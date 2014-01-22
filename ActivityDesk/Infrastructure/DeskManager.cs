@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.IO;
-using ABC.Infrastructure.ActivityBase;
-using ABC.Infrastructure.Discovery;
-using ABC.Infrastructure.Helpers;
-using ABC.Model;
+using NooSphere.Infrastructure.ActivityBase;
+using NooSphere.Infrastructure.Discovery;
+using NooSphere.Infrastructure.Helpers;
+using NooSphere.Model;
 
 namespace ActivityDesk.Infrastructure
 {
@@ -42,12 +42,12 @@ namespace ActivityDesk.Infrastructure
             //_activity.Resources.Add(resource);
         }
             
-        void _activitySystem_ActivityRemoved(object sender, ABC.Infrastructure.ActivityRemovedEventArgs e)
+        void _activitySystem_ActivityRemoved(object sender, NooSphere.Infrastructure.ActivityRemovedEventArgs e)
         {
         
         }
 
-        void _activitySystem_ActivityAdded(object sender, ABC.Infrastructure.ActivityEventArgs e)
+        void _activitySystem_ActivityAdded(object sender, NooSphere.Infrastructure.ActivityEventArgs e)
         {
             Activities.Add(e.Activity);
         }

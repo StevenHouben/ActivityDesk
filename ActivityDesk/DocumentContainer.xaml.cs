@@ -13,7 +13,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Surface.Presentation.Controls;
 using System.Collections.ObjectModel;
-using ABC.Model.Device;
+using NooSphere.Model.Device;
 
 namespace ActivityDesk
 {
@@ -99,10 +99,10 @@ namespace ActivityDesk
         }
         private void Add(ScatterViewItem element)
         {
-            DocumentContainer.SetDockState(element, DockStates.Floating);
-            element.AddHandler(UIElement.ManipulationCompletedEvent, new EventHandler<ManipulationCompletedEventArgs>(element_ManipulationDelta), true);
-            element.PreviewTouchMove += new EventHandler<TouchEventArgs>(element_PreviewTouchMove);
-            ((ScatterViewItem)element).Template = (ControlTemplate)element.FindResource("Floating");
+            SetDockState(element, DockStates.Floating);
+            element.AddHandler(ManipulationCompletedEvent, new EventHandler<ManipulationCompletedEventArgs>(element_ManipulationDelta), true);
+            element.PreviewTouchMove += element_PreviewTouchMove;
+            element.Template = (ControlTemplate)element.FindResource("Floating");
             element.Orientation = 0;
             element.CanRotate = false;
             view.Items.Add(element);
@@ -118,22 +118,22 @@ namespace ActivityDesk
             if (p.X < LeftDockTreshhold)
             {
                 item.Template = (ControlTemplate)item.FindResource("Docked");
-                DocumentContainer.SetDockState(item, DockStates.Left);
+                SetDockState(item, DockStates.Left);
             }
             else if (p.X > RightDockTreshhold)
             {
                 item.Template = (ControlTemplate)item.FindResource("Docked");
-                DocumentContainer.SetDockState(item, DockStates.Right);
+                SetDockState(item, DockStates.Right);
             }
             else if (p.Y < UpperDockThreshold)
             {
                 item.Template = (ControlTemplate)item.FindResource("Docked");
-                DocumentContainer.SetDockState(item, DockStates.Top);
+                SetDockState(item, DockStates.Top);
             }
             else
             {
                 item.Template = (ControlTemplate)item.FindResource("Floating");
-                DocumentContainer.SetDockState(item, DockStates.Floating);
+                SetDockState(item, DockStates.Floating);
             }
             UpdateDock(item);
         }
@@ -143,7 +143,7 @@ namespace ActivityDesk
         }
         private void UpdateDock(ScatterViewItem item)
         {
-            var state = DocumentContainer.GetDockState(item);
+            var state = GetDockState(item);
             if (state == DockStates.Floating)
             {
                item.Width = 1000;

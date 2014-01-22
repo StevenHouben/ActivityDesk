@@ -28,8 +28,8 @@ using System.Windows.Controls;
 using ActivityDesk.Visualizer.Visualization;
 using System.Windows.Input;
 
-using ABC.Model;
-using ABC.Model.Device;
+using NooSphere.Model;
+using NooSphere.Model.Device;
 
 namespace ActivityDesk
 {
