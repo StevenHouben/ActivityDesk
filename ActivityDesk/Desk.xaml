@@ -20,11 +20,9 @@
     </s:SurfaceWindow.Resources>
     <s:TagVisualizer x:Name="Visualizer" tve:TagVisualizerEvents.Mode="Off" VisualizationAdded="Visualizer_VisualizationAdded" VisualizationRemoved="Visualizer_VisualizationRemoved" VisualizationMoved="Visualizer_VisualizationMoved" Width="auto" Height="auto">
         <Canvas Name="canvas">
-            <Border Width="{Binding ElementName=canvas, Path=ActualWidth}" Height="{Binding ElementName=canvas, Path=ActualHeight}" BorderThickness="10" BorderBrush="#B4000000" CornerRadius="0" />
-            <Border Width="{Binding ElementName=canvas, Path=ActualWidth}" Height="{Binding ElementName=canvas, Path=ActualHeight}" BorderThickness="25" BorderBrush="#B4000000" CornerRadius="25" />
-            <Label Content="Drop device to start" FontSize="150" Foreground="#2C6C6C6C" HorizontalAlignment="Center" HorizontalContentAlignment="Center" FontWeight="ExtraBlack" ForceCursor="False" FontStretch="UltraExpanded" Name="lblStart" />
+            <Border Width="{Binding ElementName=canvas, Path=ActualWidth}" Height="{Binding ElementName=canvas, Path=ActualHeight}" BorderThickness="20,20,20,0" BorderBrush="#000000" CornerRadius="0" />
             <Canvas Name="grid" Width="auto" Height="auto" Background="{x:Null}">
-                <Grid Width="{Binding ElementName=canvas, Path=ActualWidth}" Height="{Binding ElementName=canvas, Path=ActualWidth}" Name="documentViewContainer">
+                <Grid Width="{Binding ElementName=canvas, Path=ActualWidth}" Height="{Binding ElementName=canvas, Path=ActualHeight}" Name="documentViewContainer">
                 </Grid>
                     <s:SurfaceButton Canvas.Left="50" Canvas.Top="50" Height="156" Name="btnNote" Width="191" Background="#FFE5D300" IsEnabled="True" PreviewTouchDown="button1_PreviewTouchDown" Click="BtnNote_OnClick_">
                         <Label Content="Notes" FontSize="30" FontFamily="SketchFlow Print" FontStyle="Normal" FontWeight="Bold" ForceCursor="False" Canvas.Left="42" Canvas.Top="59"></Label>

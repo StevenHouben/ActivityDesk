@@ -56,37 +56,12 @@ namespace ActivityDesk
                 Name = "Surface"
             };
 
-            WindowStyle = WindowStyle.ThreeDBorderWindow;
-            WindowState = WindowState.Minimized;
+            WindowStyle = WindowStyle.None;
+            WindowState = WindowState.Maximized;
 
             _deskManager = new DeskManager();
             _deskManager.Start(_documentContainer);
 
-        }
-        public BitmapSource ToBitmapSource(System.Drawing.Bitmap source)
-        {
-            BitmapSource bitSrc = null;
-
-            var hBitmap = source.GetHbitmap();
-
-            try
-            {
-                bitSrc = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-                    hBitmap,
-                    IntPtr.Zero,
-                    Int32Rect.Empty,
-                    BitmapSizeOptions.FromEmptyOptions());
-            }
-            catch (Win32Exception)
-            {
-                bitSrc = null;
-            }
-            finally
-            {
-                NativeMethods.DeleteObject(hBitmap);
-            }
-
-            return bitSrc;
         }
         internal static class NativeMethods
         {
@@ -98,11 +73,6 @@ namespace ActivityDesk
         private void SetDeskState(DeskState deskState)
         {
             _deskState = deskState;
-
-            Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() =>
-            {
-                //this.Background = new ImageBrush(new BitmapImage(new Uri(@"pack://application:,,,/myapp;component/ActivityDesk/Images/wood.jpg")));
-            }));
         }
         #endregion
 
@@ -127,34 +97,11 @@ namespace ActivityDesk
         }
         #endregion
 
-        #region UI
-        private void VisualizeResouce(LegacyResource res, string path)
-        {
-            try
-            {
-                var image = new Image();
-                var bitmapImage = new BitmapImage();
-                bitmapImage.BeginInit();
-                bitmapImage.UriSource = new Uri(path, UriKind.Relative);
-                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapImage.EndInit();
-                image.Source = bitmapImage;
-                image.Stretch = Stretch.Uniform;
-
-                _documentContainer.AddResource(image,res.Name);
-            }
-            catch { }
-        }
-
-        #endregion
-
         #region Events
 
 
         private void Visualizer_VisualizationAdded(object sender, TagVisualizerEventArgs e)
         {
-            if (lblStart.Visibility == Visibility.Visible)
-                lblStart.Visibility = Visibility.Hidden;
 
             if (!_lockedTags.Contains(e.TagVisualization.VisualizedTag.Value.ToString()))
             {
@@ -190,7 +137,6 @@ namespace ActivityDesk
                 if (Visualizer.ActiveVisualizations.Count == 0)
                 {
                     SetDeskState(DeskState.Ready);
-                    lblStart.Visibility = Visibility.Visible;
                 }
 
 
@@ -210,27 +156,7 @@ namespace ActivityDesk
         #endregion
         private void button1_PreviewTouchDown(object sender, TouchEventArgs e)
         {
-            //if (!fileExists)
-            //{
-            //    _deskManager.AddAttachment();
-            //    fileExists = true;
-            //}
-
-            //else
-            //{
-            //    var image = new Image();
-            //    using (var stream = _deskManager.GetAttachment())
-            //    {
-            //        var bitmap = new BitmapImage();
-            //        bitmap.BeginInit();
-            //        bitmap.StreamSource = stream;
-            //        bitmap.CacheOption = BitmapCacheOption.OnLoad;
-            //        bitmap.EndInit();
-            //        bitmap.Freeze();
-            //        image.Source = bitmap;
-            //    }
-            //    _documentContainer.AddResource(image,"");
-            //}
+            
         }
         bool fileExists = false;
 
@@ -241,7 +167,7 @@ namespace ActivityDesk
         private async void BtnNote_OnClick_(object sender, RoutedEventArgs e)
         {
              var result = await GetImages();
-            Dispatcher.Invoke(() => _documentContainer.AddWindow(new Image {Source = result.Item1}, new Image {Source = result.Item2}));
+             Dispatcher.Invoke(() => _documentContainer.AddWindow(new Image { Source = result.Item1 }, new Image { Source = result.Item2 }, "Paper"));
 
         }
 

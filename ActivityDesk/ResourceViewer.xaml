@@ -14,8 +14,8 @@
             </Grid>
         </ControlTemplate>
         <ControlTemplate x:Key="Docked">
-            <Grid x:Name="grid" Height="150" Width="150">
-                <Border x:Name="body" BorderBrush="Black" BorderThickness="15" Margin="0,0,0,0" CornerRadius="10">
+            <Grid x:Name="grid" Height="100" Width="100">
+                <Border x:Name="body" BorderBrush="Black"  BorderThickness="5" Margin="10" >
                     <Label x:Name="lblName" Content="{Binding Name}" RenderTransformOrigin="0.5,0.5" Foreground="Black" 
                            Background="#00000000" FontSize="18.667" FontWeight="Bold" 
                            d:LayoutOverrides="Height" HorizontalAlignment="Center" VerticalAlignment="Center">

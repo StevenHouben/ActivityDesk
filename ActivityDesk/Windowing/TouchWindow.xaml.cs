@@ -28,9 +28,11 @@ namespace ActivityDesk.Windowing
 
 	    public FrameworkElement Content { get; set; }
 	    public ImageSource Thumbnail { get; set; }
+	    public string Title { get; set; }
 
-        public TouchWindow(FrameworkElement content,Image thumbnail)
-		{
+	    public TouchWindow(FrameworkElement content,Image thumbnail, string title)
+	    {
+	        Title = title;
             Thumbnail = thumbnail.Source;
             Content = content;
 
@@ -52,7 +54,7 @@ namespace ActivityDesk.Windowing
             base.OnApplyTemplate();
         }
 
-		private static Size DefaultPopupSize = new Size(300, 200);
+		private static readonly Size DefaultPopupSize = new Size(300, 200);
 		/// <summary>
 		/// Gets the size that the parent container should have to fully accomodate the PopupWindow and its child content
 		/// based on the child's InitialSizeRequest.
