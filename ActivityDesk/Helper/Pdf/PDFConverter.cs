@@ -1,17 +1,4 @@
-﻿/****************************************************************************
- (c) 2012 Steven Houben(shou@itu.dk) and Søren Nielsen(snielsen@itu.dk)
-
- Pervasive Interaction Technology Laboratory (pIT lab)
- IT University of Copenhagen
-
- This library is free software; you can redistribute it and/or 
- modify it under the terms of the GNU GENERAL PUBLIC LICENSE V3 or later, 
- as published by the Free Software Foundation. Check 
- http://www.gnu.org/licenses/gpl.html for details.
-****************************************************************************/
-
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -24,12 +11,12 @@ namespace ActivityDesk.Helper.Pdf
 {
     public sealed class PdfConverter
     {
-        public static Image ConvertPdfThumbnail(string pathOfPdf)
+        public static BitmapImage ConvertPdfThumbnail(string pathOfPdf)
         {
             if (!File.Exists(pathOfPdf))
                 throw new FileNotFoundException("Invalid path");
 
-            var image = new Image();
+            var bitmapImage = new BitmapImage();
 
             var settings = new MagickReadSettings
             {
@@ -46,29 +33,29 @@ namespace ActivityDesk.Helper.Pdf
                 {
                     bitmap.Save(memory, ImageFormat.Bmp);
                     memory.Position = 0;
-                    var bitmapImage = new BitmapImage();
+
                     bitmapImage.BeginInit();
-                    bitmapImage.StreamSource = memory;
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmapImage.StreamSource = memory;
                     bitmapImage.EndInit();
-                    image.Source = bitmapImage;
+                    bitmapImage.Freeze();
                 }
                 bitmap.Dispose();
             }
-            return image;
+            return bitmapImage;
         }
 
-        public static Image ConvertPdfToImage(string pathOfPdf)
+        public static BitmapImage ConvertPdfToImage(string pathOfPdf)
         {
 
             if (!File.Exists(pathOfPdf))
                 throw new FileNotFoundException("Invalid path");
 
-            var image = new Image();
-
             const int width = 595;
             const int height = 841;
             const float scale = 0.1f;
+
+            var bitmapImage = new BitmapImage();
 
             var settings = new MagickReadSettings
             {
@@ -86,16 +73,16 @@ namespace ActivityDesk.Helper.Pdf
                 {
                     bitmap.Save(memory, ImageFormat.Bmp);
                     memory.Position = 0;
-                    var bitmapImage = new BitmapImage();
+    
                     bitmapImage.BeginInit();
-                    bitmapImage.StreamSource = memory;
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmapImage.StreamSource = memory;
                     bitmapImage.EndInit();
-                    image.Source = bitmapImage;
+                    bitmapImage.Freeze();
                 }
                 bitmap.Dispose();
             }
-            return image;
+            return bitmapImage ;
         }
 
         public static List<Image> ConvertPdfToImageList(string pathOfPdf)

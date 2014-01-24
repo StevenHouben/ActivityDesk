@@ -7,9 +7,9 @@
     Title="Activity Desk" mc:Ignorable="d"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-    d:DesignHeight="1080" d:DesignWidth="1920" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" PreviewTouchDown="SurfaceWindow_PreviewTouchDown" AutoOrientsOnStartup="True">
+     HorizontalAlignment="Stretch" VerticalAlignment="Stretch" PreviewTouchDown="SurfaceWindow_PreviewTouchDown" AutoOrientsOnStartup="True">
     <s:SurfaceWindow.Background>
-        <ImageBrush ImageSource="/ActivityDesk;component/Images/back.jpg" />
+        <ImageBrush ImageSource="/ActivityDesk;component/Images/wood.jpg" />
     </s:SurfaceWindow.Background>
     <s:SurfaceWindow.Resources>
         <ImageBrush x:Key="blue" ImageSource="/ActivityDesk;component/Images/blue.jpg" />
@@ -18,13 +18,13 @@
         <ImageBrush x:Key="yellow" ImageSource="/ActivityDesk;component/Images/yellow.jpg" />
         <ImageBrush x:Key="back" ImageSource="/ActivityDesk;component/Images/back.jpg" />
     </s:SurfaceWindow.Resources>
-    <s:TagVisualizer x:Name="Visualizer" tve:TagVisualizerEvents.Mode="Off" VisualizationAdded="Visualizer_VisualizationAdded" VisualizationRemoved="Visualizer_VisualizationRemoved" VisualizationMoved="Visualizer_VisualizationMoved" Width="1920" Height="1080">
+    <s:TagVisualizer x:Name="Visualizer" tve:TagVisualizerEvents.Mode="Off" VisualizationAdded="Visualizer_VisualizationAdded" VisualizationRemoved="Visualizer_VisualizationRemoved" VisualizationMoved="Visualizer_VisualizationMoved" Width="auto" Height="auto">
         <Canvas Name="canvas">
-            <Border Width="1920" Height="1080" BorderThickness="50" BorderBrush="#B4000000" CornerRadius="50" />
-            <Label Content="Drop device to start" FontSize="150" Foreground="#2C6C6C6C" Margin="350,400,0,0" Canvas.Left="-350" Width="1966" HorizontalAlignment="Center" HorizontalContentAlignment="Center" FontWeight="ExtraBlack" ForceCursor="False" FontStretch="UltraExpanded" Name="lblStart" />
-            <Canvas Name="grid" Width="1920" Height="1080" Background="{x:Null}">
-
-                <Grid Width="1920" Height="1080" Name="documentViewContainer">
+            <Border Width="{Binding ElementName=canvas, Path=ActualWidth}" Height="{Binding ElementName=canvas, Path=ActualHeight}" BorderThickness="10" BorderBrush="#B4000000" CornerRadius="0" />
+            <Border Width="{Binding ElementName=canvas, Path=ActualWidth}" Height="{Binding ElementName=canvas, Path=ActualHeight}" BorderThickness="25" BorderBrush="#B4000000" CornerRadius="25" />
+            <Label Content="Drop device to start" FontSize="150" Foreground="#2C6C6C6C" HorizontalAlignment="Center" HorizontalContentAlignment="Center" FontWeight="ExtraBlack" ForceCursor="False" FontStretch="UltraExpanded" Name="lblStart" />
+            <Canvas Name="grid" Width="auto" Height="auto" Background="{x:Null}">
+                <Grid Width="{Binding ElementName=canvas, Path=ActualWidth}" Height="{Binding ElementName=canvas, Path=ActualWidth}" Name="documentViewContainer">
                 </Grid>
                     <s:SurfaceButton Canvas.Left="50" Canvas.Top="50" Height="156" Name="btnNote" Width="191" Background="#FFE5D300" IsEnabled="True" PreviewTouchDown="button1_PreviewTouchDown" Click="BtnNote_OnClick_">
                         <Label Content="Notes" FontSize="30" FontFamily="SketchFlow Print" FontStyle="Normal" FontWeight="Bold" ForceCursor="False" Canvas.Left="42" Canvas.Top="59"></Label>

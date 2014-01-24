@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Windows.Controls;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using NooSphere.Infrastructure.ActivityBase;
 using NooSphere.Infrastructure.Discovery;
 using NooSphere.Infrastructure.Helpers;
@@ -15,23 +18,76 @@ namespace ActivityDesk.Infrastructure
 
         public Collection<IActivity> Activities { get; set; }
 
-
-        public void Start()
+        private DocumentContainer _documentContainer;
+        public void Start(DocumentContainer documentContainer)
         {
             Activities = new Collection<IActivity>();
 
-            _activitySystem = new ActivitySystem("desksystem");
+            var webconfiguration = WebConfiguration.DefaultWebConfiguration;
+
+            const string ravenDatabaseName = "desksystem";
+
+            var databaseConfiguration = new DatabaseConfiguration(webconfiguration.Address, webconfiguration.Port, ravenDatabaseName);
+
+
+            _activitySystem = new ActivitySystem(databaseConfiguration);
             _activitySystem.ActivityRemoved += _activitySystem_ActivityRemoved;
             _activitySystem.ActivityAdded += _activitySystem_ActivityAdded;
-            _activitySystem.Run(WebConfiguration.DefaultWebConfiguration);
+            _activitySystem.ResourceAdded += _activitySystem_ResourceAdded;    
 
-            _activitySystem.StartBroadcast(DiscoveryType.Zeroconf, "deskmanager");
 
             _activityService = new ActivityService(_activitySystem, Net.GetIp(IpType.All), 8000);
 
             _activityService.Start();
 
-            _activitySystem.AddActivity(new Activity());
+            _activityService.StartBroadcast(DiscoveryType.Zeroconf, "deskmanager");
+
+            _documentContainer = documentContainer;
+
+            InitializeContainer();
+        }
+
+        void _activitySystem_ResourceAdded(object sender, ResourceEventArgs e)
+        {
+            _documentContainer.Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() =>
+            {
+
+            var image = new Image();
+            using (var stream = _activitySystem.GetStreamFromResource(e.Resource.Id))
+            {
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.StreamSource = stream;
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.EndInit();
+                bitmap.Freeze();
+                image.Source = bitmap;
+            }
+            _documentContainer.AddResource(image, "");
+            }));
+        }
+
+        private void InitializeContainer()
+        {
+            foreach(var act in _activitySystem.Activities.Values)
+                foreach (var resource in act.Resources)
+                {
+                    if (resource != null)
+                    {
+                        var image = new Image();
+                        using (var stream = _activitySystem.GetStreamFromResource(resource.Id))
+                        {
+                            var bitmap = new BitmapImage();
+                            bitmap.BeginInit();
+                            bitmap.StreamSource = stream;
+                            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                            bitmap.EndInit();
+                            bitmap.Freeze();
+                            image.Source = bitmap;
+                        }
+                        _documentContainer.AddResource(image, "");
+                    }
+                }
         }
 
         private readonly Activity _activity = new Activity() {Name = "Images"};

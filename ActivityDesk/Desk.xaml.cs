@@ -1,16 +1,5 @@
-/****************************************************************************
- (c) 2012 Steven Houben(shou@itu.dk) and Søren Nielsen(snielsen@itu.dk)
-
- Pervasive Interaction Technology Laboratory (pIT lab)
- IT University of Copenhagen
-
- This library is free software; you can redistribute it and/or 
- modify it under the terms of the GNU GENERAL PUBLIC LICENSE V3 or later, 
- as published by the Free Software Foundation. Check 
- http://www.gnu.org/licenses/gpl.html for details.
-****************************************************************************/
-
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 using ActivityDesk.Helper.Pdf;
 using ActivityDesk.Infrastructure;
@@ -71,7 +60,7 @@ namespace ActivityDesk
             WindowState = WindowState.Minimized;
 
             _deskManager = new DeskManager();
-            _deskManager.Start();
+            _deskManager.Start(_documentContainer);
 
         }
         public BitmapSource ToBitmapSource(System.Drawing.Bitmap source)
@@ -112,7 +101,7 @@ namespace ActivityDesk
 
             Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() =>
             {
-                Background = (ImageBrush)Resources["back"];
+                //this.Background = new ImageBrush(new BitmapImage(new Uri(@"pack://application:,,,/myapp;component/ActivityDesk/Images/wood.jpg")));
             }));
         }
         #endregion
@@ -249,12 +238,23 @@ namespace ActivityDesk
         {
         }
 
-        private void BtnNote_OnClick_(object sender, RoutedEventArgs e)
+        private async void BtnNote_OnClick_(object sender, RoutedEventArgs e)
         {
-            var img = PdfConverter.ConvertPdfToImage(@"c:\cam.pdf");
-            var imgThumb = PdfConverter.ConvertPdfThumbnail(@"c:\cam.pdf");
-            _documentContainer.AddPdf(img,imgThumb);
-            
+             var result = await GetImages();
+            Dispatcher.Invoke(() => _documentContainer.AddWindow(new Image {Source = result.Item1}, new Image {Source = result.Item2}));
+
+        }
+
+        private async Task<Tuple<BitmapImage, BitmapImage>> GetImages()
+        {
+            BitmapImage img = null, imgThumb=null;
+            await Task.Factory.StartNew(() =>
+            {
+                img = PdfConverter.ConvertPdfToImage(@"c:\cam.pdf");
+                imgThumb = PdfConverter.ConvertPdfThumbnail(@"c:\cam.pdf");
+            });
+
+            return Tuple.Create( img, imgThumb);
         }
     }
 }

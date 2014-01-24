@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using ActivityDesk.Windowing;
 using Microsoft.Surface.Presentation.Controls;
 using System.Collections.ObjectModel;
 using NooSphere.Model.Device;
@@ -83,6 +84,12 @@ namespace ActivityDesk
             ResourceViewers.Add(res);
             Add(res);
         }
+        public void AddWindow(FrameworkElement content, Image thumbnail)
+        {
+            var res = new TouchWindow(content, thumbnail);
+            ResourceViewers.Add(res);
+            Add(res);
+        }
         public void AddDevice(Device device,Point position)
         {
             var dev = new DeviceTumbnail {Name = device.Name, Center = position};
@@ -146,8 +153,8 @@ namespace ActivityDesk
             var state = GetDockState(item);
             if (state == DockStates.Floating)
             {
-               item.Width = 1000;
-               item.Height = 600;
+               //item.Width = 1000;
+               //item.Height = 600;
             }
             else
             {
@@ -158,7 +165,7 @@ namespace ActivityDesk
                 else
                     item.Center = new Point(item.Center.X, UpperDockY);
                 item.Orientation = 0;
-                item.Width = item.Height = 150;
+                //item.Width = item.Height = 150;
             }
         }
         void element_ManipulationDelta(object sender, ManipulationCompletedEventArgs e)
