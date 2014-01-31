@@ -11,23 +11,14 @@
     <s:SurfaceWindow.Background>
         <ImageBrush ImageSource="/ActivityDesk;component/Images/wood.jpg" />
     </s:SurfaceWindow.Background>
-    <s:SurfaceWindow.Resources>
-        <ImageBrush x:Key="blue" ImageSource="/ActivityDesk;component/Images/blue.jpg" />
-        <ImageBrush x:Key="red" ImageSource="/ActivityDesk;component/Images/red.jpg" />
-        <ImageBrush x:Key="green" ImageSource="/ActivityDesk;component/Images/green.jpg" />
-        <ImageBrush x:Key="yellow" ImageSource="/ActivityDesk;component/Images/yellow.jpg" />
-        <ImageBrush x:Key="back" ImageSource="/ActivityDesk;component/Images/back.jpg" />
-    </s:SurfaceWindow.Resources>
-    <s:TagVisualizer x:Name="Visualizer" tve:TagVisualizerEvents.Mode="Off" VisualizationAdded="Visualizer_VisualizationAdded" VisualizationRemoved="Visualizer_VisualizationRemoved" VisualizationMoved="Visualizer_VisualizationMoved" Width="auto" Height="auto">
-        <Canvas Name="canvas">
-            <Border Width="{Binding ElementName=canvas, Path=ActualWidth}" Height="{Binding ElementName=canvas, Path=ActualHeight}" BorderThickness="20,20,20,0" BorderBrush="#000000" CornerRadius="0" />
-            <Canvas Name="grid" Width="auto" Height="auto" Background="{x:Null}">
-                <Grid Width="{Binding ElementName=canvas, Path=ActualWidth}" Height="{Binding ElementName=canvas, Path=ActualHeight}" Name="documentViewContainer">
-                </Grid>
-                    <s:SurfaceButton Canvas.Left="50" Canvas.Top="50" Height="156" Name="btnNote" Width="191" Background="#FFE5D300" IsEnabled="True" PreviewTouchDown="button1_PreviewTouchDown" Click="BtnNote_OnClick_">
-                        <Label Content="Notes" FontSize="30" FontFamily="SketchFlow Print" FontStyle="Normal" FontWeight="Bold" ForceCursor="False" Canvas.Left="42" Canvas.Top="59"></Label>
-                    </s:SurfaceButton>
-            </Canvas>
+    <Canvas Name="canvas">
+        <Border x:Name="border" Width="{Binding ElementName=canvas, Path=ActualWidth}" Height="{Binding ElementName=canvas, Path=ActualHeight}" BorderThickness="20,20,20,0" BorderBrush="#000000" CornerRadius="0" />
+        <Canvas Name="grid" Width="auto" Height="auto" Background="{x:Null}">
+            <Grid Width="{Binding ElementName=canvas, Path=ActualWidth}" Height="{Binding ElementName=canvas, Path=ActualHeight}" Name="documentViewContainer">
+            </Grid>
+            <s:SurfaceButton Canvas.Left="31.5" Canvas.Top="30" Height="94.5" Name="btnNote" Width="114.5" Background="#7ADAAA07" IsEnabled="True" PreviewTouchDown="button1_PreviewTouchDown" Click="BtnNote_OnClick_" Margin="0">
+                <Label Content="Notes" FontSize="30" FontFamily="SketchFlow Print" FontStyle="Normal" FontWeight="Bold" ForceCursor="False" Canvas.Left="42" Canvas.Top="59"></Label>
+            </s:SurfaceButton>
         </Canvas>
-    </s:TagVisualizer>
+    </Canvas>
 </s:SurfaceWindow>

@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.IO;
+﻿using System.Collections.ObjectModel;
+using System.Linq;
+using System.Web.Hosting;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using NooSphere.Infrastructure.ActivityBase;
 using NooSphere.Infrastructure.Discovery;
 using NooSphere.Infrastructure.Helpers;
+using NooSphere.Infrastructure.Web;
 using NooSphere.Model;
 
 namespace ActivityDesk.Infrastructure
@@ -31,7 +32,6 @@ namespace ActivityDesk.Infrastructure
 
 
             _activitySystem = new ActivitySystem(databaseConfiguration);
-            _activitySystem.ActivityRemoved += _activitySystem_ActivityRemoved;
             _activitySystem.ActivityAdded += _activitySystem_ActivityAdded;
             _activitySystem.ResourceAdded += _activitySystem_ResourceAdded;    
 
@@ -43,17 +43,32 @@ namespace ActivityDesk.Infrastructure
             _activityService.StartBroadcast(DiscoveryType.Zeroconf, "deskmanager");
 
             _documentContainer = documentContainer;
+            _documentContainer.IntersectionDetected += _documentContainer_IntersectionDetected;
 
             InitializeContainer();
         }
 
+        void _documentContainer_IntersectionDetected(object sender, Intersection e)
+        {
+            _activityService.SendMessage(MessageType.Resource, e.Resource);
+        }
+
         void _activitySystem_ResourceAdded(object sender, ResourceEventArgs e)
         {
-            _documentContainer.Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() =>
-            {
+            _documentContainer.Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() => AddResourceToContainer(e.Resource)));
+        }
+
+        private void AddResourceToContainer(Resource e)
+        {
+            _documentContainer.AddResource(FromResource(e));
+        }
+
+        private LoadedResource FromResource(Resource res)
+        {
+            var loadedResource = new LoadedResource();
 
             var image = new Image();
-            using (var stream = _activitySystem.GetStreamFromResource(e.Resource.Id))
+            using (var stream = _activitySystem.GetStreamFromResource(res.Id))
             {
                 var bitmap = new BitmapImage();
                 bitmap.BeginInit();
@@ -63,55 +78,22 @@ namespace ActivityDesk.Infrastructure
                 bitmap.Freeze();
                 image.Source = bitmap;
             }
-            _documentContainer.AddResource(image, "");
-            }));
+            loadedResource.Resource = res;
+            loadedResource.Content = image;
+            loadedResource.Thumbnail = image.Source;
+            return loadedResource;
         }
 
         private void InitializeContainer()
         {
-            foreach(var act in _activitySystem.Activities.Values)
-                foreach (var resource in act.Resources)
-                {
-                    if (resource != null)
-                    {
-                        var image = new Image();
-                        using (var stream = _activitySystem.GetStreamFromResource(resource.Id))
-                        {
-                            var bitmap = new BitmapImage();
-                            bitmap.BeginInit();
-                            bitmap.StreamSource = stream;
-                            bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                            bitmap.EndInit();
-                            bitmap.Freeze();
-                            image.Source = bitmap;
-                        }
-                        _documentContainer.AddResource(image, "");
-                    }
-                }
-        }
-
-        private readonly Activity _activity = new Activity() {Name = "Images"};
-        public void AddAttachment()
-        {
-            //var resource = _activitySystem.AddResourceToActivity(_activity, new MemoryStream(File.ReadAllBytes(@"C:\morten.jpg")), "",
-            //    Path.GetExtension(@"C:\morten.jpg"));
-            //_activity.Resources.Add(resource);
-        }
-            
-        void _activitySystem_ActivityRemoved(object sender, NooSphere.Infrastructure.ActivityRemovedEventArgs e)
-        {
-        
+            foreach (var resource in from act in _activitySystem.Activities.Values from resource in act.Resources where resource != null select resource)
+                _documentContainer.AddResource(FromResource(resource));
         }
 
         void _activitySystem_ActivityAdded(object sender, NooSphere.Infrastructure.ActivityEventArgs e)
         {
             Activities.Add(e.Activity);
         }
-
-    }
-
-    public class Note:LegacyResource
-    {
         public string Title { get; set; }
         public string Content { get; set; }
 

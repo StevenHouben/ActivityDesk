@@ -1,52 +1,80 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using Microsoft.Surface.Presentation.Controls;
-using System.ComponentModel;
+using ActivityDesk.Infrastructure;
+using Blake.NUI.WPF.Gestures;
+using NooSphere.Model.Device;
+using ActivityDesk.Viewers;
 
 namespace ActivityDesk
 {
-	/// <summary>
-	/// Interaction logic for DeviceTumbnail.xaml
-	/// </summary>
-    public partial class DeviceTumbnail : ScatterViewItem 
+    public partial class DeviceTumbnail : IResourceContainer,INotifyPropertyChanged
 	{
-        private string _name;
-        public string Name
+
+        public event PropertyChangedEventHandler PropertyChanged = delegate { }; 
+        public event EventHandler<LoadedResource> ResourceReleased = delegate { }; 
+
+        protected void OnPropertyChanged(string name)
         {
-            get{return _name;}
+            var handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(name));
+            }
+        }
+
+        private LoadedResource _resource;
+
+        public LoadedResource Resource
+        {
+            get { return _resource; }
             set
             {
-                _name = value;
-                if(_label != null)
-                    _label.Content = Name;
+                if (_resource != null)
+                {
+                    if (ResourceReleased != null)
+                        ResourceReleased(this, _resource);
+                }
+                _resource = value;
+                OnPropertyChanged("Resource");
             }
+
         }
 
-        private Label _label;
-        public override void OnApplyTemplate()
-        {
-            DependencyObject d = GetTemplateChild("lblName");
-            if (d != null)
-            {
-                _label = d as Label;
-                _label.Content = Name;
-            }
-            base.OnApplyTemplate();
-        }
+        public bool Iconized { get; set; }
 
-		public DeviceTumbnail()
-		{
-			this.InitializeComponent();
-		} 
-    }
+	    public event EventHandler<Device> Closed = delegate { };
+
+	    public Device Device { get; private set; }
+
+	    public DeviceTumbnail(Device device)
+	    {
+	        Device = device;
+	        Name = device.Name;
+            InitializeComponent();
+
+            DataContext = this;
+            Events.RegisterGestureEventSupport(this);
+
+	        CanScale = false;
+	        CanRotate = false;
+	    }
+
+	    private void UIElement_OnTouchDown(object sender, TouchEventArgs e)
+	    {
+	        if(Closed != null)
+                Closed(Device, Device);
+	    }
+
+	    private void OnDoubleTapGesture(object sender, GestureEventArgs e)
+	    {
+	        if (Resource == null) return;
+	        if (ResourceReleased != null)
+	            ResourceReleased(this, Resource);
+	        Resource = null;
+	    }
+	}
 }

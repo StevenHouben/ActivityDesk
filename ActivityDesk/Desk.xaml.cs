@@ -1,23 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
 using ActivityDesk.Helper.Pdf;
 using ActivityDesk.Infrastructure;
-using Microsoft.Surface.Presentation.Controls;
-using System.Windows.Media;
-using Microsoft.Surface.Presentation.Controls.TouchVisualizations;
-using System.Threading;
-using ActivityDesk.Visualizer.Definitions;
-using System.Windows.Threading;
-using System.Collections.Generic;
 using System.Windows.Media.Imaging;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
 using System.Windows.Controls;
-using ActivityDesk.Visualizer.Visualization;
 using System.Windows.Input;
 
-using NooSphere.Model;
 using NooSphere.Model.Device;
 
 namespace ActivityDesk
@@ -27,7 +17,6 @@ namespace ActivityDesk
         #region Members 
         private DeskState _deskState;
         private Device _device;
-        private readonly List<string> _lockedTags = new List<string>();
         private readonly List<string> _connectedDeviceTags = new List<string>();
         private readonly DocumentContainer _documentContainer = new DocumentContainer();
         private DeskManager _deskManager;
@@ -39,10 +28,6 @@ namespace ActivityDesk
         public Desk()
         {
             InitializeComponent();
-
-            TouchVisualizer.SetShowsVisualizations(_documentContainer, false);
-
-            InitializeTags();
 
             documentViewContainer.Children.Add(_documentContainer);
 
@@ -63,12 +48,6 @@ namespace ActivityDesk
             _deskManager.Start(_documentContainer);
 
         }
-        internal static class NativeMethods
-        {
-            [DllImport("gdi32.dll")]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            internal static extern bool DeleteObject(IntPtr hObject);
-        }
 
         private void SetDeskState(DeskState deskState)
         {
@@ -77,82 +56,12 @@ namespace ActivityDesk
         #endregion
 
         #region Initializers
-        private void InitializeTags()
-        {
-
-            Visualizer.Definitions.Add(
-                new SmartPhoneDefinition()
-                {
-                    Source = new Uri("Visualizer/Visualizations/SmartPhone.xaml", UriKind.Relative),
-                    TagRemovedBehavior = TagRemovedBehavior.Disappear,
-                    LostTagTimeout = 1000
-                });
-            Visualizer.Definitions.Add( 
-                new TabletDefinition()
-                {
-                    Source = new Uri("Visualizer/Visualizations/VisualizationTablet.xaml", UriKind.Relative),
-                    LostTagTimeout = 1000
-                }
-                );
-        }
+        
         #endregion
 
         #region Events
 
 
-        private void Visualizer_VisualizationAdded(object sender, TagVisualizerEventArgs e)
-        {
-
-            if (!_lockedTags.Contains(e.TagVisualization.VisualizedTag.Value.ToString()))
-            {
-                if (Visualizer.ActiveVisualizations.Count > 0)
-                {
-                    SetDeskState(DeskState.Active);
-                }
-            }
-            else
-            {
-                _documentContainer.RemoveDevice(e.TagVisualization.VisualizedTag.Value.ToString());
-            }
-            ((BaseVisualization)e.TagVisualization).Locked += new LockedEventHandler(Desk_Locked);
-        }
-        private void Desk_Locked(object sender, LockedEventArgs e)
-        {
-            if (_lockedTags.Contains(e.VisualizedTag))
-            {
-                _lockedTags.Remove(e.VisualizedTag);
-                _documentContainer.RemoveDevice(e.VisualizedTag);
-            }
-            else
-            {
-                _lockedTags.Add(e.VisualizedTag);
-            }
-        }
-
-        private void Visualizer_VisualizationRemoved(object sender, TagVisualizerEventArgs e)
-        {
-            if (!_lockedTags.Contains(e.TagVisualization.VisualizedTag.Value.ToString()))
-            {
-                Thread.Sleep(3000);
-                if (Visualizer.ActiveVisualizations.Count == 0)
-                {
-                    SetDeskState(DeskState.Ready);
-                }
-
-
-                Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() =>
-                {
-                    //documentContainer.Clear();
-                }));
-            }
-            else
-                _documentContainer.AddDevice(new Device(){TagValue=e.TagVisualization.VisualizedTag.Value},e.TagVisualization.Center);
-
-        }
-        private void Visualizer_VisualizationMoved(object sender, TagVisualizerEventArgs e)
-        {
-
-        }
         #endregion
         private void button1_PreviewTouchDown(object sender, TouchEventArgs e)
         {
@@ -166,8 +75,8 @@ namespace ActivityDesk
 
         private async void BtnNote_OnClick_(object sender, RoutedEventArgs e)
         {
-             var result = await GetImages();
-             Dispatcher.Invoke(() => _documentContainer.AddWindow(new Image { Source = result.Item1 }, new Image { Source = result.Item2 }, "Paper"));
+             //var result = await GetImages();
+             //Dispatcher.Invoke(() => _documentContainer.AddWindow(new Image { Source = result.Item1 }, new Image { Source = result.Item2 }, "Paper","PDF"));
 
         }
 

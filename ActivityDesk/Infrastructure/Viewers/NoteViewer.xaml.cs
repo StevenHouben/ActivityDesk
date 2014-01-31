@@ -1,30 +1,29 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
+using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using ActivityDesk.Infrastructure;
 using Microsoft.Surface.Presentation.Controls;
-using System.Windows.Ink;
+using NooSphere.Model;
 
-namespace ActivityDesk
+namespace ActivityDesk.Viewers
 {
 	/// <summary>
 	/// Interaction logic for Note.xaml
 	/// </summary>
-	public partial class Note : ScatterViewItem
+	public partial class Note : ScatterViewItem,IResourceContainer
 	{
         public event EventHandler Save = null;
         public event EventHandler Close = null;
+        public bool Iconized { get; set; }
+
 
         public string Name { get; set; }
         public StrokeCollection Strokes { get; set; }
+
+        public LoadedResource Resource { get; set; }
 
 		public Note()
 		{

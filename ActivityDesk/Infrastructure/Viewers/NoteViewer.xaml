@@ -6,7 +6,7 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:Custom="http://schemas.microsoft.com/surface/2008"
 	mc:Ignorable="d"
-	x:Class="ActivityDesk.Note"
+	x:Class="ActivityDesk.Viewers.Note"
 	x:Name="UserControl" Template="{DynamicResource Floating}" d:DesignWidth="408" Height="448" MinHeight="150" MinWidth="150" MaxHeight="600" MaxWidth="800">
     <s:ScatterViewItem.Resources>
         <ControlTemplate x:Key="Floating" >

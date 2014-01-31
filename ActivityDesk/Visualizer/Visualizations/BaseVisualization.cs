@@ -1,35 +1,29 @@
-﻿/// <licence>
-/// 
-/// (c) 2012 Steven Houben(shou@itu.dk) and Søren Nielsen(snielsen@itu.dk)
-/// 
-/// Pervasive Interaction Technology Laboratory (pIT lab)
-/// IT University of Copenhagen
-///
-/// This library is free software; you can redistribute it and/or 
-/// modify it under the terms of the GNU GENERAL PUBLIC LICENSE V3 or later, 
-/// as published by the Free Software Foundation. Check 
-/// http://www.gnu.org/licenses/gpl.html for details.
-/// 
-/// </licence>
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System;
 using Microsoft.Surface.Presentation.Controls;
+using NooSphere.Model;
 
-namespace ActivityDesk.Visualizer.Visualization
+namespace ActivityDesk.Visualizer.Visualizations
 {
     public abstract class BaseVisualization : TagVisualization
     {
-        public BaseVisualization(){}
-        public virtual void Enter() { }
-        public virtual void Leave() { }
-        public event LockedEventHandler Locked = null;
+        public event LockedEventHandler Locked = delegate { }; 
+        public event EventHandler<Resource> ReleaseResource = delegate { };
+
+        protected BaseVisualization()
+        {
+            AllowDrop = true;
+        }
+
         protected virtual void OnLocked()
         {
             if (Locked != null)
                 Locked(this, new LockedEventArgs(VisualizedTag.Value.ToString()));
+        }
+
+        protected virtual void OnReleaseResource(Resource resource)
+        {
+            if (ReleaseResource != null)
+                ReleaseResource(this, resource);
         }
     }
     public delegate void LockedEventHandler(Object sender, LockedEventArgs e);

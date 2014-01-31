@@ -1,13 +1,14 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Microsoft.Surface.Presentation.Controls;
 using ActivityDesk.Helper;
+using ActivityDesk.Infrastructure;
+using Microsoft.Surface.Presentation.Controls;
+using NooSphere.Model;
 
-namespace ActivityDesk.Windowing
+namespace ActivityDesk.Viewers
 {
-	public partial class TouchWindow : ScatterViewItem
+    public partial class TouchWindow : ScatterViewItem, IResourceContainer
 	{
 		#region Attached Property InitialSizeRequest
 		public static Size GetInitialSizeRequest(DependencyObject obj)
@@ -26,19 +27,27 @@ namespace ActivityDesk.Windowing
 
 		#endregion
 
+        public LoadedResource Resource { get; set; }
+
+        public bool Iconized { get; set; }
+
 	    public FrameworkElement Content { get; set; }
 	    public ImageSource Thumbnail { get; set; }
 	    public string Title { get; set; }
 
-	    public TouchWindow(FrameworkElement content,Image thumbnail, string title)
+        public string ContentType { get; set; }
+	    public TouchWindow(LoadedResource resource)
 	    {
-	        Title = title;
-            Thumbnail = thumbnail.Source;
-            Content = content;
+	        Resource = resource;
+	        Title = resource.Resource.Name;
+            ContentType = resource.Resource.FileType;
+            Thumbnail = resource.Thumbnail;
+            Content = resource.Content;
 
             DataContext = this;
-			InitializeComponent();
-		}
+	        InitializeComponent();
+	    }
+
 
 	    private ContentControl _contentHolder;
         public override void OnApplyTemplate()
@@ -93,5 +102,11 @@ namespace ActivityDesk.Windowing
 			if (sv != null)
 				sv.Items.Remove(this);
 		}
+
+        private void btnMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            Template = (ControlTemplate)FindResource("Docked");
+            Iconized = true;   
+        }
 	}
 }
