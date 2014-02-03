@@ -10,7 +10,7 @@ namespace ActivityDesk
 
       public override DataTemplate SelectTemplate(object item, DependencyObject container)
       {
-          if (((DeviceTumbnail)item).Center.X < 100 || ((DeviceTumbnail)item).Center.X < 1900)
+          if (((DeviceThumbnail)item).Center.X < 100 || ((DeviceThumbnail)item).Center.X < 1900)
               return Docked;
           else
               return FullSize;

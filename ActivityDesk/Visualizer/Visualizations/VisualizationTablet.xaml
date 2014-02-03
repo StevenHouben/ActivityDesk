@@ -5,8 +5,34 @@
     x:Class="ActivityDesk.Visualizer.Visualizations.VisualizationTablet" mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:visualizations="clr-namespace:ActivityDesk.Visualizer.Visualizations">
     <Grid x:Name="LayoutRoot">
-
-            <StackPanel Orientation="Horizontal">
+        <s:SurfaceScrollViewer Margin="-10,488,-40,-100" Height="100" PanningMode="HorizontalOnly" 
+                               VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Hidden">
+            <ItemsControl ItemsSource="{Binding Path=LoadedResources}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid x:Name="grid" Height="100" Width="100" xmlns:gestures="clr-namespace:Blake.NUI.WPF.Gestures;assembly=Blake.NUI.WPF"
+      gestures:Events.DoubleTapGesture="OnDoubleTapGesture" >
+                            <Border BorderBrush="DarkOliveGreen" BorderThickness="2" Margin="8" >
+                                <Border x:Name="body" BorderBrush="Black" BorderThickness="5">
+                                    <Border.Background>
+                                        <ImageBrush ImageSource="{Binding Thumbnail}"></ImageBrush>
+                                    </Border.Background>
+                                    <Canvas Width="auto" Height="auto">
+                                        <Label Canvas.Left="40" Canvas.Top="55" HorizontalContentAlignment="Center" VerticalContentAlignment="Top" Width="40" Height="25" Background="Black" Foreground="White" Content="{Binding Resource.FileType}"></Label>
+                                    </Canvas>
+                                </Border>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </s:SurfaceScrollViewer>
+        <StackPanel Orientation="Horizontal">
                 <StackPanel x:Name="pnlButtons" Width="43.334" HorizontalAlignment="Left" d:LayoutOverrides="Height" VerticalAlignment="Center">
                     <Image Height="50" Source="pin.png" VerticalAlignment="Center" HorizontalAlignment="Center" 
                    TouchDown="UIElement_OnTouchDown"></Image>

@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Web.Hosting;
 using System.Windows.Controls;
@@ -9,6 +10,7 @@ using NooSphere.Infrastructure.Discovery;
 using NooSphere.Infrastructure.Helpers;
 using NooSphere.Infrastructure.Web;
 using NooSphere.Model;
+using NooSphere.Model.Device;
 
 namespace ActivityDesk.Infrastructure
 {
@@ -19,7 +21,12 @@ namespace ActivityDesk.Infrastructure
 
         public Collection<IActivity> Activities { get; set; }
 
+        private List<string> _queuedDeviceDetections = new List<string>();
+
         private DocumentContainer _documentContainer;
+
+        private Dictionary<string,Device> _devices = new Dictionary<string, Device>(); 
+
         public void Start(DocumentContainer documentContainer)
         {
             Activities = new Collection<IActivity>();
@@ -33,7 +40,9 @@ namespace ActivityDesk.Infrastructure
 
             _activitySystem = new ActivitySystem(databaseConfiguration);
             _activitySystem.ActivityAdded += _activitySystem_ActivityAdded;
-            _activitySystem.ResourceAdded += _activitySystem_ResourceAdded;    
+            _activitySystem.ResourceAdded += _activitySystem_ResourceAdded;
+
+            _activitySystem.DeviceAdded += _activitySystem_DeviceAdded;
 
 
             _activityService = new ActivityService(_activitySystem, Net.GetIp(IpType.All), 8000);
@@ -44,8 +53,33 @@ namespace ActivityDesk.Infrastructure
 
             _documentContainer = documentContainer;
             _documentContainer.IntersectionDetected += _documentContainer_IntersectionDetected;
+            _documentContainer.DeviceValueAdded += _documentContainer_DeviceValueAdded;
+            _documentContainer.DeviceValueRemoved += _documentContainer_DeviceValueRemoved;
 
             InitializeContainer();
+        }
+
+        void _documentContainer_DeviceValueRemoved(object sender, string e)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        void _documentContainer_DeviceValueAdded(object sender, string e)
+        {
+            foreach (var dev in _activitySystem.Devices.Values)
+            {
+                if (dev.TagValue == e)
+                {
+                    _documentContainer.ValidateDevice(e);
+                    return;
+                }
+            }
+            _queuedDeviceDetections.Add(e);
+        }
+
+        void _activitySystem_DeviceAdded(object sender, DeviceEventArgs e)
+        {
+            throw new System.NotImplementedException();
         }
 
         void _documentContainer_IntersectionDetected(object sender, Intersection e)
@@ -66,6 +100,8 @@ namespace ActivityDesk.Infrastructure
         private LoadedResource FromResource(Resource res)
         {
             var loadedResource = new LoadedResource();
+
+            res.FileType = "IMG";
 
             var image = new Image();
             using (var stream = _activitySystem.GetStreamFromResource(res.Id))

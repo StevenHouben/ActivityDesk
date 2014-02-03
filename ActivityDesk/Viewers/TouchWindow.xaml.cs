@@ -36,6 +36,7 @@ namespace ActivityDesk.Viewers
 	    public string Title { get; set; }
 
         public string ContentType { get; set; }
+
 	    public TouchWindow(LoadedResource resource)
 	    {
 	        Resource = resource;

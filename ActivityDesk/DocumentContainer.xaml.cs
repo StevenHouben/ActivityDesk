@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Threading;
+using System.Windows.Media.Animation;
 using ActivityDesk.Infrastructure;
 using ActivityDesk.Viewers;
 using ActivityDesk.Visualizer.Definitions;
@@ -28,7 +25,11 @@ namespace ActivityDesk
 
     public partial class DocumentContainer
     {
-        #region Image dependency property
+
+        public event EventHandler<string> DeviceValueAdded= delegate { };
+        public event EventHandler<string> DeviceValueRemoved = delegate { };
+
+        #region Dock dependency property
 
 
         public static DependencyProperty DockState;
@@ -56,12 +57,18 @@ namespace ActivityDesk
         private int _iconSize = 100;
 
 
-        private readonly List<string> _lockedTags = new List<string>();
         public Collection<Note> Notes = new Collection<Note>();
         public Collection<ScatterViewItem> ResourceViewers = new Collection<ScatterViewItem>();
-        public Dictionary<string, DeviceTumbnail> Devices = new Dictionary<string, DeviceTumbnail>();
 
-        public event EventHandler<Intersection> IntersectionDetected = delegate { }; 
+        public Dictionary<string, DeviceContainer> DeviceContainers = new Dictionary<string, DeviceContainer>(); 
+
+        public event EventHandler<Intersection> IntersectionDetected = delegate { };
+
+
+        public void ValidateDevice(string value)
+        {
+            DeviceContainers[value].Connected = true;
+        }
 
         public DocumentContainer()
         {
@@ -77,9 +84,10 @@ namespace ActivityDesk
             TouchVisualizer.SetShowsVisualizations(this, false);
             SizeChanged += DocumentContainer_SizeChanged;
         }
+
+
         private void InitializeTags()
         {
-
             Visualizer.Definitions.Add(
                 new SmartPhoneDefinition
                 {
@@ -91,52 +99,86 @@ namespace ActivityDesk
                 new TabletDefinition
                 {
                     Source = new Uri("Visualizer/Visualizations/VisualizationTablet.xaml", UriKind.Relative),
+                    TagRemovedBehavior = TagRemovedBehavior.Fade,
                     LostTagTimeout = 1000
-                }
-                );
+                });
         }
         private void Visualizer_VisualizationAdded(object sender, TagVisualizerEventArgs e)
         {
-            if (!_lockedTags.Contains(e.TagVisualization.VisualizedTag.Value.ToString()))
+
+            var tagValue = e.TagVisualization.VisualizedTag.Value.ToString();
+
+            if (!DeviceContainers.ContainsKey(tagValue))
             {
+                var dev = new DeviceContainer
+                {
+                    DeviceVisualization = e.TagVisualization as VisualizationTablet
+                };
+                DeviceContainers.Add(tagValue,dev);
             }
             else
             {
-                RemoveDevice(e.TagVisualization.VisualizedTag.Value.ToString());
+                var container = DeviceContainers[tagValue];
+                container.VisualStyle = DeviceVisual.Visualisation;
+                container.DeviceVisualization = e.TagVisualization as VisualizationTablet;
+
+                foreach (var res in container.DeviceTumbnail.LoadedResources)
+                {
+                    if (container.DeviceVisualization != null) 
+                        container.DeviceVisualization.AddResource(res);
+                }
+                RemoveDevice(tagValue);
             }
-            ((BaseVisualization)e.TagVisualization).Locked += new LockedEventHandler(Desk_Locked);
+            ((BaseVisualization)e.TagVisualization).Locked += Device_Locked;
+            var vis = e.TagVisualization as VisualizationTablet;
+            if (vis != null)
+                vis.ResourceReleased += dev_ResourceReleased;
+
+            if (DeviceValueAdded != null)
+                DeviceValueAdded(this, tagValue);
+
         }
-        private void Desk_Locked(object sender, LockedEventArgs e)
+        private void Device_Locked(object sender, LockedEventArgs e)
         {
-            if (_lockedTags.Contains(e.VisualizedTag))
+            var container = DeviceContainers[e.VisualizedTag];
+
+            if (container.Docked)
             {
-                _lockedTags.Remove(e.VisualizedTag);
+                DeviceContainers.Remove(e.VisualizedTag);
                 RemoveDevice(e.VisualizedTag);
             }
             else
             {
-                _lockedTags.Add(e.VisualizedTag);
+                container.Docked = true;
             }
         }
         private void Visualizer_VisualizationRemoved(object sender, TagVisualizerEventArgs e)
         {
-            if (!_lockedTags.Contains(e.TagVisualization.VisualizedTag.Value.ToString()))
+            var tagValue = e.TagVisualization.VisualizedTag.Value.ToString();
+            if (!DeviceContainers.ContainsKey(tagValue))
+                return;
+
+            var container = DeviceContainers[tagValue];
+            if (container.Docked)
             {
-                Thread.Sleep(3000);
 
-
-
-                Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() =>
-                {
-                    //documentContainer.Clear();
-                }));
+                container.VisualStyle = DeviceVisual.Thumbnail;
+                container.DeviceTumbnail = AddDevice(tagValue,
+                    e.TagVisualization.Center);
+                foreach (var res in container.DeviceVisualization.LoadedResources)
+                    container.DeviceTumbnail.AddResource(res);
             }
-            else AddDevice(new Device(){TagValue=e.TagVisualization.VisualizedTag.Value},e.TagVisualization.Center);
+            else
+            {
+                foreach (var res in container.DeviceVisualization.LoadedResources)
+                    AddResource(res);
 
-        }
-        private void Visualizer_VisualizationMoved(object sender, TagVisualizerEventArgs e)
-        {
+                DeviceContainers.Remove(tagValue);
 
+                if (DeviceValueRemoved != null)
+                    DeviceValueRemoved(this, tagValue);
+
+            }
         }
         void DocumentContainer_SizeChanged(object sender, SizeChangedEventArgs e)
         {
@@ -162,17 +204,44 @@ namespace ActivityDesk
             var ink = new Note {Center = new Point(450, 450)};
             ink.Close += new EventHandler(ink_Close);
             Notes.Add(ink);
-            this.Add(ink);
+            Add(ink);
         }
 
         public void AddResource(LoadedResource resource)
         {
             var res = new ResourceViewer(resource);
             ResourceViewers.Add(res);
-            var rnd = new Random();
-            res.Center = new Point(rnd.Next(200, 1000), rnd.Next(200, 800));
+            res.Center = new Point(new Random().Next(200, 1000), new Random().Next(200, 800));
             Add(res);
 
+        }
+        public void AddResourceAtLocation(LoadedResource resource,Point p)
+        {
+            var res = new ResourceViewer(resource);
+
+            var stb = new Storyboard();
+
+            var moveCenter = new PointAnimation
+            {
+                FillBehavior = FillBehavior.Stop,
+                From = new Point(p.X + 50, p.Y+50),
+                To = new Point(p.X + 50, p.Y + 200),
+                Duration = new Duration(TimeSpan.FromSeconds(0.5)),
+                EasingFunction = new QuadraticEase() { EasingMode = EasingMode.EaseOut }
+            };
+
+            stb.Children.Add(moveCenter);
+            Storyboard.SetTarget(moveCenter, res);
+            Storyboard.SetTargetProperty(moveCenter, new PropertyPath(ScatterViewItem.CenterProperty));
+            Add(res);
+
+            stb.Completed += (sender, e) =>
+            {
+                ResourceViewers.Add(res);
+                res.Center = (Point)moveCenter.To;
+            };
+
+            stb.Begin(this);
 
         }
         public void AddPdf(Image img,Image thumb)
@@ -189,29 +258,45 @@ namespace ActivityDesk
             res.Height = 600;
             Add(res);
         }
-        public void AddDevice(Device device,Point position)
+        public DeviceThumbnail AddDevice(string tagValue,Point position)
         {
-            var dev = new DeviceTumbnail(device) {Center = position};
+            var dev = new DeviceThumbnail(tagValue) { Center = position };
             dev.ResourceReleased += dev_ResourceReleased;
             dev.Closed += dev_Closed;
-            Devices.Add(device.TagValue.ToString(),dev);
+            //Devices.Add(device.TagValue.ToString(),dev);
             Add(dev);
 
             dev.CanScale = false;
+            dev.CanRotate = true;
+
+            return dev;
         }
 
-        void dev_ResourceReleased(object sender, LoadedResource e)
+        void dev_ResourceReleased(object sender, Point e)
         {
-            AddResource(e);
+            var res = sender as LoadedResource;
+
+            if (res == null) return;
+
+            AddResourceAtLocation(res,new Point(e.X,e.Y));
         }
-        void dev_Closed(object sender, Device dev)
+        void dev_Closed(object sender, string dev)
         {
-            
-            //RemoveDevice(dev.TagValue.ToString());
+            RemoveDevice(dev);
+            DeviceContainers.Remove(dev);
+            //var id = 
+            //foreach (var container in DeviceContainers.Values)
+            //{
+            //    if (container.DeviceTumbnail == dev)
+            //    {
+            //        RemoveDevice(dev..ToString());
+            //    }
+            //}
+
         }
         public void UpdateDevice(Device device)
         {
-            Devices[device.TagValue.ToString()].Name = device.Name;
+            //Devices[device.TagValue.ToString()].Name = device.Name;
         }
         private void ink_Close(object sender, EventArgs e)
         {
@@ -231,7 +316,7 @@ namespace ActivityDesk
 
         void element_Loaded(object sender, RoutedEventArgs e)
         {
-            if (sender is DeviceTumbnail)
+            if (sender is DeviceThumbnail)
                 return;
             var element = sender as ScatterViewItem;
             if (element == null) return;
@@ -260,34 +345,78 @@ namespace ActivityDesk
             HandleDockingFromTouch((ScatterViewItem)sender,e.GetTouchPoint(view).Position);
             CheckIntersections((ScatterViewItem) sender);
         }
+
+        public object resourcesendlock = new object();
+        private bool check = true;
         private void CheckIntersections(ScatterViewItem item)
         {
             if (!((IResourceContainer)item).Iconized) 
                 return;
 
-            foreach (var dev in Devices.Values)
+            foreach (var dev in DeviceContainers.Values)
             {
 
                 var rectItem = new Rect(
                     new Point(item.Center.X - _iconSize / 2, item.Center.Y - _iconSize / 2),
                     new Size(_iconSize, _iconSize));
 
-                var rectDev = new Rect(
-                    new Point(dev.Center.X - dev.ActualWidth / 2 + 80, dev.Center.Y - dev.ActualHeight / 2 + 30),
-                    new Size(dev.ActualWidth-50, dev.ActualHeight-50));
+                var rectDev = new Rect();
+
+                switch (dev.VisualStyle)
+                {
+                    case DeviceVisual.Thumbnail:
+                        rectDev = new Rect(
+                                new Point(
+                                    dev.DeviceTumbnail.Center.X - dev.DeviceTumbnail.ActualWidth / 2 + 80, 
+                                    dev.DeviceTumbnail.Center.Y - dev.DeviceTumbnail.ActualHeight / 2 + 30),
+                                new Size(
+                                    dev.DeviceTumbnail.ActualWidth - 50, 
+                                    dev.DeviceTumbnail.ActualHeight - 50));
+                        break;
+                    case DeviceVisual.Visualisation:
+                        rectDev = new Rect(
+                                new Point(
+                                    dev.DeviceVisualization.Center.X - dev.DeviceVisualization.ActualWidth / 2 + 80,
+                                    dev.DeviceVisualization.Center.Y - dev.DeviceVisualization.ActualHeight / 2 + 30),
+                                new Size(
+                                    dev.DeviceVisualization.ActualWidth - 50,
+                                    dev.DeviceVisualization.ActualHeight - 50));
+                        break;
+                }
 
                 bool result = rectItem.IntersectsWith(rectDev);
                 if(result)
                 {
-                    if (IntersectionDetected != null)
-                        IntersectionDetected(this, new Intersection() { Device = dev.Device, Resource = ((IResourceContainer)item).Resource.Resource });
+                    if (InProgress.ContainsKey(item))
+                    {
+                        InProgress.Remove(item);
+                        return;
+                    }
 
-                    dev.Resource = ((IResourceContainer) item).Resource ;
+                    InProgress.Add(item,true);
+                    if (IntersectionDetected != null)
+                        IntersectionDetected(this,
+                            new Intersection()
+                            {
+                                Device = dev.Device,
+                                Resource = ((IResourceContainer) item).Resource.Resource
+                            });
+                    switch (dev.VisualStyle)
+                    {
+                        case DeviceVisual.Thumbnail:
+                             dev.DeviceTumbnail.AddResource(((IResourceContainer)item).Resource);
+                            break;
+                        case DeviceVisual.Visualisation:
+                            dev.DeviceVisualization.AddResource(((IResourceContainer)item).Resource);
+                            break;
+                    }
 
                     Remove(item);
+
                 }
             }
         }
+        private Dictionary<ScatterViewItem, bool> InProgress = new Dictionary<ScatterViewItem, bool>(); 
         private void HandleDockingFromTouch(ScatterViewItem item,Point p)
         {
             var previousdockState = GetDockState(item);
@@ -354,9 +483,8 @@ namespace ActivityDesk
         }
         public void RemoveDevice(string p)
         {
-            if (!Devices.ContainsKey(p)) return;
-            view.Items.Remove(Devices[p]);
-            Devices.Remove(p);
+            if (!DeviceContainers.ContainsKey(p)) return;
+            view.Items.Remove(DeviceContainers[p].DeviceTumbnail);
         }
     }
     public enum DockStates

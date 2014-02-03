@@ -1,21 +1,21 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using ActivityDesk.Infrastructure;
 using Blake.NUI.WPF.Gestures;
-using NooSphere.Model.Device;
 using ActivityDesk.Viewers;
 
 namespace ActivityDesk
 {
-    public partial class DeviceTumbnail : IResourceContainer,INotifyPropertyChanged
-	{
 
-        public event PropertyChangedEventHandler PropertyChanged = delegate { }; 
-        public event EventHandler<LoadedResource> ResourceReleased = delegate { }; 
+    public partial class DeviceThumbnail : IResourceContainer, INotifyPropertyChanged
+    {
+
+        public event PropertyChangedEventHandler PropertyChanged = delegate { };
+        public event EventHandler<Point> ResourceReleased = delegate { };
 
         protected void OnPropertyChanged(string name)
         {
@@ -26,34 +26,40 @@ namespace ActivityDesk
             }
         }
 
-        private LoadedResource _resource;
+        private LoadedResource _resource = LoadedResource.EmptyResource;
+
+        public ObservableCollection<LoadedResource> LoadedResources { get; set; }
 
         public LoadedResource Resource
         {
             get { return _resource; }
             set
             {
-                if (_resource != null)
-                {
-                    if (ResourceReleased != null)
-                        ResourceReleased(this, _resource);
-                }
                 _resource = value;
                 OnPropertyChanged("Resource");
             }
 
         }
 
+        public void AddResource(LoadedResource res)
+        {
+            Resource = res;
+            LoadedResources.Add(res);
+        }
+
         public bool Iconized { get; set; }
 
-	    public event EventHandler<Device> Closed = delegate { };
+        public event EventHandler<string> Closed = delegate { };
 
-	    public Device Device { get; private set; }
+        public string VisualizedTag { get; set; }
 
-	    public DeviceTumbnail(Device device)
-	    {
-	        Device = device;
-	        Name = device.Name;
+        public DeviceThumbnail(string visualizedTagValue)
+        {
+            VisualizedTag = visualizedTagValue;
+
+            Resource = new LoadedResource();
+            LoadedResources = new ObservableCollection<LoadedResource>();
+
             InitializeComponent();
 
             DataContext = this;
@@ -66,15 +72,28 @@ namespace ActivityDesk
 	    private void UIElement_OnTouchDown(object sender, TouchEventArgs e)
 	    {
 	        if(Closed != null)
-                Closed(Device, Device);
+                Closed(this, VisualizedTag);
 	    }
 
 	    private void OnDoubleTapGesture(object sender, GestureEventArgs e)
 	    {
-	        if (Resource == null) return;
-	        if (ResourceReleased != null)
-	            ResourceReleased(this, Resource);
-	        Resource = null;
+            var fe = sender as FrameworkElement;
+            if (fe == null) return;
+
+            var point = fe.TranslatePoint(new Point(0, 0), Parent as FrameworkElement);
+
+            var res = fe.DataContext as LoadedResource;
+
+            if (res == null) return;
+
+            LoadedResources.Remove(res);
+
+            if (ResourceReleased != null)
+                ResourceReleased(res, point);
+
+            if (Resource == res)
+                Resource = LoadedResources.Count != 0 ? LoadedResources.First() : LoadedResource.EmptyResource;
+
 	    }
 	}
 }

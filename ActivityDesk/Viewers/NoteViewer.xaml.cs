@@ -6,7 +6,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using ActivityDesk.Infrastructure;
 using Microsoft.Surface.Presentation.Controls;
-using NooSphere.Model;
 
 namespace ActivityDesk.Viewers
 {
@@ -27,7 +26,7 @@ namespace ActivityDesk.Viewers
 
 		public Note()
 		{
-			this.InitializeComponent();
+			InitializeComponent();
 		}
 
         private SurfaceButton reset;

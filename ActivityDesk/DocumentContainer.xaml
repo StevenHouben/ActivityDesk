@@ -10,7 +10,7 @@
              d:DesignHeight="300" d:DesignWidth="300">
 
     <Grid>
-        <s:TagVisualizer x:Name="Visualizer" visualizer:TagVisualizerEvents.Mode="Off" VisualizationAdded="Visualizer_VisualizationAdded" VisualizationRemoved="Visualizer_VisualizationRemoved" VisualizationMoved="Visualizer_VisualizationMoved" 
+        <s:TagVisualizer x:Name="Visualizer" visualizer:TagVisualizerEvents.Mode="Off" VisualizationAdded="Visualizer_VisualizationAdded" VisualizationRemoved="Visualizer_VisualizationRemoved"
                      Width="auto" Height="auto">
             <s:ScatterView Name="view" />
         </s:TagVisualizer>

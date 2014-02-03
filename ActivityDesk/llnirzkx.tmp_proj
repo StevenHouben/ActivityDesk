@@ -57,41 +57,8 @@
     </ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Blake.NUI.WPF">
-      <HintPath>..\Libraries\Blake.NUI.WPF.dll</HintPath>
-    </Reference>
-    <Reference Include="Blake.NUI.WPF.Surface">
-      <HintPath>..\Libraries\Blake.NUI.WPF.Surface.dll</HintPath>
-    </Reference>
-    <Reference Include="Blake.NUI.WPF.SurfaceToolkit">
-      <HintPath>..\Libraries\Blake.NUI.WPF.SurfaceToolkit.dll</HintPath>
-    </Reference>
-    <Reference Include="Magick.NET-x64">
-      <HintPath>..\packages\Magick.NET-Q16-x64.6.8.8.201\lib\net40-client\Magick.NET-x64.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Surface.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
-    <Reference Include="Microsoft.Surface.Presentation.Generic, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
-    <Reference Include="System" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xaml" />
-    <Reference Include="System.Xml" />
-    <Reference Include="WindowsBase" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="Microsoft.Surface" />
-    <Reference Include="Microsoft.Surface.Presentation" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -153,57 +120,8 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="ColoredButtons.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="DeviceTumbnail.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="DocumentContainer.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Viewers\NoteViewer.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Viewers\PdfViewer.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Viewers\ResourceViewer.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Visualizer\Visualizations\SmartPhone.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Visualizer\Visualizations\VisualizationSmartPhone.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Desk.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Viewers\TouchWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Visualizer\Visualizations\StyleDictionary.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Visualizer\Visualizations\VisualizationTablet.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="icon_tablet.png" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
@@ -228,7 +146,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\note.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\NooSphere\NooSphere\NooSphere.Infrastructure\NooSphere.Infrastructure.csproj">
@@ -241,29 +158,59 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\wood.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\tablet_icon.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\tablet_landscape.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Visualizer\Visualizations\tablet_landscape.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Visualizer\Visualizations\pin.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\pin.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Visualizer\Visualizations\Koala.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\tablet-landscape.png" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <ItemGroup>
+    <ReferencePath Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\Libraries\Blake.NUI.WPF.dll" />
+    <ReferencePath Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\Libraries\Blake.NUI.WPF.Surface.dll" />
+    <ReferencePath Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\Libraries\Blake.NUI.WPF.SurfaceToolkit.dll" />
+    <ReferencePath Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\packages\Magick.NET-Q16-x64.6.8.8.201\lib\net40-client\Magick.NET-x64.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Microsoft SDKs\Surface\v2.0\Reference Assemblies\Microsoft.Surface.Core.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Microsoft SDKs\Surface\v2.0\Reference Assemblies\Microsoft.Surface.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Microsoft SDKs\Surface\v2.0\Reference Assemblies\Microsoft.Surface.Presentation.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Microsoft SDKs\Surface\v2.0\Reference Assemblies\Microsoft.Surface.Presentation.Generic.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\mscorlib.dll" />
+    <ReferencePath Include="C:\Users\Pitlab\Documents\GitHub\NooSphere\NooSphere\NooSphere.Infrastructure\bin\Debug\NooSphere.Infrastructure.dll" />
+    <ReferencePath Include="C:\Users\Pitlab\Documents\GitHub\NooSphere\NooSphere\NooSphere.Model\bin\Debug\NooSphere.Model.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\PresentationCore.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\PresentationFramework.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Core.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Data.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Drawing.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Web.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Windows.Forms.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Xaml.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Xml.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\WindowsBase.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\DeviceTumbnail.g.cs" />
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\DocumentContainer.g.cs" />
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\Viewers\NoteViewer.g.cs" />
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\Viewers\PdfViewer.g.cs" />
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\Viewers\ResourceViewer.g.cs" />
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\Visualizer\Visualizations\SmartPhone.g.cs" />
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\Visualizer\Visualizations\VisualizationSmartPhone.g.cs" />
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\Desk.g.cs" />
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\Viewers\TouchWindow.g.cs" />
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\Visualizer\Visualizations\VisualizationTablet.g.cs" />
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\App.g.cs" />
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\GeneratedInternalTypeHelper.g.cs" />
+  </ItemGroup>
 </Project>

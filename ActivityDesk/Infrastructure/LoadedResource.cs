@@ -1,12 +1,19 @@
 ﻿using System.ComponentModel;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using NooSphere.Model;
 
 namespace ActivityDesk.Infrastructure
 {
-    public class LoadedResource:INotifyPropertyChanged
+    public class LoadedResource : INotifyPropertyChanged
     {
+
+        public LoadedResource()
+        {
+            _thumbnail = new Image().Source;
+            _image = new Image();
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -56,7 +63,8 @@ namespace ActivityDesk.Infrastructure
                 OnPropertyChanged("Resource");
             }
 
-        } 
+        }
 
+        public static LoadedResource EmptyResource = new LoadedResource();
     }
 }

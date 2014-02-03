@@ -5,25 +5,52 @@
     xmlns:s="http://schemas.microsoft.com/surface/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	mc:Ignorable="d"
-	x:Class="ActivityDesk.DeviceTumbnail"
+	x:Class="ActivityDesk.DeviceThumbnail"
 	x:Name="UserControl" MinHeight="150" MinWidth="150" Width="auto" Height="auto">
     <s:ScatterViewItem.Resources>
         <ControlTemplate x:Key="Floating">
-            <Grid x:Name="LayoutRoot" Width="249" Height="150" xmlns:gestures="clr-namespace:Blake.NUI.WPF.Gestures;assembly=Blake.NUI.WPF"
-      gestures:Events.DoubleTapGesture="OnDoubleTapGesture">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Height="150">
+            <Grid x:Name="LayoutRoot" Width="250" Height="150" >
+                <s:SurfaceScrollViewer Margin="-10,150,-40,-100" Height="100" PanningMode="HorizontalOnly" 
+                               VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Hidden">
+                    <ItemsControl ItemsSource="{Binding Path=LoadedResources}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid x:Name="grid" Height="100" Width="100" xmlns:gestures="clr-namespace:Blake.NUI.WPF.Gestures;assembly=Blake.NUI.WPF"
+      gestures:Events.DoubleTapGesture="OnDoubleTapGesture" >
+                                    <Border BorderBrush="DarkOliveGreen" BorderThickness="2" Margin="8" >
+                                    <Border x:Name="body" BorderBrush="Black" BorderThickness="5">
+                                        <Border.Background>
+                                            <ImageBrush ImageSource="{Binding Thumbnail}"></ImageBrush>
+                                        </Border.Background>
+                                        <Canvas Width="auto" Height="auto">
+                                            <Label Canvas.Left="40" Canvas.Top="55" HorizontalContentAlignment="Center" VerticalContentAlignment="Top" Width="40" Height="25" Background="Black" Foreground="White" Content="{Binding Resource.FileType}"></Label>
+                                        </Canvas>
+                                    </Border>
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </s:SurfaceScrollViewer>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <StackPanel x:Name="pnlButtons" Width="40" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <Image TouchDown="UIElement_OnTouchDown" Source="Images/pin.png" VerticalAlignment="Center" HorizontalAlignment="Center"></Image>
                     </StackPanel>
-                    <Border x:Name="btnBody">
-                        <Border.Background>
-                            <ImageBrush Stretch="Fill" ImageSource="{Binding Resource.Thumbnail}"></ImageBrush>
-                        </Border.Background>
-                        <Image Source="Images/tablet_landscape.png" Margin="0,0,0,-9"></Image>
-                    </Border>
+                    <Canvas x:Name="Canvas">
+                        <Border x:Name="btnBody" Width="197" Height="131" Canvas.Left="6" Canvas.Top="-47">
+                            <Border.Background>
+                                <ImageBrush Stretch="Fill" ImageSource="{Binding Resource.Thumbnail}"></ImageBrush>
+                            </Border.Background>
+                        </Border>
+                        <Image Source="Images/tablet_landscape.png" Canvas.Left="-5" Canvas.Top="-58"/>
+                    </Canvas>
                 </StackPanel>
             </Grid>
-
         </ControlTemplate>
         <ControlTemplate x:Key="Docked">
             <Grid x:Name="LayoutRoot" Height="100" Width="100" Background="Transparent" >
@@ -33,19 +60,6 @@
             </Grid>
         </ControlTemplate>
     </s:ScatterViewItem.Resources>
-    <Grid x:Name="LayoutRoot" Width="249" Height="150" >
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Height="150">
-            <StackPanel x:Name="pnlButtons" Width="40" HorizontalAlignment="Left" VerticalAlignment="Center">
-                <Image TouchDown="UIElement_OnTouchDown" Source="Images/pin.png" VerticalAlignment="Center" HorizontalAlignment="Center"></Image>
-            </StackPanel>
-            <Border x:Name="btnBody">
-                <Border.Background>
-                    <ImageBrush Stretch="Fill" ImageSource="{Binding Resource.Thumbnail}"></ImageBrush>
-                </Border.Background>
-                <Image Source="Images/tablet_landscape.png" Margin="0,0,0,-9"></Image>
-            </Border>
-        </StackPanel>
-    </Grid>
 </s:ScatterViewItem>
 <!--xmlns:gestures="clr-namespace:Blake.NUI.WPF.Gestures;assembly=Blake.NUI.WPF"
       gestures:Events.DoubleTapGesture="OnDoubleTapGesture"--> 

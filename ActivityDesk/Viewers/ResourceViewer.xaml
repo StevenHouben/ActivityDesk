@@ -8,8 +8,7 @@
              d:DesignHeight="300" d:DesignWidth="300" MinHeight="100" MinWidth="100" Width="1000" Height="600">
     <s:ScatterViewItem.Resources>
         <ControlTemplate x:Key="Floating" >
-            <Grid x:Name="grid" Background="#E6171616" Height="auto" Width="auto" xmlns:gestures="clr-namespace:Blake.NUI.WPF.Gestures;assembly=Blake.NUI.WPF"
-      gestures:Events.DoubleTapGesture="OnDoubleTapGesture" >
+            <Grid x:Name="grid" Background="#E6171616" Height="auto" Width="auto">
                 <Border x:Name="body" Margin="0,0,0,0"></Border>
             </Grid>
         </ControlTemplate>
