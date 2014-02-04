@@ -10,6 +10,42 @@
     <s:ScatterViewItem.Resources>
         <ControlTemplate x:Key="Floating">
             <Grid x:Name="LayoutRoot" Width="250" Height="150" >
+                <Image Source="Images/triangle.png" Height="40" RenderTransformOrigin="2.1,1.275" Margin="-82,181,315,-71">
+                    <Image.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleX="-1"/>
+                            <SkewTransform/>
+                            <RotateTransform/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </Image.RenderTransform>
+                    <Image.Style>
+                        <Style TargetType="{x:Type Image}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding UiOverflow}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding UiOverflow}" Value="False">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Image.Style>
+                </Image>
+                <Image Source="Images/triangle.png" Width="20" Height="40" RenderTransformOrigin="2.1,1.275" Margin="290,183,-60,-73">
+                    <Image.Style>
+                        <Style TargetType="{x:Type Image}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding UiOverflow}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding UiOverflow}" Value="False">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Image.Style>
+                </Image>
                 <s:SurfaceScrollViewer Margin="-10,150,-40,-100" Height="100" PanningMode="HorizontalOnly" 
                                VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Hidden">
                     <ItemsControl ItemsSource="{Binding Path=LoadedResources}">
@@ -21,16 +57,16 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid x:Name="grid" Height="100" Width="100" xmlns:gestures="clr-namespace:Blake.NUI.WPF.Gestures;assembly=Blake.NUI.WPF"
-      gestures:Events.DoubleTapGesture="OnDoubleTapGesture" >
+      gestures:Events.DoubleTapGesture="OnDoubleTapGesture">
                                     <Border BorderBrush="DarkOliveGreen" BorderThickness="2" Margin="8" >
-                                    <Border x:Name="body" BorderBrush="Black" BorderThickness="5">
-                                        <Border.Background>
+                                        <Border x:Name="body" BorderBrush="Black" BorderThickness="5">
+                                            <Border.Background>
                                                 <ImageBrush ImageSource="{Binding Thumbnail}"></ImageBrush>
-                                        </Border.Background>
-                                        <Canvas Width="auto" Height="auto">
-                                            <Label Canvas.Left="40" Canvas.Top="55" HorizontalContentAlignment="Center" VerticalContentAlignment="Top" Width="40" Height="25" Background="Black" Foreground="White" Content="{Binding Resource.FileType}"></Label>
-                                        </Canvas>
-                                    </Border>
+                                            </Border.Background>
+                                            <Canvas Width="auto" Height="auto">
+                                                <Label Canvas.Left="40" Canvas.Top="55" HorizontalContentAlignment="Center" VerticalContentAlignment="Top" Width="40" Height="25" Background="Black" Foreground="White" Content="{Binding Resource.FileType}"></Label>
+                                            </Canvas>
+                                        </Border>
                                     </Border>
                                 </Grid>
                             </DataTemplate>
@@ -66,7 +102,7 @@
                                     </Style.Triggers>
                                 </Style>
                             </Image.Style>
-                            </Image>
+                        </Image>
                     </StackPanel>
                     <Canvas x:Name="Canvas">
                         <Border x:Name="btnBody" Width="197" Height="131" Canvas.Left="6" Canvas.Top="-47">

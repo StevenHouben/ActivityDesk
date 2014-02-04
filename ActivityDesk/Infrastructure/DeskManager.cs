@@ -136,8 +136,16 @@ namespace ActivityDesk.Infrastructure
 
         private void InitializeContainer()
         {
-            foreach (var resource in from act in _activitySystem.Activities.Values from resource in act.Resources where resource != null select resource)
+            foreach (
+                var resource in
+                    from act in _activitySystem.Activities.Values
+                    from resource in act.Resources
+                    where resource != null
+                    select resource)
+            {
                 _documentContainer.AddResource(FromResource(resource));
+            }
+                
         }
 
         void _activitySystem_ActivityAdded(object sender, NooSphere.Infrastructure.ActivityEventArgs e)

@@ -281,6 +281,9 @@
   <ItemGroup>
     <Resource Include="Visualizer\Visualizations\pinOK.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\triangle.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
 </Project>

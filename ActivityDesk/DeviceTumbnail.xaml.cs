@@ -17,6 +17,18 @@ namespace ActivityDesk
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
         internal event EventHandler<Point> ResourceReleased = delegate { };
 
+        private bool _uiOverflow;
+        public bool UiOverflow
+        {
+            get { return _uiOverflow; }
+            set
+            {
+                _uiOverflow = value;
+                OnPropertyChanged("UiOverflow");
+            }
+
+        }
+
         protected void OnPropertyChanged(string name)
         {
             var handler = PropertyChanged;
@@ -83,6 +95,7 @@ namespace ActivityDesk
 
             Resource = new LoadedResource();
             LoadedResources = new ObservableCollection<LoadedResource>();
+            LoadedResources.CollectionChanged += LoadedResources_CollectionChanged;
 
             InitializeComponent();
 
@@ -93,7 +106,12 @@ namespace ActivityDesk
 	        CanRotate = false;
 	    }
 
-	    private void UIElement_OnTouchDown(object sender, TouchEventArgs e)
+        void LoadedResources_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            UiOverflow = LoadedResources.Count > 3;
+        }
+
+        private void UIElement_OnTouchDown(object sender, TouchEventArgs e)
 	    {
 	        if(Closed != null)
                 Closed(this, VisualizedTag);

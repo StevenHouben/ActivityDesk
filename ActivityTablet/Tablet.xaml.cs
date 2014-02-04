@@ -15,7 +15,6 @@ using NooSphere.Infrastructure.Helpers;
 using NooSphere.Infrastructure.Web;
 using NooSphere.Model;
 using NooSphere.Model.Device;
-using NooSphere.Model.Users;
 
 namespace ActivityTablet
 {
@@ -233,6 +232,14 @@ namespace ActivityTablet
                             {
                                 LoadedResources.Remove(rToR);
                             }
+                        });
+                    }
+                    else
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            LoadedResources.Clear();
+                            ContentHolder.Background = Brushes.White;
                         });
                     }
                     break;

@@ -12,6 +12,7 @@ using ActivityDesk.Visualizer.Visualizations;
 using Microsoft.Surface.Presentation.Controls;
 using System.Collections.ObjectModel;
 using Microsoft.Surface.Presentation.Controls.TouchVisualizations;
+using Microsoft.Surface.Presentation.Input;
 using NooSphere.Model;
 using NooSphere.Model.Device;
 using Note = ActivityDesk.Viewers.Note;
@@ -62,9 +63,7 @@ namespace ActivityDesk
 
         public Collection<Note> Notes = new Collection<Note>();
         public Collection<ScatterViewItem> ResourceViewers = new Collection<ScatterViewItem>();
-
         public Dictionary<string, DeviceContainer> DeviceContainers = new Dictionary<string, DeviceContainer>(); 
-
 
         public void ValidateDevice(string value, Device device)
         {
@@ -74,7 +73,6 @@ namespace ActivityDesk
 
         public DocumentContainer()
         {
-
             InitializeComponent();
 
             InitializeTags();
@@ -143,10 +141,6 @@ namespace ActivityDesk
                 container.Invalidate();
             }
             ((BaseVisualization)e.TagVisualization).Locked += Device_Locked;
-            var vis = e.TagVisualization as VisualizationTablet;
-            //if (vis != null)
-            //    vis.ResourceReleased += dev_ResourceReleased;
-
             if (DeviceValueAdded != null)
                 DeviceValueAdded(this, tagValue);
 
@@ -167,8 +161,14 @@ namespace ActivityDesk
             {
                 container.Pinned = false;
                 if (container.VisualStyle != DeviceVisual.Thumbnail) return;
-                foreach (var res in container.DeviceThumbnail.LoadedResources)
-                    AddResource(res);
+                if (container.Connected)
+                {
+                    if (ResourceHandleReleased != null)
+                        ResourceHandleReleased(this, new ResourceHandle { Device = container.Device, Resource = null });
+
+                    foreach (var res in container.DeviceThumbnail.LoadedResources)
+                        AddResource(res);
+                }
                 RemoveDevice(e.VisualizedTag);
                 DeviceContainers.Remove(e.VisualizedTag);
             }
@@ -196,6 +196,10 @@ namespace ActivityDesk
             {
                 foreach (var res in container.DeviceVisualization.LoadedResources)
                     AddResource(res);
+
+
+                if (ResourceHandleReleased != null)
+                    ResourceHandleReleased(this, new ResourceHandle { Device = container.Device, Resource = null });
 
                 DeviceContainers.Remove(tagValue);
 
@@ -226,17 +230,17 @@ namespace ActivityDesk
         public void AddNote()
         {
             var ink = new Note {Center = new Point(450, 450)};
-            ink.Close += new EventHandler(ink_Close);
+            ink.Close += ink_Close;
             Notes.Add(ink);
             Add(ink);
         }
 
-        private static readonly Random random = new Random();
-        private static readonly object syncLock = new object();
+        private static readonly Random Random = new Random();
+        private static readonly object SyncLock = new object();
         public static int RandomNumber(int min, int max)
         {
-            lock(syncLock) { // synchronize
-                return random.Next(min, max);
+            lock(SyncLock) { // synchronize
+                return Random.Next(min, max);
             }
         }
         public void AddResource(LoadedResource resource)
@@ -247,6 +251,7 @@ namespace ActivityDesk
             Add(res);
 
         }
+
         public void AddResourceAtLocation(LoadedResource resource,Point p)
         {
             var res = new ResourceViewer(resource);
@@ -307,6 +312,10 @@ namespace ActivityDesk
             var container = DeviceContainers[dev];
 
             container.Pinned = false;
+
+            if(ResourceHandleReleased != null)
+                ResourceHandleReleased(this, new ResourceHandle { Device = container.Device,Resource = null });
+
             if (container.VisualStyle != DeviceVisual.Thumbnail) return;
             foreach (var res in container.DeviceThumbnail.LoadedResources)
                 AddResource(res);
@@ -324,13 +333,26 @@ namespace ActivityDesk
         private void Add(ScatterViewItem element)
         {
             SetDockState(element, DockStates.Floating);
-            element.AddHandler(ManipulationCompletedEvent, new EventHandler<ManipulationCompletedEventArgs>(element_ManipulationDelta), true);
-            element.PreviewTouchMove += element_PreviewTouchMove;
-            element.Loaded += element_Loaded;
             element.Template = (ControlTemplate)element.FindResource("Floating");
+            element.AddHandler(ManipulationCompletedEvent, new EventHandler<ManipulationCompletedEventArgs>(element_ManipulationDelta), true);
+            element.AddHandler(ManipulationDeltaEvent, new EventHandler<ManipulationDeltaEventArgs>(element_ManipulationDelta), true);
+            element.Loaded += element_Loaded;
+            element.PreviewTouchDown += element_PreviewTouchDown;
+
             element.Orientation = 0;
             element.SizeChanged += element_SizeChanged;
             view.Items.Add(element);
+        }
+
+        void element_PreviewTouchDown(object sender, TouchEventArgs e)
+        {
+            HandleDockingFromTouch((ScatterViewItem)sender, e.Device.GetPosition(view));
+        }
+
+        void element_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
+        {
+            CheckIntersections((ScatterViewItem) sender);
+            e.Handled = true;
         }
 
         void element_Loaded(object sender, RoutedEventArgs e)
@@ -359,26 +381,19 @@ namespace ActivityDesk
                 ((IResourceContainer)item).Iconized = false;
             }
         }
-        private void element_PreviewTouchMove(object sender, TouchEventArgs e)
-        {
-            HandleDockingFromTouch((ScatterViewItem)sender,e.GetTouchPoint(view).Position);
-            CheckIntersections((ScatterViewItem) sender);
-        }
 
-        public object resourcesendlock = new object();
-        private bool check = true;
         private void CheckIntersections(ScatterViewItem item)
         {
+
             if (!((IResourceContainer)item).Iconized) 
                 return;
 
             foreach (var dev in DeviceContainers.Values)
             {
-                if (!dev.Connected) 
+                if (!dev.Connected)
                     return;
-
                 var rectItem = new Rect(
-                    new Point(item.Center.X - _iconSize / 2, item.Center.Y - _iconSize / 2),
+                    new Point(item.Center.X - _iconSize/2, item.Center.Y - _iconSize/2),
                     new Size(_iconSize, _iconSize));
 
                 var rectDev = new Rect();
@@ -387,34 +402,39 @@ namespace ActivityDesk
                 {
                     case DeviceVisual.Thumbnail:
                         rectDev = new Rect(
-                                new Point(
-                                    dev.DeviceThumbnail.Center.X - dev.DeviceThumbnail.ActualWidth / 2 + 80, 
-                                    dev.DeviceThumbnail.Center.Y - dev.DeviceThumbnail.ActualHeight / 2 + 30),
-                                new Size(
-                                    dev.DeviceThumbnail.ActualWidth - 50, 
-                                    dev.DeviceThumbnail.ActualHeight - 50));
+                            new Point(
+                                dev.DeviceThumbnail.Center.X - dev.DeviceThumbnail.ActualWidth/2 + 80,
+                                dev.DeviceThumbnail.Center.Y - dev.DeviceThumbnail.ActualHeight/2 + 30),
+                            new Size(
+                                dev.DeviceThumbnail.ActualWidth - 50,
+                                dev.DeviceThumbnail.ActualHeight - 50));
                         break;
                     case DeviceVisual.Visualisation:
                         rectDev = new Rect(
-                                new Point(
-                                    dev.DeviceVisualization.Center.X - dev.DeviceVisualization.ActualWidth / 2 + 80,
-                                    dev.DeviceVisualization.Center.Y - dev.DeviceVisualization.ActualHeight / 2 + 30),
-                                new Size(
-                                    dev.DeviceVisualization.ActualWidth - 50,
-                                    dev.DeviceVisualization.ActualHeight - 50));
+                            new Point(
+                                dev.DeviceVisualization.Center.X - dev.DeviceVisualization.ActualWidth/2 +
+                                80,
+                                dev.DeviceVisualization.Center.Y - dev.DeviceVisualization.ActualHeight/2 +
+                                30),
+                            new Size(
+                                dev.DeviceVisualization.ActualWidth - 50,
+                                dev.DeviceVisualization.ActualHeight - 50));
                         break;
                 }
 
                 bool result = rectItem.IntersectsWith(rectDev);
-                if(result)
-                {
-                    if (InProgress.ContainsKey(item))
-                    {
-                        InProgress.Remove(item);
-                        return;
-                    }
 
-                    InProgress.Add(item,true);
+
+                if (result)
+                {
+
+                    item.RemoveHandler(ManipulationCompletedEvent, new EventHandler<ManipulationCompletedEventArgs>(element_ManipulationDelta));
+                    item.RemoveHandler(ManipulationDeltaEvent, new EventHandler<ManipulationDeltaEventArgs>(element_ManipulationDelta));
+                    item.Loaded -= element_Loaded;
+                    item.PreviewTouchDown -= element_PreviewTouchDown;
+                    item.SizeChanged -= element_SizeChanged;
+
+                    Remove(item);
                     if (ResourceHandled != null)
                         ResourceHandled(this,
                             new ResourceHandle()
@@ -425,19 +445,15 @@ namespace ActivityDesk
                     switch (dev.VisualStyle)
                     {
                         case DeviceVisual.Thumbnail:
-                             dev.DeviceThumbnail.AddResource(((IResourceContainer)item).Resource);
+                            dev.DeviceThumbnail.AddResource(((IResourceContainer) item).Resource);
                             break;
                         case DeviceVisual.Visualisation:
-                            dev.DeviceVisualization.AddResource(((IResourceContainer)item).Resource);
+                            dev.DeviceVisualization.AddResource(((IResourceContainer) item).Resource);
                             break;
                     }
-
-                    Remove(item);
-
                 }
             }
         }
-        private Dictionary<ScatterViewItem, bool> InProgress = new Dictionary<ScatterViewItem, bool>(); 
         private void HandleDockingFromTouch(ScatterViewItem item,Point p)
         {
             var previousdockState = GetDockState(item);
