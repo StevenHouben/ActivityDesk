@@ -5,7 +5,6 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using ActivityDesk.Infrastructure;
-using ActivityDesk.Viewers;
 using Blake.NUI.WPF.Gestures;
 using NooSphere.Model.Device;
 
@@ -42,6 +41,30 @@ namespace ActivityDesk.Visualizer.Visualizations
 
         }
 
+        private bool _connected;
+        public bool Connected
+        {
+            get { return _connected; }
+            set
+            {
+                _connected = value;
+                OnPropertyChanged("Connected");
+            }
+
+        }
+
+        private bool _pinned;
+        public bool Pinned
+        {
+            get { return _pinned; }
+            set
+            {
+                _pinned = value;
+                OnPropertyChanged("Pinned");
+            }
+
+        }
+
         public void AddResource(LoadedResource res)
         {
             Resource = res;
@@ -73,7 +96,9 @@ namespace ActivityDesk.Visualizer.Visualizations
             var fe = sender as FrameworkElement;
             if (fe == null) return;
 
-            var point = fe.TranslatePoint(new Point(0, 0), Parent as FrameworkElement);
+            var frameworkElement = Parent as FrameworkElement;
+            if (frameworkElement == null) return;
+            var point = fe.TranslatePoint(new Point(0, 0), frameworkElement.Parent as FrameworkElement);
 
             var res = fe.DataContext as LoadedResource;
 
@@ -86,7 +111,6 @@ namespace ActivityDesk.Visualizer.Visualizations
 
             if (Resource == res)
                 Resource = LoadedResources.Count != 0 ? LoadedResources.First() : LoadedResource.EmptyResource;
-
         }
     }
 }

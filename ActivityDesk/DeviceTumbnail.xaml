@@ -25,7 +25,7 @@
                                     <Border BorderBrush="DarkOliveGreen" BorderThickness="2" Margin="8" >
                                     <Border x:Name="body" BorderBrush="Black" BorderThickness="5">
                                         <Border.Background>
-                                            <ImageBrush ImageSource="{Binding Thumbnail}"></ImageBrush>
+                                                <ImageBrush ImageSource="{Binding Thumbnail}"></ImageBrush>
                                         </Border.Background>
                                         <Canvas Width="auto" Height="auto">
                                             <Label Canvas.Left="40" Canvas.Top="55" HorizontalContentAlignment="Center" VerticalContentAlignment="Top" Width="40" Height="25" Background="Black" Foreground="White" Content="{Binding Resource.FileType}"></Label>
@@ -38,8 +38,35 @@
                     </ItemsControl>
                 </s:SurfaceScrollViewer>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <StackPanel x:Name="pnlButtons" Width="40" HorizontalAlignment="Left" VerticalAlignment="Center">
-                        <Image TouchDown="UIElement_OnTouchDown" Source="Images/pin.png" VerticalAlignment="Center" HorizontalAlignment="Center"></Image>
+                    <StackPanel x:Name="pnlButtons" Width="40" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,5,0">
+                        <Image TouchDown="UIElement_OnTouchDown" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <Image.Style>
+                                <Style TargetType="{x:Type Image}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Pinned}" Value="False">
+                                            <Setter Property="Source" Value="Images/pin.png"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Pinned}" Value="True">
+                                            <Setter Property="Source" Value="Images/pinOK.png"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Image.Style>
+                        </Image>
+                        <Image Stretch="Fill" Source="Images/connectedWorking.png" Name="Connection" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <Image.Style>
+                                <Style TargetType="{x:Type Image}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Connected}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Connected}" Value="True">
+                                            <Setter Property="Visibility" Value="Hidden"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Image.Style>
+                            </Image>
                     </StackPanel>
                     <Canvas x:Name="Canvas">
                         <Border x:Name="btnBody" Width="197" Height="131" Canvas.Left="6" Canvas.Top="-47">

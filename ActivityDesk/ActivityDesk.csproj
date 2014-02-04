@@ -111,6 +111,7 @@
     <Compile Include="Helper\Pdf\PDFConverter.cs" />
     <Compile Include="Infrastructure\DeskManager.cs" />
     <Compile Include="Infrastructure\LoadedResource.cs" />
+    <Compile Include="ResourceReleasedEventArgs.cs" />
     <Compile Include="Viewers\DeviceContainer.cs" />
     <Compile Include="Viewers\IResourceContainer.cs" />
     <Compile Include="Viewers\NoteViewer.xaml.cs">
@@ -263,6 +264,22 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\tablet-landscape.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Visualizer\Visualizations\connectedOK.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Visualizer\Visualizations\connectedWorking.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\connectedOK.png" />
+    <Resource Include="Images\connectedWorking.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\pinOK.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Visualizer\Visualizations\pinOK.png" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

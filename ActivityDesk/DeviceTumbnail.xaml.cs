@@ -15,7 +15,7 @@ namespace ActivityDesk
     {
 
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
-        public event EventHandler<Point> ResourceReleased = delegate { };
+        internal event EventHandler<Point> ResourceReleased = delegate { };
 
         protected void OnPropertyChanged(string name)
         {
@@ -24,6 +24,30 @@ namespace ActivityDesk
             {
                 handler(this, new PropertyChangedEventArgs(name));
             }
+        }
+
+        private bool _connected;
+        public bool Connected
+        {
+            get { return _connected; }
+            set
+            {
+                _connected = value;
+                OnPropertyChanged("Connected");
+            }
+
+        }
+
+        private bool _pinned;
+        public bool Pinned
+        {
+            get { return _pinned; }
+            set
+            {
+                _pinned = value;
+                OnPropertyChanged("Connected");
+            }
+
         }
 
         private LoadedResource _resource = LoadedResource.EmptyResource;

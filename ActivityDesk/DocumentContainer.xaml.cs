@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -17,7 +18,7 @@ using Note = ActivityDesk.Viewers.Note;
 
 namespace ActivityDesk
 {
-    public class Intersection
+    public class ResourceHandle
     {
         public Device Device { get; set; }
         public Resource Resource { get; set; }
@@ -28,6 +29,8 @@ namespace ActivityDesk
 
         public event EventHandler<string> DeviceValueAdded= delegate { };
         public event EventHandler<string> DeviceValueRemoved = delegate { };
+        public event EventHandler<ResourceHandle> ResourceHandled = delegate { };
+        public event EventHandler<ResourceHandle> ResourceHandleReleased = delegate { };
 
         #region Dock dependency property
 
@@ -62,12 +65,11 @@ namespace ActivityDesk
 
         public Dictionary<string, DeviceContainer> DeviceContainers = new Dictionary<string, DeviceContainer>(); 
 
-        public event EventHandler<Intersection> IntersectionDetected = delegate { };
 
-
-        public void ValidateDevice(string value)
+        public void ValidateDevice(string value, Device device)
         {
             DeviceContainers[value].Connected = true;
+            DeviceContainers[value].Device = device;
         }
 
         public DocumentContainer()
@@ -114,43 +116,64 @@ namespace ActivityDesk
                 {
                     DeviceVisualization = e.TagVisualization as VisualizationTablet
                 };
+                dev.ResourceReleased += dev_ResourceReleased;
                 DeviceContainers.Add(tagValue,dev);
             }
             else
             {
                 var container = DeviceContainers[tagValue];
+
+                if (container.VisualStyle != DeviceVisual.Thumbnail)
+                {
+                    Console.WriteLine("Error: double detection. Debug problem?");
+                    return;
+                }
+
                 container.VisualStyle = DeviceVisual.Visualisation;
                 container.DeviceVisualization = e.TagVisualization as VisualizationTablet;
 
-                foreach (var res in container.DeviceTumbnail.LoadedResources)
+
+                foreach (var res in container.DeviceThumbnail.LoadedResources)
                 {
                     if (container.DeviceVisualization != null) 
                         container.DeviceVisualization.AddResource(res);
                 }
                 RemoveDevice(tagValue);
+
+                container.Invalidate();
             }
             ((BaseVisualization)e.TagVisualization).Locked += Device_Locked;
             var vis = e.TagVisualization as VisualizationTablet;
-            if (vis != null)
-                vis.ResourceReleased += dev_ResourceReleased;
+            //if (vis != null)
+            //    vis.ResourceReleased += dev_ResourceReleased;
 
             if (DeviceValueAdded != null)
                 DeviceValueAdded(this, tagValue);
 
         }
+
+        void dev_ResourceReleased(Device sender, ResourceReleasedEventArgs e)
+        {
+            AddResourceAtLocation(e.LoadedResource, new Point(e.Position.X, e.Position.Y));
+
+           if(ResourceHandleReleased !=null)
+               ResourceHandleReleased(this, new ResourceHandle{Device = e.Device,Resource = e.LoadedResource.Resource});
+        }
         private void Device_Locked(object sender, LockedEventArgs e)
         {
             var container = DeviceContainers[e.VisualizedTag];
 
-            if (container.Docked)
+            if (container.Pinned)
             {
-                DeviceContainers.Remove(e.VisualizedTag);
+                container.Pinned = false;
+                if (container.VisualStyle != DeviceVisual.Thumbnail) return;
+                foreach (var res in container.DeviceThumbnail.LoadedResources)
+                    AddResource(res);
                 RemoveDevice(e.VisualizedTag);
+                DeviceContainers.Remove(e.VisualizedTag);
             }
             else
-            {
-                container.Docked = true;
-            }
+                container.Pinned = true;
         }
         private void Visualizer_VisualizationRemoved(object sender, TagVisualizerEventArgs e)
         {
@@ -159,14 +182,15 @@ namespace ActivityDesk
                 return;
 
             var container = DeviceContainers[tagValue];
-            if (container.Docked)
+            if (container.Pinned)
             {
-
                 container.VisualStyle = DeviceVisual.Thumbnail;
-                container.DeviceTumbnail = AddDevice(tagValue,
+                container.DeviceThumbnail = AddDevice(tagValue,
                     e.TagVisualization.Center);
+                container.Invalidate();
+
                 foreach (var res in container.DeviceVisualization.LoadedResources)
-                    container.DeviceTumbnail.AddResource(res);
+                    container.DeviceThumbnail.AddResource(res);
             }
             else
             {
@@ -207,11 +231,19 @@ namespace ActivityDesk
             Add(ink);
         }
 
+        private static readonly Random random = new Random();
+        private static readonly object syncLock = new object();
+        public static int RandomNumber(int min, int max)
+        {
+            lock(syncLock) { // synchronize
+                return random.Next(min, max);
+            }
+        }
         public void AddResource(LoadedResource resource)
         {
             var res = new ResourceViewer(resource);
             ResourceViewers.Add(res);
-            res.Center = new Point(new Random().Next(200, 1000), new Random().Next(200, 800));
+            res.Center = new Point(RandomNumber(200, 1000), RandomNumber(200, 800));
             Add(res);
 
         }
@@ -261,9 +293,7 @@ namespace ActivityDesk
         public DeviceThumbnail AddDevice(string tagValue,Point position)
         {
             var dev = new DeviceThumbnail(tagValue) { Center = position };
-            dev.ResourceReleased += dev_ResourceReleased;
             dev.Closed += dev_Closed;
-            //Devices.Add(device.TagValue.ToString(),dev);
             Add(dev);
 
             dev.CanScale = false;
@@ -271,28 +301,17 @@ namespace ActivityDesk
 
             return dev;
         }
-
-        void dev_ResourceReleased(object sender, Point e)
-        {
-            var res = sender as LoadedResource;
-
-            if (res == null) return;
-
-            AddResourceAtLocation(res,new Point(e.X,e.Y));
-        }
         void dev_Closed(object sender, string dev)
         {
+            if (!DeviceContainers.ContainsKey(dev)) return;
+            var container = DeviceContainers[dev];
+
+            container.Pinned = false;
+            if (container.VisualStyle != DeviceVisual.Thumbnail) return;
+            foreach (var res in container.DeviceThumbnail.LoadedResources)
+                AddResource(res);
             RemoveDevice(dev);
             DeviceContainers.Remove(dev);
-            //var id = 
-            //foreach (var container in DeviceContainers.Values)
-            //{
-            //    if (container.DeviceTumbnail == dev)
-            //    {
-            //        RemoveDevice(dev..ToString());
-            //    }
-            //}
-
         }
         public void UpdateDevice(Device device)
         {
@@ -355,6 +374,8 @@ namespace ActivityDesk
 
             foreach (var dev in DeviceContainers.Values)
             {
+                if (!dev.Connected) 
+                    return;
 
                 var rectItem = new Rect(
                     new Point(item.Center.X - _iconSize / 2, item.Center.Y - _iconSize / 2),
@@ -367,11 +388,11 @@ namespace ActivityDesk
                     case DeviceVisual.Thumbnail:
                         rectDev = new Rect(
                                 new Point(
-                                    dev.DeviceTumbnail.Center.X - dev.DeviceTumbnail.ActualWidth / 2 + 80, 
-                                    dev.DeviceTumbnail.Center.Y - dev.DeviceTumbnail.ActualHeight / 2 + 30),
+                                    dev.DeviceThumbnail.Center.X - dev.DeviceThumbnail.ActualWidth / 2 + 80, 
+                                    dev.DeviceThumbnail.Center.Y - dev.DeviceThumbnail.ActualHeight / 2 + 30),
                                 new Size(
-                                    dev.DeviceTumbnail.ActualWidth - 50, 
-                                    dev.DeviceTumbnail.ActualHeight - 50));
+                                    dev.DeviceThumbnail.ActualWidth - 50, 
+                                    dev.DeviceThumbnail.ActualHeight - 50));
                         break;
                     case DeviceVisual.Visualisation:
                         rectDev = new Rect(
@@ -394,9 +415,9 @@ namespace ActivityDesk
                     }
 
                     InProgress.Add(item,true);
-                    if (IntersectionDetected != null)
-                        IntersectionDetected(this,
-                            new Intersection()
+                    if (ResourceHandled != null)
+                        ResourceHandled(this,
+                            new ResourceHandle()
                             {
                                 Device = dev.Device,
                                 Resource = ((IResourceContainer) item).Resource.Resource
@@ -404,7 +425,7 @@ namespace ActivityDesk
                     switch (dev.VisualStyle)
                     {
                         case DeviceVisual.Thumbnail:
-                             dev.DeviceTumbnail.AddResource(((IResourceContainer)item).Resource);
+                             dev.DeviceThumbnail.AddResource(((IResourceContainer)item).Resource);
                             break;
                         case DeviceVisual.Visualisation:
                             dev.DeviceVisualization.AddResource(((IResourceContainer)item).Resource);
@@ -484,7 +505,7 @@ namespace ActivityDesk
         public void RemoveDevice(string p)
         {
             if (!DeviceContainers.ContainsKey(p)) return;
-            view.Items.Remove(DeviceContainers[p].DeviceTumbnail);
+            view.Items.Remove(DeviceContainers[p].DeviceThumbnail);
         }
     }
     public enum DockStates

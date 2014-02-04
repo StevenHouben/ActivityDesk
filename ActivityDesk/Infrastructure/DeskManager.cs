@@ -21,7 +21,7 @@ namespace ActivityDesk.Infrastructure
 
         public Collection<IActivity> Activities { get; set; }
 
-        private List<string> _queuedDeviceDetections = new List<string>();
+        private readonly List<string> _queuedDeviceDetections = new List<string>();
 
         private DocumentContainer _documentContainer;
 
@@ -52,39 +52,53 @@ namespace ActivityDesk.Infrastructure
             _activityService.StartBroadcast(DiscoveryType.Zeroconf, "deskmanager");
 
             _documentContainer = documentContainer;
-            _documentContainer.IntersectionDetected += _documentContainer_IntersectionDetected;
+            _documentContainer.ResourceHandled += _documentContainer_IntersectionDetected;
+            _documentContainer.ResourceHandleReleased += _documentContainer_ResourceHandleReleased;
             _documentContainer.DeviceValueAdded += _documentContainer_DeviceValueAdded;
             _documentContainer.DeviceValueRemoved += _documentContainer_DeviceValueRemoved;
 
             InitializeContainer();
         }
 
+        void _documentContainer_ResourceHandleReleased(object sender, ResourceHandle e)
+        {
+            _activityService.SendMessage(e.Device, MessageType.ResourceRemove, e.Resource);
+        }
+
         void _documentContainer_DeviceValueRemoved(object sender, string e)
         {
-            throw new System.NotImplementedException();
+            if (_activitySystem.Devices.Values.Any(dev => dev.TagValue == e))
+            {
+                //remove here
+            }
         }
 
         void _documentContainer_DeviceValueAdded(object sender, string e)
         {
-            foreach (var dev in _activitySystem.Devices.Values)
+            if (_activitySystem.Devices.Values.Any(dev => dev.TagValue == e))
             {
-                if (dev.TagValue == e)
-                {
-                    _documentContainer.ValidateDevice(e);
-                    return;
-                }
+                var device = _activitySystem.Devices.Values.Where(dev => dev.TagValue == e);
+                _documentContainer.ValidateDevice(e, device.First() as Device);
+                return;
             }
             _queuedDeviceDetections.Add(e);
         }
 
         void _activitySystem_DeviceAdded(object sender, DeviceEventArgs e)
         {
-            throw new System.NotImplementedException();
+            var value = "";
+            foreach (var val in _queuedDeviceDetections.Where(val => val == e.Device.TagValue))
+            {
+                _documentContainer.ValidateDevice(val,e.Device as Device);
+                value = val;
+            }
+            if (value != "" && _queuedDeviceDetections.Contains(value))
+                _queuedDeviceDetections.Remove(value);
         }
 
-        void _documentContainer_IntersectionDetected(object sender, Intersection e)
+        void _documentContainer_IntersectionDetected(object sender, ResourceHandle e)
         {
-            _activityService.SendMessage(MessageType.Resource, e.Resource);
+            _activityService.SendMessage(e.Device,MessageType.Resource, e.Resource);
         }
 
         void _activitySystem_ResourceAdded(object sender, ResourceEventArgs e)

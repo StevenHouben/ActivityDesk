@@ -34,12 +34,41 @@
         </s:SurfaceScrollViewer>
         <StackPanel Orientation="Horizontal">
                 <StackPanel x:Name="pnlButtons" Width="43.334" HorizontalAlignment="Left" d:LayoutOverrides="Height" VerticalAlignment="Center">
-                    <Image Height="50" Source="pin.png" VerticalAlignment="Center" HorizontalAlignment="Center" 
-                   TouchDown="UIElement_OnTouchDown"></Image>
-                </StackPanel>
+                <Image TouchDown="UIElement_OnTouchDown" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Image.Style>
+                        <Style TargetType="{x:Type Image}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Pinned}" Value="False">
+                                    <Setter Property="Source" Value="pin.png"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Pinned}" Value="True">
+                                    <Setter Property="Source" Value="pinOK.png"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Image.Style>
+                </Image>
+                <Image Stretch="Fill" Source="connectedWorking.png" Name="Connection" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Image.Style>
+                        <Style TargetType="{x:Type Image}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Connected}" Value="False">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Connected}" Value="True">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Image.Style>
+                </Image>
+            </StackPanel>
                 <Border x:Name="btnBody" Height="488">
                     <Image Source="tablet_landscape.png" Height="525" Width="732"></Image>
                 </Border>
             </StackPanel>
     </Grid>
 </visualizations:BaseVisualization>
+
+<!--xmlns:gestures="clr-namespace:Blake.NUI.WPF.Gestures;assembly=Blake.NUI.WPF"
+      gestures:Events.DoubleTapGesture="OnDoubleTapGesture"--> 
