@@ -83,6 +83,22 @@ namespace ActivityDesk.Viewers
             Device = new Device();
         }
 
+        internal void Clear()
+        {
+            if (DeviceThumbnail != null)
+            {
+                DeviceThumbnail.LoadedResources.Clear();
+                DeviceThumbnail.Resource = null;
+            }
+
+
+            if (DeviceVisualization != null)
+            {
+                DeviceVisualization.LoadedResources.Clear();
+                DeviceVisualization.Resource = null;
+            }
+
+        }
 
         internal void Invalidate()
         {

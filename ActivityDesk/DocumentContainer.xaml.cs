@@ -1,6 +1,9 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -28,7 +31,7 @@ namespace ActivityDesk
     public partial class DocumentContainer
     {
 
-        public event EventHandler<string> DeviceValueAdded= delegate { };
+        public event EventHandler<string> DeviceValueAdded = delegate { };
         public event EventHandler<string> DeviceValueRemoved = delegate { };
         public event EventHandler<ResourceHandle> ResourceHandled = delegate { };
         public event EventHandler<ResourceHandle> ResourceHandleReleased = delegate { };
@@ -40,11 +43,12 @@ namespace ActivityDesk
 
         public static DockStates GetDockState(DependencyObject obj)
         {
-          return (DockStates) obj.GetValue(DockState);
+            return (DockStates) obj.GetValue(DockState);
         }
+
         public static void SetDockState(DependencyObject obj, DockStates value)
         {
-          obj.SetValue(DockState, value);
+            obj.SetValue(DockState, value);
         }
 
         #endregion
@@ -63,7 +67,7 @@ namespace ActivityDesk
 
         public Collection<Note> Notes = new Collection<Note>();
         public Collection<ScatterViewItem> ResourceViewers = new Collection<ScatterViewItem>();
-        public Dictionary<string, DeviceContainer> DeviceContainers = new Dictionary<string, DeviceContainer>(); 
+        public Dictionary<string, DeviceContainer> DeviceContainers = new Dictionary<string, DeviceContainer>();
 
         public void ValidateDevice(string value, Device device)
         {
@@ -78,13 +82,167 @@ namespace ActivityDesk
             InitializeTags();
             var metadata = new FrameworkPropertyMetadata(DockStates.Floating);
             DockState = DependencyProperty.RegisterAttached("DockState",
-                                                                typeof(DockStates),
-                                                                typeof(DocumentContainer), metadata);
+                typeof (DockStates),
+                typeof (DocumentContainer), metadata);
 
             TouchVisualizer.SetShowsVisualizations(this, false);
             SizeChanged += DocumentContainer_SizeChanged;
         }
 
+
+        internal void Build(Dictionary<string,LoadedResource> resources, DeskConfiguration configuration)
+        {
+            Clear();
+
+            if (configuration == null)
+                foreach (var res in resources.Values)
+                    AddResource(res);
+            else
+                BuildFromConfiguration(resources, configuration);
+        }
+
+        private void BuildFromConfiguration(Dictionary<string, LoadedResource> resources, DeskConfiguration configuration)
+        {
+            foreach (var dev in configuration.DeviceConfigurations)
+            {
+                // Device exists
+                if (DeviceContainers.ContainsKey(dev.TagValue))
+                {
+                    var container = DeviceContainers[dev.TagValue];
+
+                    //Device is connected
+                    if (container.Connected)
+                    {
+                        
+                        //device is stored as thumbnail
+                        if (dev.Thumbnail)
+                        {
+                         
+                            //actual device is thumbnail
+                            if (container.VisualStyle == DeviceVisual.Thumbnail)
+                            {
+                                container.DeviceThumbnail.Center = dev.Center;
+                                HandleDockingFromTouch(container.DeviceThumbnail, dev.Center);
+                                container.Pinned = dev.Pinned;
+
+                                foreach (var def in dev.Configurations.Select(res => res as DefaultResourceConfiguration))
+                                {
+                                    container.DeviceThumbnail.AddResource(resources[def.Resource.Id]);
+                                    //resources.Remove(def.Resource.Id);
+                                }
+                            }
+                            else
+                            {
+                                foreach (var def in dev.Configurations.Select(res => res as DefaultResourceConfiguration))
+                                {
+                                    container.DeviceVisualization.AddResource(resources[def.Resource.Id]);
+                                   // resources.Remove(def.Resource.Id);
+                                }
+                            }
+                        }
+                        //device is not stored as thumbnail
+                        else
+                        {
+                            foreach (var def in dev.Configurations.Select(res => res as DefaultResourceConfiguration))
+                            {
+                                container.DeviceVisualization.AddResource(resources[def.Resource.Id]);
+                                //resources.Remove(def.Resource.Id);
+                            }
+                        }
+                    }
+                    //Device is not connected
+                    else
+                    {
+                        foreach (var def in dev.Configurations.Select(res => res as DefaultResourceConfiguration))
+                            AddResource(resources[def.Resource.Id]);
+                    }
+                }
+                //Device is not found
+                else
+                {
+                    foreach (var def in dev.Configurations.Select(res => res as DefaultResourceConfiguration))
+                    {
+                        AddResource(resources[def.Resource.Id]);
+                    }
+                }
+            }
+            foreach (var deskConfig in configuration.Configurations.Select(config => config as DeskResourceConfiguration))
+            {
+                if (deskConfig == null)
+                    return;
+
+                 var viewer = AddResourceAtLocation(resources[deskConfig.Resource.Id], deskConfig.Center);
+
+                    if (deskConfig.Iconized)
+                        viewer.Template = (ControlTemplate)viewer.FindResource("Docked");
+            }
+        }
+
+        internal DeskConfiguration GetDeskConfiguration()
+        {
+
+            var deskConfiguration = new DeskConfiguration();
+
+            //Handle all resources on the desk
+
+            foreach (var resConfig in ResourceViewers.Select(item => new DeskResourceConfiguration()
+            {
+                AttachedDevice = null,
+                Center = item.Center,
+                DockState = GetDockState(item),
+                Resource = ((IResourceContainer) item).Resource.Resource,
+                Iconized = ((IResourceContainer) item).Iconized
+            }))
+            {
+                deskConfiguration.Configurations.Add(resConfig);
+            }
+
+            foreach (var dev in DeviceContainers.Values)
+            {
+                var deviceConfig = new DeviceConfiguration
+                {
+                    Device = dev.Device,
+                    Pinned = dev.Pinned,
+                    TagValue = dev.TagValue
+                };
+
+                if (dev.VisualStyle == DeviceVisual.Thumbnail)
+                {
+                    deviceConfig.Center = dev.DeviceThumbnail.Center;
+
+                    switch(GetDockState(dev.DeviceThumbnail) )
+                    {
+                        case DockStates.Left:
+                            deviceConfig.Center = new Point(-10, deviceConfig.Center.Y);
+                            break;
+                        case DockStates.Right:
+                            deviceConfig.Center = new Point(2000,deviceConfig.Center.Y);
+                            break;
+                        case DockStates.Top:
+                            deviceConfig.Center = new Point( deviceConfig.Center.X,-10);
+                            break;
+
+                    }
+                    deviceConfig.Thumbnail = true;
+
+                    foreach (var res in dev.DeviceThumbnail.LoadedResources)
+                    {
+                        deviceConfig.Configurations.Add(new DefaultResourceConfiguration() { Resource = res.Resource });
+                    }
+                }
+                else
+                {
+                    foreach (var res in dev.DeviceVisualization.LoadedResources)
+                    {
+                        deviceConfig.Configurations.Add(new DefaultResourceConfiguration() { Resource = res.Resource });
+                        deviceConfig.Thumbnail = false;
+                    }
+                }
+                deskConfiguration.DeviceConfigurations.Add(deviceConfig);
+            }
+
+            return deskConfiguration;
+        }
 
         private void InitializeTags()
         {
@@ -112,7 +270,8 @@ namespace ActivityDesk
             {
                 var dev = new DeviceContainer
                 {
-                    DeviceVisualization = e.TagVisualization as VisualizationTablet
+                    DeviceVisualization = e.TagVisualization as VisualizationTablet,
+                    TagValue = tagValue
                 };
                 dev.ResourceReleased += dev_ResourceReleased;
                 DeviceContainers.Add(tagValue,dev);
@@ -148,7 +307,7 @@ namespace ActivityDesk
 
         void dev_ResourceReleased(Device sender, ResourceReleasedEventArgs e)
         {
-            AddResourceAtLocation(e.LoadedResource, new Point(e.Position.X, e.Position.Y));
+            AddResourceAtLocationWithAnimation(e.LoadedResource, new Point(e.Position.X, e.Position.Y));
 
            if(ResourceHandleReleased !=null)
                ResourceHandleReleased(this, new ResourceHandle{Device = e.Device,Resource = e.LoadedResource.Resource});
@@ -225,7 +384,16 @@ namespace ActivityDesk
         }
         public void Clear()
         {
-            view.Items.Clear();
+            foreach (var container in DeviceContainers.Values)
+                container.Clear();
+
+            foreach (var res in ResourceViewers)
+            {
+                view.Items.Remove(res);
+            }
+            ResourceViewers.Clear();
+
+
         }
         public void AddNote()
         {
@@ -252,7 +420,15 @@ namespace ActivityDesk
 
         }
 
-        public void AddResourceAtLocation(LoadedResource resource,Point p)
+        public ResourceViewer AddResourceAtLocation(LoadedResource resource, Point p)
+        {
+            var res = new ResourceViewer(resource);
+            Add(res);
+            ResourceViewers.Add(res);
+            res.Center = p;
+            return res;
+        }
+        public ResourceViewer AddResourceAtLocationWithAnimation(LoadedResource resource, Point p)
         {
             var res = new ResourceViewer(resource);
 
@@ -279,6 +455,8 @@ namespace ActivityDesk
             };
 
             stb.Begin(this);
+
+            return res;
 
         }
         public void AddPdf(Image img,Image thumb)
@@ -435,6 +613,7 @@ namespace ActivityDesk
                     item.SizeChanged -= element_SizeChanged;
 
                     Remove(item);
+                    ResourceViewers.Remove(item);
                     if (ResourceHandled != null)
                         ResourceHandled(this,
                             new ResourceHandle()

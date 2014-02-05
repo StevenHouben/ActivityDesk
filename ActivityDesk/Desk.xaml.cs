@@ -29,6 +29,8 @@ namespace ActivityDesk
         {
             InitializeComponent();
 
+            Title = "deskv1";
+
             documentViewContainer.Children.Add(_documentContainer);
 
             SetDeskState(DeskState.Ready);

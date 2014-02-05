@@ -64,7 +64,6 @@ namespace ActivityDesk.Infrastructure
             }
 
         }
-
         public static LoadedResource EmptyResource = new LoadedResource();
     }
 }

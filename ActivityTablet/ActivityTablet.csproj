@@ -113,6 +113,10 @@
       <Project>{dc2a799f-b985-4a95-9b3c-fecfe14b8597}</Project>
       <Name>NooSphere.Model</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ActivityDesk\ActivityDesk.csproj">
+      <Project>{94919648-acac-4e13-817c-5f41b9123c77}</Project>
+      <Name>ActivityDesk</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="activity1.PNG" />

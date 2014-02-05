@@ -22,7 +22,7 @@ namespace ActivityTablet
     {
         #region Private Members
         private Device _device;
-        private readonly Dictionary<string, Proxy> _proxies = new Dictionary<string, Proxy>();
+        private readonly Dictionary<SurfaceButton, Proxy> _proxies = new Dictionary<SurfaceButton, Proxy>();
         private ActivityClient _client;
 
         public ObservableCollection<LoadedResource> LoadedResources { get; set; }
@@ -33,7 +33,6 @@ namespace ActivityTablet
         public Tablet()
         {
             InitializeComponent();
-
 
             LoadedResources = new ObservableCollection<LoadedResource>(); 
 
@@ -83,8 +82,12 @@ namespace ActivityTablet
 
             disco.DiscoveryAddressAdded += (sender, e) =>
             {
-                var foundWebConfiguration = new WebConfiguration(e.ServiceInfo.Address);
-                StartClient(foundWebConfiguration);
+                if (e.ServiceInfo.Code == "9865")
+                {
+                    var foundWebConfiguration = new WebConfiguration(e.ServiceInfo.Address);
+                    StartClient(foundWebConfiguration);
+                }
+
             };
             disco.Find(DiscoveryType.Zeroconf);
 
@@ -126,13 +129,14 @@ namespace ActivityTablet
                 var p = new Proxy {Activity = ac, Ui = srfcBtn};
                 srfcBtn.Content = ac.Name;
                 srfcBtn.Click += SrfcBtnClick;
+                srfcBtn.Tag = ac.Id;
                 activityStack.Children.Add(srfcBtn);
 
                 var mtrBtn = CopyButton(srfcBtn);
                 mtrBtn.Width = mtrBtn.Height = 200;
                 mtrBtn.Click += SrfcBtnClick;
+                mtrBtn.Tag = ac.Id;
                 activityMatrix.Children.Add(mtrBtn);
-                _proxies.Add(p.Activity.Id, p);
             }));
         }
         private SurfaceButton CopyButton(SurfaceButton btn)
@@ -147,7 +151,11 @@ namespace ActivityTablet
         }
         private void SrfcBtnClick(object sender, RoutedEventArgs e)
         {
-            
+            var sb = sender as SurfaceButton;
+            if (sb.Tag == null)
+                return;
+
+            _client.SendMessage(MessageType.ActivityChanged,sb.Tag as string) ;
         }
         private void RemoveActivityUI(string id)
         {
@@ -159,7 +167,6 @@ namespace ActivityTablet
                         activityStack.Children.RemoveAt(i);
                         activityMatrix.Children.RemoveAt(i);
                     }
-                _proxies.Remove(id);
             }));
         }
        
@@ -310,7 +317,6 @@ namespace ActivityTablet
                     break;
             }
         }
-
         private DisplayMode _displayMode;
     }
 

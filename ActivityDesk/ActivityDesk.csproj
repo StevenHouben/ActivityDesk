@@ -12,10 +12,14 @@
     <OutputType>winexe</OutputType>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
-    <SccProjectName>Svn</SccProjectName>
-    <SccLocalPath>Svn</SccLocalPath>
-    <SccAuxPath>Svn</SccAuxPath>
-    <SccProvider>SubversionScc</SccProvider>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
     <PublishUrl>Publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
@@ -109,6 +113,7 @@
     </Compile>
     <Compile Include="DocumentViewTemplateSelector.cs" />
     <Compile Include="Helper\Pdf\PDFConverter.cs" />
+    <Compile Include="Infrastructure\DeskConfiguration.cs" />
     <Compile Include="Infrastructure\DeskManager.cs" />
     <Compile Include="Infrastructure\LoadedResource.cs" />
     <Compile Include="ResourceReleasedEventArgs.cs" />

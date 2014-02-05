@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net.Mime;
 using System.Web.Hosting;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -10,13 +12,14 @@ using NooSphere.Infrastructure.Discovery;
 using NooSphere.Infrastructure.Helpers;
 using NooSphere.Infrastructure.Web;
 using NooSphere.Model;
+using NooSphere.Model.Configuration;
 using NooSphere.Model.Device;
 
 namespace ActivityDesk.Infrastructure
 {
     internal class DeskManager
     {
-        private ActivitySystem _activitySystem;
+        private static ActivitySystem _activitySystem;
         private ActivityService _activityService;
 
         public Collection<IActivity> Activities { get; set; }
@@ -25,7 +28,9 @@ namespace ActivityDesk.Infrastructure
 
         private DocumentContainer _documentContainer;
 
-        private Dictionary<string,Device> _devices = new Dictionary<string, Device>(); 
+        private Dictionary<string,Device> _devices = new Dictionary<string, Device>();
+
+        private Activity _selectedActivity;
 
         public void Start(DocumentContainer documentContainer)
         {
@@ -44,20 +49,51 @@ namespace ActivityDesk.Infrastructure
 
             _activitySystem.DeviceAdded += _activitySystem_DeviceAdded;
 
+            _activitySystem.MessageReceived += _activitySystem_MessageReceived;
+
 
             _activityService = new ActivityService(_activitySystem, Net.GetIp(IpType.All), 8000);
 
             _activityService.Start();
 
-            _activityService.StartBroadcast(DiscoveryType.Zeroconf, "deskmanager");
+            _activityService.StartBroadcast(DiscoveryType.Zeroconf, "deskmanager","pitlab","9865");
 
             _documentContainer = documentContainer;
+
             _documentContainer.ResourceHandled += _documentContainer_IntersectionDetected;
             _documentContainer.ResourceHandleReleased += _documentContainer_ResourceHandleReleased;
             _documentContainer.DeviceValueAdded += _documentContainer_DeviceValueAdded;
             _documentContainer.DeviceValueRemoved += _documentContainer_DeviceValueRemoved;
 
-            InitializeContainer();
+        }
+
+        void _activitySystem_MessageReceived(object sender, MessageEventArgs e)
+        {
+            switch (e.Message.Type)
+            {
+                case MessageType.ActivityChanged:
+                    if (e.Message.Content != null && _activitySystem.Activities.ContainsKey(e.Message.Content as string))
+                    {
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            if (_selectedActivity != null)
+                            {
+
+                                _selectedActivity.Configuration = _documentContainer.GetDeskConfiguration() as ISituatedConfiguration;
+
+                                _activitySystem.UpdateActivity(_selectedActivity);
+                            }
+
+
+                            _selectedActivity = _activitySystem.Activities[e.Message.Content as string] as Activity;
+
+                            if (_selectedActivity != null)
+                                InitializeContainer(_selectedActivity);
+                        });
+                    }
+
+                    break;
+            }
         }
 
         void _documentContainer_ResourceHandleReleased(object sender, ResourceHandle e)
@@ -111,7 +147,7 @@ namespace ActivityDesk.Infrastructure
             _documentContainer.AddResource(FromResource(e));
         }
 
-        private LoadedResource FromResource(Resource res)
+        internal static LoadedResource FromResource(Resource res)
         {
             var loadedResource = new LoadedResource();
 
@@ -134,18 +170,15 @@ namespace ActivityDesk.Infrastructure
             return loadedResource;
         }
 
-        private void InitializeContainer()
+        private void InitializeContainer(Activity act)
         {
-            foreach (
-                var resource in
-                    from act in _activitySystem.Activities.Values
-                    from resource in act.Resources
-                    where resource != null
-                    select resource)
-            {
-                _documentContainer.AddResource(FromResource(resource));
-            }
-                
+            var configuration = act.Configuration;
+
+            var loadedResources = act.Resources.ToDictionary(res => res.Id, FromResource);
+
+            _documentContainer.Build(loadedResources, configuration as DeskConfiguration);
+            _selectedActivity = act;
+ 
         }
 
         void _activitySystem_ActivityAdded(object sender, NooSphere.Infrastructure.ActivityEventArgs e)
