@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -26,6 +27,8 @@ namespace ActivityTablet
         private ActivityClient _client;
 
         public ObservableCollection<LoadedResource> LoadedResources { get; set; }
+
+        public Dictionary<string, LoadedResource> ResourceCache = new Dictionary<string, LoadedResource>();
 
         #endregion
 
@@ -116,6 +119,7 @@ namespace ActivityTablet
                 
                 //Show resource mode by default
                 resourceViewer.Visibility = Visibility.Visible;
+
             }));
         }
         private void AddActivityUI(Activity ac)
@@ -188,7 +192,18 @@ namespace ActivityTablet
                 foreach (var act in _client.Activities.Values)
                 {
                     AddActivityUI(act as Activity);
-                   // PopulateResource(act as Activity);
+
+                    Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() =>
+                    {
+                        foreach (var res in act.Resources)
+                        {
+                            ResourceCache.Add(res.Id, FromResource(res));
+                        }
+                    }));
+
+                        
+                   
+                    // PopulateResource(act as Activity);
                 }
 
             }
@@ -209,8 +224,16 @@ namespace ActivityTablet
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            var loadedResource = FromResource(resource);
-
+                            LoadedResource loadedResource;
+                            if (ResourceCache.ContainsKey(resource.Id))
+                            {
+                                loadedResource = ResourceCache[resource.Id];
+                            }
+                            else
+                            {
+                                loadedResource = FromResource(resource);
+                                ResourceCache.Add(resource.Id,loadedResource);
+                            }
 
                             ContentHolder.Height = loadedResource.Content.Height;
                             loadedResource.Content.Stretch = Stretch.Uniform;
