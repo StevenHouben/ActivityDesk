@@ -1,9 +1,7 @@
 ﻿using System;
-using System.CodeDom;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
+using System.Web.UI.HtmlControls;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -94,6 +92,17 @@ namespace ActivityDesk
         {
             Clear();
 
+            foreach (var dev in DeviceContainers.Values)
+            {
+                ResourceHandleReleased(this, new ResourceHandle()
+                {
+                    Device = dev.Device,
+                    Resource = null
+                });
+                
+            }
+
+
             if (configuration == null)
                 foreach (var res in resources.Values)
                     AddResource(res);
@@ -124,11 +133,17 @@ namespace ActivityDesk
                                 container.DeviceThumbnail.Center = dev.Center;
                                 HandleDockingFromTouch(container.DeviceThumbnail, dev.Center);
                                 container.Pinned = dev.Pinned;
+                                container.DeviceThumbnail.Orientation = dev.Orientation;
 
-                                foreach (var def in dev.Configurations.Select(res => res as DefaultResourceConfiguration))
+                                foreach (
+                                    var def in dev.Configurations.Select(res => res as DefaultResourceConfiguration))
                                 {
                                     container.DeviceThumbnail.AddResource(resources[def.Resource.Id]);
-                                    //resources.Remove(def.Resource.Id);
+                                    ResourceHandled(this, new ResourceHandle()
+                                    {
+                                        Device = container.Device,
+                                        Resource = def.Resource
+                                    });
                                 }
                             }
                             else
@@ -136,7 +151,11 @@ namespace ActivityDesk
                                 foreach (var def in dev.Configurations.Select(res => res as DefaultResourceConfiguration))
                                 {
                                     container.DeviceVisualization.AddResource(resources[def.Resource.Id]);
-                                   // resources.Remove(def.Resource.Id);
+                                    ResourceHandled(this, new ResourceHandle()
+                                    {
+                                        Device = container.Device,
+                                        Resource = def.Resource
+                                    });                           
                                 }
                             }
                         }
@@ -146,7 +165,11 @@ namespace ActivityDesk
                             foreach (var def in dev.Configurations.Select(res => res as DefaultResourceConfiguration))
                             {
                                 container.DeviceVisualization.AddResource(resources[def.Resource.Id]);
-                                //resources.Remove(def.Resource.Id);
+                                ResourceHandled(this, new ResourceHandle()
+                                {
+                                    Device = container.Device,
+                                    Resource = def.Resource
+                                });
                             }
                         }
                     }
@@ -166,6 +189,8 @@ namespace ActivityDesk
                     }
                 }
             }
+
+            //handle all other resources
             foreach (var deskConfig in configuration.Configurations.Select(config => config as DeskResourceConfiguration))
             {
                 if (deskConfig == null)
@@ -173,8 +198,10 @@ namespace ActivityDesk
 
                  var viewer = AddResourceAtLocation(resources[deskConfig.Resource.Id], deskConfig.Center);
 
-                    if (deskConfig.Iconized)
-                        viewer.Template = (ControlTemplate)viewer.FindResource("Docked");
+                 viewer.Iconized = deskConfig.Iconized;
+                    viewer.Width = deskConfig.Size.Width;
+                    viewer.Height = deskConfig.Size.Height;
+                viewer.Orientation = deskConfig.Orientation;
             }
         }
 
@@ -187,11 +214,12 @@ namespace ActivityDesk
 
             foreach (var resConfig in ResourceViewers.Select(item => new DeskResourceConfiguration()
             {
-                AttachedDevice = null,
                 Center = item.Center,
                 DockState = GetDockState(item),
                 Resource = ((IResourceContainer) item).Resource.Resource,
-                Iconized = ((IResourceContainer) item).Iconized
+                Iconized = ((IResourceContainer) item).Iconized,
+                Orientation = item.Orientation,
+                Size = new Size(item.Width,item.Height)
             }))
             {
                 deskConfiguration.Configurations.Add(resConfig);
@@ -209,7 +237,7 @@ namespace ActivityDesk
                 if (dev.VisualStyle == DeviceVisual.Thumbnail)
                 {
                     deviceConfig.Center = dev.DeviceThumbnail.Center;
-
+                    deviceConfig.Orientation = dev.DeviceThumbnail.Orientation;
                     switch(GetDockState(dev.DeviceThumbnail) )
                     {
                         case DockStates.Left:
@@ -537,11 +565,19 @@ namespace ActivityDesk
         {
             if (sender is DeviceThumbnail)
                 return;
-            var element = sender as ScatterViewItem;
-            if (element == null) return;
+            var element = sender as ResourceViewer;
 
-            element.Template = (ControlTemplate)element.FindResource("Docked");
-            ((IResourceContainer)element).Iconized = true;
+            if (element.Iconized)
+            {
+                element.Template = (ControlTemplate)element.FindResource("Docked");
+                ((IResourceContainer)element).Iconized = true;
+            }
+            else
+            {
+                element.Template = (ControlTemplate)element.FindResource("Floating");
+                ((IResourceContainer)element).Iconized = true;
+            }
+
         }
         void element_SizeChanged(object sender, SizeChangedEventArgs e)
         {

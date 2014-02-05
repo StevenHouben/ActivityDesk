@@ -63,21 +63,23 @@
                 </StackPanel>
             </StackPanel>
         </Grid>
-        <StackPanel x:Name="activityStack" Orientation="Vertical"/>
+        <StackPanel Width="225" x:Name="activityStack" Orientation="Vertical" HorizontalAlignment="Left" Margin="0,50,0,0"/>
         <s:SurfaceScrollViewer x:Name="controllerView" Margin="8,52,8,8" HorizontalAlignment="Left" Visibility="Hidden">
             <WrapPanel x:Name="activityMatrix" Canvas.Top="8" Width="968" Height="548" Canvas.Left="8" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top"/>
         </s:SurfaceScrollViewer>
     	<Canvas x:Name="inputView" Margin="8" Visibility="Hidden" Background="White" d:IsHidden="True"/>
     	<DockPanel x:Name="menu" Height="48" VerticalAlignment="Top" Background="Black" d:IsLocked="True">
-    		<s:SurfaceButton Content="Quit" Style="{DynamicResource Invert}" Foreground="White" 
+            <StackPanel Orientation="Horizontal">
+                <s:SurfaceButton Content="Quit" Style="{DynamicResource Invert}" Foreground="White" 
 			FontSize="13.333" Width="98.858" RenderTransformOrigin="-0.037,0.75" Height="10" 
 			ToolTip="Stop the login process and exit the application." x:Name="btnQuit" 
 			HorizontalContentAlignment="Center" VerticalContentAlignment="Center" 
 			Click="BtnQuitClick" Margin="0" Canvas.Top="3" Canvas.Left="1" />
-            <s:SurfaceButton FontSize="13.333" Foreground="White" Height="38.338" 
+                <s:SurfaceButton FontSize="13.333" Foreground="White" Height="38.338" 
 			RenderTransformOrigin="-0.037,0.75" Style="{DynamicResource Invert}" 
 			Width="98.858"  ToolTip="Adds a new empty activity" x:Name="btnMode" 
 			VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Margin="0" Canvas.Left="102.858" Canvas.Top="3" Content="Mode" Click="btnMode_Click" />
-        </DockPanel>
+            </StackPanel>
+    		</DockPanel>
     </Grid>
 </Window>

@@ -82,12 +82,9 @@ namespace ActivityTablet
 
             disco.DiscoveryAddressAdded += (sender, e) =>
             {
-                if (e.ServiceInfo.Code == "9865")
-                {
-                    var foundWebConfiguration = new WebConfiguration(e.ServiceInfo.Address);
-                    StartClient(foundWebConfiguration);
-                }
-
+                if (e.ServiceInfo.Code != "9865") return;
+                var foundWebConfiguration = new WebConfiguration(e.ServiceInfo.Address);
+                StartClient(foundWebConfiguration);
             };
             disco.Find(DiscoveryType.Zeroconf);
 

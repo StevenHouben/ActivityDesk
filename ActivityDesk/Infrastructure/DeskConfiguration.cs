@@ -1,5 +1,6 @@
 ﻿
 using System.Collections.Generic;
+using System.Drawing;
 using NooSphere.Model;
 using NooSphere.Model.Configuration;
 using NooSphere.Model.Device;
@@ -36,7 +37,9 @@ namespace ActivityDesk.Infrastructure
 
         public System.Windows.Point Center { get; set; }
 
-        public Device AttachedDevice { get; set; }
+        public System.Windows.Size Size { get; set; }
+
+        public double Orientation { get; set; }
 
         public bool Iconized { get; set; }
     }
@@ -45,6 +48,8 @@ namespace ActivityDesk.Infrastructure
         public IDevice Device { get; set; }
 
         public List<IResourceConfiguration> Configurations { get; set; }
+
+        public double Orientation { get; set; }
 
         public System.Windows.Point Center { get; set; }
 
