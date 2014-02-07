@@ -8,7 +8,7 @@ namespace ActivityDesk.Visualizer.Definitions
     {
         protected override bool Matches(TagData tag)
         {
-            return tag.Value == 204 || tag.Value == 205;
+            return tag.Value == 170 || tag.Value == 171;
         }
 
         protected override Freezable CreateInstanceCore()

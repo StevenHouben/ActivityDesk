@@ -49,7 +49,7 @@ namespace ActivityTablet
             _device = new Device()
             {
                 DeviceType = DeviceType.Tablet,
-                TagValue = "205"
+                TagValue = "170"
             };
 
             RunDiscovery();
