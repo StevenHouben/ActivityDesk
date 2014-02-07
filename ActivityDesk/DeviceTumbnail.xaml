@@ -57,7 +57,7 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Grid x:Name="grid" Height="100" Width="100" gestures:Events.DoubleTapGesture="OnDoubleTapGesture">
+                                <Grid x:Name="grid" Height="100" Width="100" gestures:Events.DoubleTapGesture="OnDoubleTapGesture" >
                                     <Border BorderBrush="DarkOliveGreen" BorderThickness="2" Margin="8" >
                                         <Border x:Name="body" BorderBrush="Black" BorderThickness="5">
                                             <Border.Background>
@@ -97,6 +97,20 @@
                                             <Setter Property="Visibility" Value="Visible"/>
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding Connected}" Value="True">
+                                            <Setter Property="Visibility" Value="Hidden"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Image.Style>
+                        </Image>
+                        <Image Stretch="Fill" Source="Images/NoInterrupt.png"  VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <Image.Style>
+                                <Style TargetType="{x:Type Image}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Interruptable}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Interruptable}" Value="False">
                                             <Setter Property="Visibility" Value="Hidden"/>
                                         </DataTrigger>
                                     </Style.Triggers>

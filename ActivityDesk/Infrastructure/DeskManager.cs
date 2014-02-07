@@ -1,10 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net.Mime;
-using System.Web.Hosting;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using NooSphere.Infrastructure.ActivityBase;
@@ -14,6 +11,7 @@ using NooSphere.Infrastructure.Web;
 using NooSphere.Model;
 using NooSphere.Model.Configuration;
 using NooSphere.Model.Device;
+using Image = System.Windows.Controls.Image;
 
 namespace ActivityDesk.Infrastructure
 {
@@ -28,7 +26,7 @@ namespace ActivityDesk.Infrastructure
 
         private DocumentContainer _documentContainer;
 
-        private Dictionary<string,Device> _devices = new Dictionary<string, Device>();
+        private Dictionary<string, Device> _devices = new Dictionary<string, Device>();
 
         private Activity _selectedActivity;
 
@@ -40,7 +38,8 @@ namespace ActivityDesk.Infrastructure
 
             const string ravenDatabaseName = "desksystem";
 
-            var databaseConfiguration = new DatabaseConfiguration(webconfiguration.Address, webconfiguration.Port, ravenDatabaseName);
+            var databaseConfiguration = new DatabaseConfiguration(webconfiguration.Address, webconfiguration.Port,
+                ravenDatabaseName);
 
 
             _activitySystem = new ActivitySystem(databaseConfiguration);
@@ -56,7 +55,7 @@ namespace ActivityDesk.Infrastructure
 
             _activityService.Start();
 
-            _activityService.StartBroadcast(DiscoveryType.Zeroconf, "deskmanager","pitlab","9865");
+            _activityService.StartBroadcast(DiscoveryType.Zeroconf, "deskmanager", "pitlab", "9865");
 
             _documentContainer = documentContainer;
 
@@ -65,9 +64,15 @@ namespace ActivityDesk.Infrastructure
             _documentContainer.DeviceValueAdded += _documentContainer_DeviceValueAdded;
             _documentContainer.DeviceValueRemoved += _documentContainer_DeviceValueRemoved;
 
+
+            _selectedActivity = _activitySystem.Activities.Values.First() as Activity;
+
+            if (_selectedActivity != null)
+                InitializeContainer(_selectedActivity);
+
         }
 
-        void _activitySystem_MessageReceived(object sender, MessageEventArgs e)
+        private void _activitySystem_MessageReceived(object sender, MessageEventArgs e)
         {
             switch (e.Message.Type)
             {
@@ -79,7 +84,8 @@ namespace ActivityDesk.Infrastructure
                             if (_selectedActivity != null)
                             {
 
-                                _selectedActivity.Configuration = _documentContainer.GetDeskConfiguration() as ISituatedConfiguration;
+                                _selectedActivity.Configuration =
+                                    _documentContainer.GetDeskConfiguration() as ISituatedConfiguration;
 
                                 _activitySystem.UpdateActivity(_selectedActivity);
                             }
@@ -96,12 +102,12 @@ namespace ActivityDesk.Infrastructure
             }
         }
 
-        void _documentContainer_ResourceHandleReleased(object sender, ResourceHandle e)
+        private void _documentContainer_ResourceHandleReleased(object sender, ResourceHandle e)
         {
             _activityService.SendMessage(e.Device, MessageType.ResourceRemove, e.Resource);
         }
 
-        void _documentContainer_DeviceValueRemoved(object sender, string e)
+        private void _documentContainer_DeviceValueRemoved(object sender, string e)
         {
             if (_activitySystem.Devices.Values.Any(dev => dev.TagValue == e))
             {
@@ -109,7 +115,7 @@ namespace ActivityDesk.Infrastructure
             }
         }
 
-        void _documentContainer_DeviceValueAdded(object sender, string e)
+        private void _documentContainer_DeviceValueAdded(object sender, string e)
         {
             if (_activitySystem.Devices.Values.Any(dev => dev.TagValue == e))
             {
@@ -120,26 +126,27 @@ namespace ActivityDesk.Infrastructure
             _queuedDeviceDetections.Add(e);
         }
 
-        void _activitySystem_DeviceAdded(object sender, DeviceEventArgs e)
+        private void _activitySystem_DeviceAdded(object sender, DeviceEventArgs e)
         {
             var value = "";
             foreach (var val in _queuedDeviceDetections.Where(val => val == e.Device.TagValue))
             {
-                _documentContainer.ValidateDevice(val,e.Device as Device);
+                _documentContainer.ValidateDevice(val, e.Device as Device);
                 value = val;
             }
             if (value != "" && _queuedDeviceDetections.Contains(value))
                 _queuedDeviceDetections.Remove(value);
         }
 
-        void _documentContainer_IntersectionDetected(object sender, ResourceHandle e)
+        private void _documentContainer_IntersectionDetected(object sender, ResourceHandle e)
         {
-            _activityService.SendMessage(e.Device,MessageType.Resource, e.Resource);
+            _activityService.SendMessage(e.Device, MessageType.Resource, e.Resource);
         }
 
-        void _activitySystem_ResourceAdded(object sender, ResourceEventArgs e)
+        private void _activitySystem_ResourceAdded(object sender, ResourceEventArgs e)
         {
-            _documentContainer.Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() => AddResourceToContainer(e.Resource)));
+            _documentContainer.Dispatcher.Invoke(DispatcherPriority.Background,
+                new System.Action(() => AddResourceToContainer(e.Resource)));
         }
 
         private void AddResourceToContainer(Resource e)
@@ -147,7 +154,7 @@ namespace ActivityDesk.Infrastructure
             _documentContainer.AddResource(FromResource(e));
         }
 
-        internal static LoadedResource FromResource(Resource res)
+        internal LoadedResource FromResource(Resource res)
         {
             var loadedResource = new LoadedResource();
 
@@ -163,14 +170,15 @@ namespace ActivityDesk.Infrastructure
                 bitmap.EndInit();
                 bitmap.Freeze();
                 image.Source = bitmap;
+                image.Width = bitmap.Width;
+                image.Height = bitmap.Height;
             }
             loadedResource.Resource = res;
             loadedResource.Content = image;
             loadedResource.Thumbnail = image.Source;
             return loadedResource;
         }
-
-        private void InitializeContainer(Activity act)
+    private void InitializeContainer(Activity act)
         {
             var configuration = act.Configuration;
 

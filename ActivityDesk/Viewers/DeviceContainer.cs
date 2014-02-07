@@ -15,6 +15,8 @@ namespace ActivityDesk.Viewers
 
         private DeviceThumbnail _deviceThumbnail;
 
+        public bool Intersecting { get; set; }
+
         public DeviceThumbnail DeviceThumbnail
         {
             get { return _deviceThumbnail; }

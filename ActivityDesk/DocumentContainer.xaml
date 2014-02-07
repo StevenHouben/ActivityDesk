@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:visualizer="clr-namespace:ActivityDesk.Visualizer"
+             xmlns:controls="clr-namespace:Blake.NUI.WPF.Controls;assembly=Blake.NUI.WPF"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>

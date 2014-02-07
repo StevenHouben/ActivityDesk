@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -63,6 +65,8 @@ namespace ActivityTablet
             res.FileType = "IMG";
 
             var image = new Image();
+
+         
             using (var stream = _client.GetResource(res))
             {
                 var bitmap = new BitmapImage();
@@ -171,7 +175,7 @@ namespace ActivityTablet
             }));
         }
        
-        private void StartClient(WebConfiguration config)
+        void StartClient(WebConfiguration config)
         {
             if (_client != null)
                 return;
@@ -193,19 +197,41 @@ namespace ActivityTablet
                 {
                     AddActivityUI(act as Activity);
 
-                    Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() =>
+                    foreach (var resource in act.Resources)
                     {
-                        foreach (var res in act.Resources)
+                        Resource res = resource;
+                        Dispatcher.Invoke(async () =>
                         {
-                            ResourceCache.Add(res.Id, FromResource(res));
-                        }
-                    }));
+                            var loadedResource = new LoadedResource();
 
-                        
-                   
-                    // PopulateResource(act as Activity);
+                            res.FileType = "IMG";
+
+                            var image = new Image();
+
+                            var result = await Task.Factory.StartNew(() =>
+                            {
+                                BitmapImage bitmap;
+                                using (var stream = _client.GetResource(res))
+                                {
+                                    bitmap = new BitmapImage();
+                                    bitmap.BeginInit();
+                                    bitmap.StreamSource = stream;
+                                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                                    bitmap.EndInit();
+                                    bitmap.Freeze();
+                                }
+                                return bitmap;
+                            });
+
+                            image.Source = result;
+                            loadedResource.Resource = res;
+                            loadedResource.Content = image;
+                            loadedResource.Thumbnail = image.Source;
+
+                            ResourceCache.Add(res.Id, loadedResource);
+                        });
+                    }
                 }
-
             }
             catch (Exception ex)
             {

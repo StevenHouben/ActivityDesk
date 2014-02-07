@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using ActivityDesk.Infrastructure;
 using Blake.NUI.WPF.Gestures;
@@ -46,6 +47,18 @@ namespace ActivityDesk
             {
                 _connected = value;
                 OnPropertyChanged("Connected");
+            }
+
+        }
+
+        private bool _interruptable;
+        public bool Interruptable
+        {
+            get { return _interruptable; }
+            set
+            {
+                _interruptable = value;
+                OnPropertyChanged("Interruptable");
             }
 
         }
@@ -104,7 +117,14 @@ namespace ActivityDesk
 
 	        CanScale = false;
 	        CanRotate = false;
-	    }
+
+            Width = 300;
+            Height = 150;
+
+            Template = (ControlTemplate)FindResource("Floating");
+
+            Interruptable = false;
+        }
 
         void LoadedResources_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
