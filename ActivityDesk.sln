@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NooSphere.Infrastructure", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActivityTablet", "ActivityTablet\ActivityTablet.csproj", "{BDFCA366-736B-486E-8F0E-C57B82C45A70}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Debug.Datagenerator", "Debug.Datagenerator\Debug.Datagenerator.csproj", "{5B829C45-5AD8-4EBC-B7EE-F368FA85AF2A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -64,6 +66,14 @@ Global
 		{BDFCA366-736B-486E-8F0E-C57B82C45A70}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BDFCA366-736B-486E-8F0E-C57B82C45A70}.Release|x64.ActiveCfg = Release|Any CPU
 		{BDFCA366-736B-486E-8F0E-C57B82C45A70}.Release|x86.ActiveCfg = Release|Any CPU
+		{5B829C45-5AD8-4EBC-B7EE-F368FA85AF2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B829C45-5AD8-4EBC-B7EE-F368FA85AF2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B829C45-5AD8-4EBC-B7EE-F368FA85AF2A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5B829C45-5AD8-4EBC-B7EE-F368FA85AF2A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5B829C45-5AD8-4EBC-B7EE-F368FA85AF2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B829C45-5AD8-4EBC-B7EE-F368FA85AF2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B829C45-5AD8-4EBC-B7EE-F368FA85AF2A}.Release|x64.ActiveCfg = Release|Any CPU
+		{5B829C45-5AD8-4EBC-B7EE-F368FA85AF2A}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
