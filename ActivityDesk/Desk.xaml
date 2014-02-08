@@ -6,7 +6,7 @@
     Title="Activity Desk" mc:Ignorable="d"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-     HorizontalAlignment="Stretch" VerticalAlignment="Stretch" PreviewTouchDown="SurfaceWindow_PreviewTouchDown" AutoOrientsOnStartup="True">
+     HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AutoOrientsOnStartup="True">
     <s:SurfaceWindow.Background>
         <ImageBrush ImageSource="/ActivityDesk;component/Images/wood.jpg" />
     </s:SurfaceWindow.Background>

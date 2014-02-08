@@ -273,7 +273,7 @@ namespace ActivityTablet
         {
             try
             {
-                ContentHolder.Strokes.Clear();
+                //ContentHolder.Strokes.Clear();
 
                 var src = img.Source;
                 ContentHolder.Height = src.Height;
