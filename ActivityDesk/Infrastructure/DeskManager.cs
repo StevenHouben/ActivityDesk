@@ -47,8 +47,10 @@ namespace ActivityDesk.Infrastructure
             _activitySystem.ResourceAdded += _activitySystem_ResourceAdded;
 
             _activitySystem.DeviceAdded += _activitySystem_DeviceAdded;
+            _activitySystem.DeviceRemoved += _activitySystem_DeviceRemoved;
 
             _activitySystem.MessageReceived += _activitySystem_MessageReceived;
+
 
 
             _activityService = new ActivityService(_activitySystem, Net.GetIp(IpType.All), 8000);
@@ -69,6 +71,12 @@ namespace ActivityDesk.Infrastructure
 
             if (_selectedActivity != null)
                 InitializeContainer(_selectedActivity);
+
+        }
+
+        void _activitySystem_DeviceRemoved(object sender, DeviceRemovedEventArgs e)
+        {
+            _documentContainer.RemoveDevice(e.Id);
 
         }
 
@@ -109,10 +117,6 @@ namespace ActivityDesk.Infrastructure
 
         private void _documentContainer_DeviceValueRemoved(object sender, string e)
         {
-            if (_activitySystem.Devices.Values.Any(dev => dev.TagValue == e))
-            {
-                //remove here
-            }
         }
 
         private void _documentContainer_DeviceValueAdded(object sender, string e)

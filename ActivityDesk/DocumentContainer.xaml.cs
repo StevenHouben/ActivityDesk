@@ -333,7 +333,7 @@ namespace ActivityDesk
                     if (container.DeviceVisualization != null) 
                         container.DeviceVisualization.AddResource(res);
                 }
-                RemoveDevice(tagValue);
+                RemoveDeviceVisualisation(tagValue);
 
                 container.Invalidate();
 
@@ -369,7 +369,7 @@ namespace ActivityDesk
                     foreach (var res in container.DeviceThumbnail.LoadedResources)
                         AddResource(res,true);
                 }
-                RemoveDevice(e.VisualizedTag);
+                RemoveDeviceVisualisation(e.VisualizedTag);
                 DeviceContainers.Remove(e.VisualizedTag);
             }
             else
@@ -560,7 +560,7 @@ namespace ActivityDesk
             if (container.VisualStyle != DeviceVisual.Thumbnail) return;
             foreach (var res in container.DeviceThumbnail.LoadedResources)
                 AddResource(res,true);
-            RemoveDevice(dev);
+            RemoveDeviceVisualisation(dev);
             DeviceContainers.Remove(dev);
         }
         public void UpdateDevice(Device device)
@@ -847,10 +847,37 @@ namespace ActivityDesk
         {
             view.Items.Remove(element);
         }
-        public void RemoveDevice(string p)
+        void RemoveDeviceVisualisation(string p)
         {
-            if (!DeviceContainers.ContainsKey(p)) return;
+            if (!DeviceContainers.ContainsKey(p)) 
+                return;
             view.Items.Remove(DeviceContainers[p].DeviceThumbnail);
+        }
+
+        public void RemoveDevice(string id)
+        {
+            Dispatcher.Invoke(() => 
+            { 
+                DeviceContainer container = null;
+                foreach (var con in DeviceContainers.Values.Where(con => con.Device.Id == id))
+                    container = con;
+                if (container == null)
+                    return;
+
+                if (ResourceHandleReleased != null)
+                    ResourceHandleReleased(this, new ResourceHandle { Device = container.Device, Resource = null });
+
+                if (container.VisualStyle == DeviceVisual.Thumbnail)
+                {
+                    foreach (var res in container.DeviceThumbnail.LoadedResources)
+                        AddResource(res, true);
+                    RemoveDeviceVisualisation(container.TagValue);
+                }
+                else
+                    foreach (var res in container.DeviceVisualization.LoadedResources)
+                        AddResource(res, true);
+                DeviceContainers.Remove(container.TagValue);
+            });
         }
     }
     public enum DockStates

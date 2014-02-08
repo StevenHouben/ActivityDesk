@@ -192,6 +192,7 @@ namespace ActivityTablet
                 _client.ActivityAdded += activityClient_ActivityAdded;
                 _client.ActivityRemoved += activityClient_ActivityRemoved;
                 _client.MessageReceived += _client_MessageReceived;
+                _client.DeviceRemoved += _client_DeviceRemoved;
 
                 foreach (var act in _client.Activities.Values)
                 {
@@ -203,6 +204,12 @@ namespace ActivityTablet
 
                 MessageBox.Show(ex.ToString());
             }
+        }
+
+        void _client_DeviceRemoved(object sender, DeviceRemovedEventArgs e)
+        {
+            if(e.Id == _device.Id)
+                Environment.Exit(0);
         }
 
         void _client_MessageReceived(object sender, MessageEventArgs e)
@@ -226,9 +233,7 @@ namespace ActivityTablet
                                 ResourceCache.Add(resource.Id,loadedResource);
                             }
 
-                            ContentHolder.Height = loadedResource.Content.Height;
-                            loadedResource.Content.Stretch = Stretch.Uniform;
-                            ContentHolder.Background = new ImageBrush(loadedResource.Content.Source);
+                            ShowResource(loadedResource.Content);
 
                             LoadedResources.Add(loadedResource);
                         });
@@ -265,16 +270,16 @@ namespace ActivityTablet
             }
         }
 
-        private void ShowResource(object sender)
+        private void ShowResource(Image img)
         {
             try
             {
                 ContentHolder.Strokes.Clear();
 
-                var src = ((Image)sender).Source;
+                var src = img.Source;
                 ContentHolder.Height = src.Height;
                 ContentHolder.Background = new ImageBrush(src);
-                ContentHolder.Tag = ((Image) sender).Tag;
+                ContentHolder.Tag = img.Tag;
             }
             catch (Exception ex)
             {
@@ -307,7 +312,7 @@ namespace ActivityTablet
         }
         private void BtnQuitClick(object sender, RoutedEventArgs e)
         {
-            Environment.Exit(0);
+            _client.RemoveDevice(_device.Id);
         }
         #endregion
 
