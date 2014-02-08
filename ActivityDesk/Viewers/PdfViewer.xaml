@@ -8,7 +8,7 @@
     
     <my:ScatterViewItem.Resources>
         <ControlTemplate x:Key="Floating" >
-            <Grid x:Name="grid" Background="#E6171616">
+            <Grid x:Name="grid" Background="#E6171616" gestures:Events.DoubleTapGesture="Grid_OnDoubleTapGesture">
                 <my:SurfaceScrollViewer x:Name="scrollViewer" Margin="20" PanningMode="Both">
                     <StackPanel x:Name="panel"></StackPanel>
                 </my:SurfaceScrollViewer>
@@ -18,17 +18,10 @@
             <Grid x:Name="grid" Height="100" Width="100" gestures:Events.DoubleTapGesture="Grid_OnDoubleTapGesture" >
                 <Border x:Name="body" BorderBrush="Black"  BorderThickness="5" Margin="10">
                     <Canvas Width="auto" Height="auto">
-                        <Label Canvas.Left="40" Canvas.Top="55" HorizontalContentAlignment="Center" VerticalContentAlignment="Top" Width="40" Height="25" Background="Black" Foreground="White" Content="PDF"></Label>
+                        <Label Canvas.Left="40" Canvas.Top="55" HorizontalContentAlignment="Center" VerticalContentAlignment="Top" Width="40" Height="25" Background="Black" Foreground="White" Content="IMG"></Label>
                     </Canvas>
                 </Border>
-            </Grid>
-            <!--<Grid x:Name="grid" Height="100" Width="100">
-                <Border x:Name="body" BorderBrush="Black" BorderThickness="5" Margin="10" >
-                    <Border.Background>
-                        <ImageBrush ImageSource="{Binding Thumbnail}"></ImageBrush>
-                    </Border.Background>
-                </Border>
-            </Grid>-->
+                </Grid>
         </ControlTemplate>
     </my:ScatterViewItem.Resources>
     <Grid>

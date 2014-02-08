@@ -118,8 +118,6 @@ namespace ActivityTablet
                 MaxHeight = 800;
                 MaxWidth = 1280;
 
-                //Show menu
-                menu.Visibility = Visibility.Visible;
                 
                 //Show resource mode by default
                 resourceViewer.Visibility = Visibility.Visible;
@@ -135,13 +133,14 @@ namespace ActivityTablet
                 srfcBtn.Content = ac.Name;
                 srfcBtn.Click += SrfcBtnClick;
                 srfcBtn.Tag = ac.Id;
+                srfcBtn.Width = 180;
                 activityStack.Children.Add(srfcBtn);
 
                 var mtrBtn = CopyButton(srfcBtn);
                 mtrBtn.Width = mtrBtn.Height = 200;
                 mtrBtn.Click += SrfcBtnClick;
                 mtrBtn.Tag = ac.Id;
-                activityMatrix.Children.Add(mtrBtn);
+                //activityMatrix.Children.Add(mtrBtn);
             }));
         }
         private SurfaceButton CopyButton(SurfaceButton btn)
@@ -170,7 +169,7 @@ namespace ActivityTablet
                     if((string)((SurfaceButton)activityStack.Children[i]).Tag ==id)
                     {
                         activityStack.Children.RemoveAt(i);
-                        activityMatrix.Children.RemoveAt(i);
+                        //activityMatrix.Children.RemoveAt(i);
                     }
             }));
         }
@@ -184,7 +183,7 @@ namespace ActivityTablet
                 Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() =>
                 {
                     activityStack.Children.Clear();
-                    activityMatrix.Children.Clear();
+                    //activityMatrix.Children.Clear();
                 }));
 
                 _client = new ActivityClient(config.Address, config.Port,
@@ -323,13 +322,10 @@ namespace ActivityTablet
             {
                 case DisplayMode.ResourceViewer:
                     resourceViewer.Visibility = Visibility.Visible;
-                    inputView.Visibility = Visibility.Hidden;
-                    controllerView.Visibility =Visibility.Hidden;
+
                     break;
                 case DisplayMode.Controller:
                     resourceViewer.Visibility = Visibility.Hidden;
-                    inputView.Visibility = Visibility.Hidden;
-                    controllerView.Visibility = Visibility.Visible;
                     break;
             }
         }

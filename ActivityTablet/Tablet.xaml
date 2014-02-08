@@ -3,29 +3,18 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:s="http://schemas.microsoft.com/surface/2008"
     Title="ActivityTablet" mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" d:Height="1024" d:Width="687" 
-          WindowStyle="None" Width="1000" Height="624" ResizeMode="NoResize" WindowState="Maximized">
-    <Grid Name="grid" Background="#FFE2DCDC" d:LayoutOverrides="HorizontalMargin" Width="auto" Height="auto" Margin="0,0,-39,-39">
-    	<Canvas x:Name="menuView" Margin="8" Visibility="Visible" d:IsHidden="True">
-    		<s:SurfaceScrollViewer x:Name="activityDockScroller1" Height="558" 
-    			Width="158" VerticalContentAlignment="Center" 
-    			HorizontalContentAlignment="Center" VerticalScrollBarVisibility="Hidden" >
-    			<StackPanel Orientation="Vertical" x:Name="ActivityDock1"/>
-    		</s:SurfaceScrollViewer>
-    		<s:SurfaceScrollViewer x:Name="ContentScroller1" Height="451" 
-    			Width="800" VerticalContentAlignment="Center" 
-    			HorizontalContentAlignment="Center" VerticalScrollBarVisibility="Hidden" Canvas.Left="162" Canvas.Top="107" />
-    		<s:SurfaceScrollViewer x:Name="resourceScroller1" Height="100" 
-    			Width="800" VerticalContentAlignment="Center" 
-    			HorizontalContentAlignment="Center" VerticalScrollBarVisibility="Hidden" Canvas.Left="162" >
-    			<StackPanel Orientation="Horizontal" x:Name="resourceDock1"/>
-    		</s:SurfaceScrollViewer>
-    	</Canvas>
-    	<Grid x:Name="resourceViewer" Margin="0,48,0,0" HorizontalAlignment="Left" Width="auto" d:IsLocked="True" d:IsHidden="False">
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" d:Height="1280" d:Width="800" 
+          WindowStyle="None" Width="1280" Height="800" ResizeMode="NoResize" WindowState="Maximized">
+    <Grid Name="grid" Background="White" d:LayoutOverrides="HorizontalMargin" Width="auto" Height="auto">
+    	<Grid x:Name="resourceViewer" HorizontalAlignment="Stretch" Width="auto" d:IsLocked="True" d:IsHidden="False">
             <StackPanel Orientation="Horizontal"  HorizontalAlignment="Stretch">
-                <s:SurfaceScrollViewer x:Name="activityScroller" Width="250" VerticalContentAlignment="Center" VerticalScrollBarVisibility="Visible" HorizontalContentAlignment="Center"></s:SurfaceScrollViewer>
-                <StackPanel Orientation="Vertical" Width="950" >
-                    <s:SurfaceScrollViewer x:Name="resourceScroller" Height="105" Width="auto" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" VerticalScrollBarVisibility="Visible" IsManipulationEnabled="False">
+                <s:SurfaceScrollViewer  Margin="0,50,0,0" x:Name="activityScroller" Width="200" VerticalContentAlignment="Center" 
+                                       VerticalScrollBarVisibility="Visible" HorizontalContentAlignment="Center"/>
+                <StackPanel Orientation="Vertical" Width="1080" >
+                    <s:SurfaceScrollViewer x:Name="resourceScroller" Height="150" Width="auto" VerticalContentAlignment="Top" 
+                                           HorizontalContentAlignment="Center" VerticalScrollBarVisibility="Hidden" 
+                                           IsManipulationEnabled="False" PanningMode="HorizontalOnly"  
+                                           HorizontalScrollBarVisibility="Visible" >
                         <ItemsControl ItemsSource="{Binding Path=LoadedResources}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -54,9 +43,9 @@
                     <s:SurfaceScrollViewer x:Name="resourceViewScroller" Height="700" VerticalContentAlignment="Center" VerticalScrollBarVisibility="Visible"
             	HorizontalContentAlignment="Center" IsHitTestVisible="True" IsManipulationEnabled="False"
                                    IsEnabled="True" PanningMode="None" >
-                    <InkCanvas x:Name="ContentHolder" MoveEnabled="False" Width="auto" Height="700">
+                        <InkCanvas x:Name="ContentHolder" MoveEnabled="False" Width="1080" Height="700" >
                         <InkCanvas.DefaultDrawingAttributes>
-                            <DrawingAttributes x:Name="attribute" Width="10" Height="10" Color="Yellow"/>
+                            <DrawingAttributes x:Name="attribute" Width="5" Height="5" Color="Red"/>
                         </InkCanvas.DefaultDrawingAttributes>
                     </InkCanvas>
                 </s:SurfaceScrollViewer>
@@ -64,22 +53,9 @@
             </StackPanel>
         </Grid>
         <StackPanel Width="225" x:Name="activityStack" Orientation="Vertical" HorizontalAlignment="Left" Margin="0,50,0,0"/>
-        <s:SurfaceScrollViewer x:Name="controllerView" Margin="8,52,8,8" HorizontalAlignment="Left" Visibility="Hidden">
-            <WrapPanel x:Name="activityMatrix" Canvas.Top="8" Width="968" Height="548" Canvas.Left="8" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        </s:SurfaceScrollViewer>
-    	<Canvas x:Name="inputView" Margin="8" Visibility="Hidden" Background="White" d:IsHidden="True"/>
-    	<DockPanel x:Name="menu" Height="48" VerticalAlignment="Top" Background="Black" d:IsLocked="True">
-            <StackPanel Orientation="Horizontal">
-                <s:SurfaceButton Content="Quit" Style="{DynamicResource Invert}" Foreground="White" 
-			FontSize="13.333" Width="98.858" RenderTransformOrigin="-0.037,0.75" Height="10" 
-			ToolTip="Stop the login process and exit the application." x:Name="btnQuit" 
-			HorizontalContentAlignment="Center" VerticalContentAlignment="Center" 
-			Click="BtnQuitClick" Margin="0" Canvas.Top="3" Canvas.Left="1" />
-                <s:SurfaceButton FontSize="13.333" Foreground="White" Height="38.338" 
-			RenderTransformOrigin="-0.037,0.75" Style="{DynamicResource Invert}" 
-			Width="98.858"  ToolTip="Adds a new empty activity" x:Name="btnMode" 
-			VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Margin="0" Canvas.Left="102.858" Canvas.Top="3" Content="Mode" Click="btnMode_Click" />
-            </StackPanel>
-    		</DockPanel>
+        <StackPanel x:Name="Menu" Orientation="Horizontal" Height="48" VerticalAlignment="Top">
+            <Image Source="Images/quit.png" PreviewMouseDown="BtnQuitClick" PreviewTouchDown="BtnQuitClick"></Image>
+            <Image Source="Images/grid.png" Margin="7" PreviewMouseDown="btnMode_Click" PreviewTouchDown="btnMode_Click"></Image>
+        </StackPanel>
     </Grid>
 </Window>

@@ -30,6 +30,12 @@ namespace ActivityDesk.Viewers
             DataContext = this;
 
             InitializeComponent();
+
+            Width = 1024;
+            Height = 768;
+            Events.RegisterGestureEventSupport(this);
+
+
         }
 
         private Panel _panel;
@@ -63,7 +69,6 @@ namespace ActivityDesk.Viewers
          {
              if (time == ConvertToTimestamp(DateTime.Now))
                  return;
-             else
                  time = ConvertToTimestamp(DateTime.Now);
 
              if (Iconized)

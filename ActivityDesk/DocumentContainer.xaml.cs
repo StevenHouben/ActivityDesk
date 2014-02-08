@@ -505,10 +505,7 @@ namespace ActivityDesk
         void res_Copied(object sender, LoadedResource e)
         {
             var rv =  sender as ScatterViewItem;
-            var point = rv.TranslatePoint(new Point(),this );
-
-            AddResourceAtLocation(e, point,true);
-
+            AddResourceAtLocation(e, new Point(rv.ActualCenter.X+20,rv.ActualCenter.Y+20),true);
         }
 
         public ScatterViewItem ResourceViewerFromFileType(string resourceType,LoadedResource res)
