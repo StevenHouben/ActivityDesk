@@ -64,8 +64,8 @@ namespace ActivityDesk.Infrastructure
             _documentContainer.DeviceValueAdded += _documentContainer_DeviceValueAdded;
             _documentContainer.DeviceValueRemoved += _documentContainer_DeviceValueRemoved;
 
-
-            _selectedActivity = _activitySystem.Activities.Values.First() as Activity;
+            if (_activitySystem.Activities.Count>0)
+                _selectedActivity = _activitySystem.Activities.Values.First() as Activity;
 
             if (_selectedActivity != null)
                 InitializeContainer(_selectedActivity);
@@ -151,14 +151,13 @@ namespace ActivityDesk.Infrastructure
 
         private void AddResourceToContainer(Resource e)
         {
-            _documentContainer.AddResource(FromResource(e));
+           _documentContainer.AddResource(FromResource(e),true);
+
         }
 
         internal LoadedResource FromResource(Resource res)
         {
             var loadedResource = new LoadedResource();
-
-            res.FileType = "IMG";
 
             var image = new Image();
             using (var stream = _activitySystem.GetStreamFromResource(res.Id))
@@ -178,7 +177,7 @@ namespace ActivityDesk.Infrastructure
             loadedResource.Thumbnail = image.Source;
             return loadedResource;
         }
-    private void InitializeContainer(Activity act)
+        private void InitializeContainer(Activity act)
         {
             var configuration = act.Configuration;
 

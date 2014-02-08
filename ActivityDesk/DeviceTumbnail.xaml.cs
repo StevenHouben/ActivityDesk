@@ -12,7 +12,7 @@ using ActivityDesk.Viewers;
 namespace ActivityDesk
 {
 
-    public partial class DeviceThumbnail : IResourceContainer, INotifyPropertyChanged
+    public partial class DeviceThumbnail : INotifyPropertyChanged
     {
 
         public event PropertyChangedEventHandler PropertyChanged = delegate { };

@@ -5,7 +5,6 @@ using System.Windows;
 using ActivityDesk.Helper.Pdf;
 using ActivityDesk.Infrastructure;
 using System.Windows.Media.Imaging;
-using System.Windows.Controls;
 using System.Windows.Input;
 
 using NooSphere.Model.Device;

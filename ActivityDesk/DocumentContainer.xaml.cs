@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -27,8 +28,6 @@ namespace ActivityDesk
         public Device Device { get; set; }
         public Resource Resource { get; set; }
     }
-
-
     public partial class DocumentContainer
     {
 
@@ -106,12 +105,13 @@ namespace ActivityDesk
                     Device = dev.Device,
                     Resource = null
                 });
-                
             }
 
             if (configuration == null)
                 foreach (var res in resources.Values)
-                    AddResource(res,true);
+                {
+                   AddResource(res,true);
+                }
             else
                 BuildFromConfiguration(resources, configuration);
         }
@@ -204,7 +204,7 @@ namespace ActivityDesk
 
                  var viewer = AddResourceAtLocation(resources[deskConfig.Resource.Id], deskConfig.Center);
 
-                 viewer.Iconized = deskConfig.Iconized;
+                 ((IResourceContainer)viewer).Iconized = deskConfig.Iconized;
                     viewer.Width = deskConfig.Size.Width;
                     viewer.Height = deskConfig.Size.Height;
                 viewer.Orientation = deskConfig.Orientation;
@@ -310,6 +310,9 @@ namespace ActivityDesk
                 };
                 dev.ResourceReleased += dev_ResourceReleased;
                 DeviceContainers.Add(tagValue,dev);
+
+                Debug.WriteLine("NooSphere Device validation disabled for thumbnails");
+                ValidateDevice(dev.TagValue, dev.Device);
             }
             else
             {
@@ -333,8 +336,11 @@ namespace ActivityDesk
                 RemoveDevice(tagValue);
 
                 container.Invalidate();
+
+                ValidateDevice(container.TagValue, container.Device);
             }
             ((BaseVisualization)e.TagVisualization).Locked += Device_Locked;
+
             if (DeviceValueAdded != null)
                 DeviceValueAdded(this, tagValue);
 
@@ -386,8 +392,7 @@ namespace ActivityDesk
                 foreach (var res in container.DeviceVisualization.LoadedResources)
                     container.DeviceThumbnail.AddResource(res);
 
-                //debug-data
-
+                Debug.WriteLine("NooSphere Device validation disabled for thumbnails");
                 ValidateDevice(container.TagValue,container.Device);
             }
             else
@@ -433,6 +438,7 @@ namespace ActivityDesk
             ResourceViewers.Clear();
         }
 
+
         private void Add(ScatterViewItem element)
         {
             SetDockState(element, DockStates.Floating);
@@ -447,46 +453,32 @@ namespace ActivityDesk
 
             view.Items.Add(element);
         }
-
-        public void AddResource(LoadedResource resource,bool iconized=false)
+        public ScatterViewItem AddResource(LoadedResource resource, bool iconized = false)
         {
-            var res = new ResourceViewer(resource) {Iconized = iconized};
-            ResourceViewers.Add(res);
-            res.Center = new Point(RandomNumber(200, 1000), RandomNumber(200, 800));
-            res.Copied += res_Copied;
-            Add(res);
-
+            return AddResourceAtLocation(resource, new Point(RandomNumber(200, 1000), RandomNumber(200, 800)), iconized);
         }
-
-        void res_Copied(object sender, LoadedResource e)
+        public ScatterViewItem AddResourceAtLocation(LoadedResource resource, Point p, bool iconized = false)
         {
-            var rv =  sender as ResourceViewer;
-            var point = rv.TranslatePoint(new Point(),this );
-
-            var viewer = AddResourceAtLocation(e, point,true);
-
-        }
-
-        public ResourceViewer AddResourceAtLocation(LoadedResource resource, Point p,bool iconized=false)
-        {
-            var res = new ResourceViewer(resource) {Iconized = iconized};
-            res.Copied += res_Copied;
+            var res = ResourceViewerFromFileType(resource.Resource.FileType, resource);
+            ((IResourceContainer)res).Iconized = iconized;
             ResourceViewers.Add(res);
             res.Center = p;
-
+            ((IResourceContainer)res).Copied += res_Copied;
             Add(res);
             return res;
         }
-        public ResourceViewer RestoreResource(LoadedResource resource, Point p)
+        public ScatterViewItem RestoreResource(LoadedResource resource, Point p)
         {
-            var res = new ResourceViewer(resource){Iconized = true};
-            res.Copied += res_Copied;
+            var res = ResourceViewerFromFileType(resource.Resource.FileType, resource);
+            ((IResourceContainer)res).Iconized = true;
+            ((IResourceContainer)res).Copied += res_Copied;
+
             var stb = new Storyboard();
 
             var moveCenter = new PointAnimation
             {
                 FillBehavior = FillBehavior.Stop,
-                From = new Point(p.X + 50, p.Y+50),
+                From = new Point(p.X + 50, p.Y + 50),
                 To = new Point(p.X + 50, p.Y + 200),
                 Duration = new Duration(TimeSpan.FromSeconds(0.5)),
                 EasingFunction = new QuadraticEase() { EasingMode = EasingMode.EaseOut }
@@ -495,6 +487,7 @@ namespace ActivityDesk
             stb.Children.Add(moveCenter);
             Storyboard.SetTarget(moveCenter, res);
             Storyboard.SetTargetProperty(moveCenter, new PropertyPath(ScatterViewItem.CenterProperty));
+
             Add(res);
 
             stb.Completed += (sender, e) =>
@@ -508,9 +501,30 @@ namespace ActivityDesk
             return res;
 
         }
-        public void AddPdf(Image img,Image thumb)
+
+        void res_Copied(object sender, LoadedResource e)
         {
-            var res = new PdfViewer(img,thumb) { Width = img.Width, Height = img.Height };
+            var rv =  sender as ScatterViewItem;
+            var point = rv.TranslatePoint(new Point(),this );
+
+            AddResourceAtLocation(e, point,true);
+
+        }
+
+        public ScatterViewItem ResourceViewerFromFileType(string resourceType,LoadedResource res)
+        {
+            switch (resourceType)
+            {
+                case "IMG":
+                    return new ResourceViewer(res);
+                case "PDF":
+                    return new TouchWindow(res);
+            }
+            return new ResourceViewer(res);
+        }
+        public void AddPdf(LoadedResource loadedResource,bool iconized=false)
+        {
+            var res = new PdfViewer(loadedResource) { Iconized = iconized };
             ResourceViewers.Add(res);
             Add(res);
         }
@@ -557,9 +571,9 @@ namespace ActivityDesk
         {
             if (sender is DeviceThumbnail)
                 return;
-            var element = sender as ResourceViewer;
+            var element = sender as ScatterViewItem;
 
-            if (element.Iconized)
+            if (((IResourceContainer)element).Iconized)
             {
                 element.Template = (ControlTemplate)element.FindResource("Docked");
                 ((IResourceContainer)element).Iconized = true;
@@ -596,14 +610,17 @@ namespace ActivityDesk
         }
         void element_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
         {
-            var item = sender as ResourceViewer;
-            if(item != null)
-                CheckIntersections(item);
             var thumbnail = sender as DeviceThumbnail;
             if (thumbnail != null)
             {
                 CheckRotation(thumbnail);
                 CheckDeviceIntersections(thumbnail);
+            }
+            else
+            {
+                var item = sender as ScatterViewItem;
+                if (item != null)
+                    CheckIntersections(item);
             }
             e.Handled = true;
         }
@@ -689,7 +706,7 @@ namespace ActivityDesk
         private void CheckRotation(DeviceThumbnail deviceThumbnail)
         {
             var or = deviceThumbnail.Orientation;
-            deviceThumbnail.Interruptable = or > 210 && or <240;
+            deviceThumbnail.Interruptable = or > 180 && or <260;
         }
 
         

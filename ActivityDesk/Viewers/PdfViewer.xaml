@@ -2,28 +2,33 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d"  MinHeight="150" MinWidth="150">
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:gestures="clr-namespace:Blake.NUI.WPF.Gestures;assembly=Blake.NUI.WPF"
+             mc:Ignorable="d"  MinHeight="100" MinWidth="100">
     
     <my:ScatterViewItem.Resources>
         <ControlTemplate x:Key="Floating" >
             <Grid x:Name="grid" Background="#E6171616">
-                <my:SurfaceScrollViewer x:Name="scrollViewer" Margin="50,50,50,50" PanningMode="Both">
+                <my:SurfaceScrollViewer x:Name="scrollViewer" Margin="20" PanningMode="Both">
                     <StackPanel x:Name="panel"></StackPanel>
                 </my:SurfaceScrollViewer>
             </Grid>
         </ControlTemplate>
         <ControlTemplate x:Key="Docked">
-            <Grid x:Name="grid" Height="100" Width="100">
+            <Grid x:Name="grid" Height="100" Width="100" gestures:Events.DoubleTapGesture="Grid_OnDoubleTapGesture" >
+                <Border x:Name="body" BorderBrush="Black"  BorderThickness="5" Margin="10">
+                    <Canvas Width="auto" Height="auto">
+                        <Label Canvas.Left="40" Canvas.Top="55" HorizontalContentAlignment="Center" VerticalContentAlignment="Top" Width="40" Height="25" Background="Black" Foreground="White" Content="PDF"></Label>
+                    </Canvas>
+                </Border>
+            </Grid>
+            <!--<Grid x:Name="grid" Height="100" Width="100">
                 <Border x:Name="body" BorderBrush="Black" BorderThickness="5" Margin="10" >
                     <Border.Background>
                         <ImageBrush ImageSource="{Binding Thumbnail}"></ImageBrush>
                     </Border.Background>
-                    <StackPanel Orientation="Vertical" VerticalAlignment="Bottom" >
-                        <Label HorizontalContentAlignment="Center" VerticalContentAlignment="Top" Width="auto" Height="25" Background="Black" Foreground="White" Content="PDF"></Label>
-                    </StackPanel>
                 </Border>
-            </Grid>
+            </Grid>-->
         </ControlTemplate>
     </my:ScatterViewItem.Resources>
     <Grid>

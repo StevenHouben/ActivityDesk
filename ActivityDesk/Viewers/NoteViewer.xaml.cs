@@ -17,9 +17,13 @@ namespace ActivityDesk.Viewers
         public event EventHandler Save = null;
         public event EventHandler Close = null;
         public bool Iconized { get; set; }
+        public event EventHandler<LoadedResource> Copied = delegate { };
 
+        public string ResourceType { get; set; }
 
         public string Name { get; set; }
+            
+
         public StrokeCollection Strokes { get; set; }
 
         public LoadedResource Resource { get; set; }

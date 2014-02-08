@@ -11,10 +11,8 @@
                         <DockPanel LastChildFill="True" >
                             <Border DockPanel.Dock="Top" >
                                 <Grid>
-                                    <TextBlock Text="{Binding Title}"  FontWeight="Bold" VerticalAlignment="Center" Margin="15,0" FontSize="20"  Foreground="White"/>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                        <s:SurfaceButton Content="Minimize" HorizontalAlignment="Right" Margin="3" x:Name="btnMinimize" Click="btnMinimize_Click"/>
-                                        <s:SurfaceButton Content="Close" HorizontalAlignment="Right" Margin="3" x:Name="btnClose" Click="btnClose_Click"/>
+                                        <Image Height="30" Source="\Images\min.png" PreviewTouchDown="btnMinimize_Click" PreviewMouseDown="btnMinimize_Click"></Image>
                                     </StackPanel>
 
                                 </Grid>

@@ -15,6 +15,8 @@ namespace ActivityDesk.Viewers
 
         public event EventHandler<LoadedResource> Copied = delegate { };
 
+        public string ResourceType { get; set; }
+
         public Image Image { get; set; }
 
         public LoadedResource Resource { get; set; }

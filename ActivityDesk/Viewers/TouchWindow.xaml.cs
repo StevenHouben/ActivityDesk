@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using ActivityDesk.Helper;
@@ -31,6 +32,9 @@ namespace ActivityDesk.Viewers
 
         public bool Iconized { get; set; }
 
+        public event EventHandler<LoadedResource> Copied = delegate { };
+
+        public string ResourceType { get; set; }
 	    public FrameworkElement Content { get; set; }
 	    public ImageSource Thumbnail { get; set; }
 	    public string Title { get; set; }
