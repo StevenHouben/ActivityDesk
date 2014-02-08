@@ -197,40 +197,40 @@ namespace ActivityTablet
                 {
                     AddActivityUI(act as Activity);
 
-                    foreach (var resource in act.Resources)
-                    {
-                        Resource res = resource;
-                        Dispatcher.Invoke(async () =>
-                        {
-                            var loadedResource = new LoadedResource();
+                    //foreach (var resource in act.Resources)
+                    //{
+                    //    Resource res = resource;
+                    //    Dispatcher.Invoke(async () =>
+                    //    {
+                    //        var loadedResource = new LoadedResource();
 
-                            res.FileType = "IMG";
+                    //        res.FileType = "IMG";
 
-                            var image = new Image();
+                    //        var image = new Image();
 
-                            var result = await Task.Factory.StartNew(() =>
-                            {
-                                BitmapImage bitmap;
-                                using (var stream = _client.GetResource(res))
-                                {
-                                    bitmap = new BitmapImage();
-                                    bitmap.BeginInit();
-                                    bitmap.StreamSource = stream;
-                                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                                    bitmap.EndInit();
-                                    bitmap.Freeze();
-                                }
-                                return bitmap;
-                            });
+                    //        var result = await Task.Factory.StartNew(() =>
+                    //        {
+                    //            BitmapImage bitmap;
+                    //            using (var stream = _client.GetResource(res))
+                    //            {
+                    //                bitmap = new BitmapImage();
+                    //                bitmap.BeginInit();
+                    //                bitmap.StreamSource = stream;
+                    //                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    //                bitmap.EndInit();
+                    //                bitmap.Freeze();
+                    //            }
+                    //            return bitmap;
+                    //        });
 
-                            image.Source = result;
-                            loadedResource.Resource = res;
-                            loadedResource.Content = image;
-                            loadedResource.Thumbnail = image.Source;
+                    //        image.Source = result;
+                    //        loadedResource.Resource = res;
+                    //        loadedResource.Content = image;
+                    //        loadedResource.Thumbnail = image.Source;
 
-                            ResourceCache.Add(res.Id, loadedResource);
-                        });
-                    }
+                    //        ResourceCache.Add(res.Id, loadedResource);
+                    //    });
+                    //}
                 }
             }
             catch (Exception ex)

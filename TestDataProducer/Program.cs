@@ -53,6 +53,10 @@ namespace Debug.Datagenerator
 
             if (count++ < 5)
                 _activitySystem.AddActivity(new Activity());
+            else
+            {
+                Working = false;
+            }
 
         }
     }
