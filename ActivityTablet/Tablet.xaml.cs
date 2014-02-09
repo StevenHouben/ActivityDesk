@@ -271,19 +271,40 @@ namespace ActivityTablet
 
         private void ShowResource(Image img)
         {
-            try
-            {
-                //ContentHolder.Strokes.Clear();
+             ContentHolder.Children.Clear();
+             ContentHolder.Height = img.Source.Height;
 
-                var src = img.Source;
-                ContentHolder.Height = src.Height;
-                ContentHolder.Background = new ImageBrush(src);
-                ContentHolder.Tag = img.Tag;
-            }
-            catch (Exception ex)
+            if (img.Source.Height > 1500)
             {
-                MessageBox.Show(ex.ToString());
+                var src = img.Source;
+               
+
+                var height = 9240; // (int)bitmapsource.Height;
+                var width = 502; //(int)bitmapsource.Width;
+                var imageHeight = height/10;
+                var runs = height/imageHeight;
+
+                for (var i = 0; i < runs; i++)
+                {
+                    var croppedImage = new Image {Width = width, Height = imageHeight, Stretch = Stretch.Fill};
+                    var rect = new Int32Rect(0, i*imageHeight, width, imageHeight);
+
+                    var cb = new CroppedBitmap(
+                        (BitmapSource) img.Source, rect
+                        );
+
+                    croppedImage.Source = cb;
+                    croppedImage.Width = 800;
+                    croppedImage.Height = 1056;
+                    ContentHolder.Children.Add(croppedImage);
+                }
             }
+            else
+            {
+                ContentHolder.Children.Add(img);
+            }
+            resourceViewScroller.ScrollToHome();
+
         }
      
         #endregion

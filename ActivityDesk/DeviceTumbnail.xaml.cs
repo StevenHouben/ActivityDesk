@@ -12,7 +12,7 @@ using ActivityDesk.Viewers;
 namespace ActivityDesk
 {
 
-    public partial class DeviceThumbnail : INotifyPropertyChanged
+    public partial class DeviceThumbnail : INotifyPropertyChanged, IResourceContainer
     {
 
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
@@ -157,5 +157,13 @@ namespace ActivityDesk
                 Resource = LoadedResources.Count != 0 ? LoadedResources.First() : LoadedResource.EmptyResource;
 
 	    }
-	}
+
+
+        public event EventHandler<LoadedResource> Copied;
+
+        public string ResourceType
+        {
+            get; set;
+        }
+    }
 }

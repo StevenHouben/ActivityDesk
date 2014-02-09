@@ -133,13 +133,20 @@ namespace ActivityDesk.Infrastructure
         private void _activitySystem_DeviceAdded(object sender, DeviceEventArgs e)
         {
             var value = "";
-            foreach (var val in _queuedDeviceDetections.Where(val => val == e.Device.TagValue))
+
+            if (_documentContainer.DeviceContainers.ContainsKey(e.Device.TagValue))
             {
-                _documentContainer.ValidateDevice(val, e.Device as Device);
-                value = val;
+
+
+
+                foreach (var val in _queuedDeviceDetections.Where(val => val == e.Device.TagValue))
+                {
+                    _documentContainer.ValidateDevice(val, e.Device as Device);
+                    value = val;
+                }
+                if (value != "" && _queuedDeviceDetections.Contains(value))
+                    _queuedDeviceDetections.Remove(value);
             }
-            if (value != "" && _queuedDeviceDetections.Contains(value))
-                _queuedDeviceDetections.Remove(value);
         }
 
         private void _documentContainer_IntersectionDetected(object sender, ResourceHandle e)

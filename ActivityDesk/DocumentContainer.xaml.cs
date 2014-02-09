@@ -74,8 +74,13 @@ namespace ActivityDesk
 
         public void ValidateDevice(string value, Device device)
         {
-            DeviceContainers[value].Connected = true;
-            DeviceContainers[value].Device = device;
+            if (DeviceContainers.ContainsKey(value))
+            {
+                DeviceContainers[value].Connected = true;
+                DeviceContainers[value].Device = device;
+                
+            }
+
         }
 
         public DocumentContainer()
@@ -311,8 +316,8 @@ namespace ActivityDesk
                 dev.ResourceReleased += dev_ResourceReleased;
                 DeviceContainers.Add(tagValue,dev);
 
-                Debug.WriteLine("NooSphere Device validation disabled for thumbnails");
-                ValidateDevice(dev.TagValue, dev.Device);
+                //Debug.WriteLine("NooSphere Device validation disabled for thumbnails");
+                //ValidateDevice(dev.TagValue, dev.Device);
             }
             else
             {
@@ -337,7 +342,7 @@ namespace ActivityDesk
 
                 container.Invalidate();
 
-                ValidateDevice(container.TagValue, container.Device);
+                //ValidateDevice(container.TagValue, container.Device);
             }
             ((BaseVisualization)e.TagVisualization).Locked += Device_Locked;
 
@@ -392,8 +397,8 @@ namespace ActivityDesk
                 foreach (var res in container.DeviceVisualization.LoadedResources)
                     container.DeviceThumbnail.AddResource(res);
 
-                Debug.WriteLine("NooSphere Device validation disabled for thumbnails");
-                ValidateDevice(container.TagValue,container.Device);
+                //Debug.WriteLine("NooSphere Device validation disabled for thumbnails");
+                //ValidateDevice(container.TagValue,container.Device);
             }
             else
             {

@@ -41,13 +41,17 @@
                     </s:SurfaceScrollViewer>
                 
                     <s:SurfaceScrollViewer x:Name="resourceViewScroller" Height="700" VerticalContentAlignment="Center" VerticalScrollBarVisibility="Visible"
-            	HorizontalContentAlignment="Center" IsHitTestVisible="True" IsManipulationEnabled="False"
-                                   IsEnabled="True" PanningMode="None" >
-                        <Canvas x:Name="ContentHolder" Width="1080" Height="700" >
-                        <!--<InkCanvas.DefaultDrawingAttributes>
-                            <DrawingAttributes x:Name="attribute" Width="5" Height="5" Color="Red"/>
-                        </InkCanvas.DefaultDrawingAttributes>-->
-                    </Canvas>
+            	HorizontalContentAlignment="Center" IsHitTestVisible="True" IsManipulationEnabled="True"
+                                   IsEnabled="True" PanningMode="VerticalOnly" >
+                        <InkCanvas>
+                            <InkCanvas.DefaultDrawingAttributes>
+                                <DrawingAttributes x:Name="attribute" Width="5" Height="5" Color="Red"/>
+                            </InkCanvas.DefaultDrawingAttributes>
+                            <StackPanel Orientation="Vertical" x:Name="ContentHolder" Width="auto" Height="auto" >
+         
+                            </StackPanel>
+                        </InkCanvas>
+                       
                 </s:SurfaceScrollViewer>
                 </StackPanel>
             </StackPanel>
