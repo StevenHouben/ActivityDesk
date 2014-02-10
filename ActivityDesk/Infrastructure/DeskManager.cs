@@ -149,6 +149,7 @@ namespace ActivityDesk.Infrastructure
                 value = val;
             }
 
+            //Device is not found, but maybe it is trying to reconnect to the visualisation
             if (value == "")
             {
                 foreach (var val in _documentContainer.DeviceContainers.Keys.Where(val => val == e.Device.TagValue))
@@ -157,7 +158,6 @@ namespace ActivityDesk.Infrastructure
                     value = val;
                 }
             }
- 
 
             //if no device was found, we add it to
             if (value != "" && _queuedDeviceDetections.Contains(value))

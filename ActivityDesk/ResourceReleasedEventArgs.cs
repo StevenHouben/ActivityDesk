@@ -1,10 +1,8 @@
-﻿using System.Drawing;
-using ActivityDesk.Infrastructure;
+﻿using ActivityDesk.Infrastructure;
 using NooSphere.Model.Device;
 
 namespace ActivityDesk
 {
-
     public class ResourceReleasedEventArgs
     {
         public Device Device { get; set; }

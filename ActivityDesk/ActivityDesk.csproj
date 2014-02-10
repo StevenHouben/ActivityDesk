@@ -103,21 +103,22 @@
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
-    <Compile Include="CustomTopmostBehavior.cs" />
-    <Compile Include="DeskState.cs" />
-    <Compile Include="DeviceTumbnail.xaml.cs">
-      <DependentUpon>DeviceTumbnail.xaml</DependentUpon>
+    <Compile Include="DockStateManager.cs" />
+    <Compile Include="Helper\CustomTopmostBehavior.cs" />
+    <Compile Include="Helper\Math.cs" />
+    <Compile Include="ResourceHandle.cs" />
+    <Compile Include="Viewers\DeviceViewer.xaml.cs">
+      <DependentUpon>DeviceViewer.xaml</DependentUpon>
     </Compile>
     <Compile Include="DocumentContainer.xaml.cs">
       <DependentUpon>DocumentContainer.xaml</DependentUpon>
     </Compile>
-    <Compile Include="DocumentViewTemplateSelector.cs" />
     <Compile Include="Helper\Pdf\PDFConverter.cs" />
     <Compile Include="Infrastructure\DeskConfiguration.cs" />
     <Compile Include="Infrastructure\DeskManager.cs" />
     <Compile Include="Infrastructure\LoadedResource.cs" />
     <Compile Include="ResourceReleasedEventArgs.cs" />
-    <Compile Include="Viewers\DeviceContainer.cs" />
+    <Compile Include="Infrastructure\DeviceContainer.cs" />
     <Compile Include="Viewers\IResourceContainer.cs" />
     <Compile Include="Viewers\NoteViewer.xaml.cs">
       <DependentUpon>NoteViewer.xaml</DependentUpon>
@@ -159,11 +160,7 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="ColoredButtons.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="DeviceTumbnail.xaml">
+    <Page Include="Viewers\DeviceViewer.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -207,9 +204,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="icon_tablet.png" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">

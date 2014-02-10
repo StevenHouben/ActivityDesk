@@ -6,7 +6,7 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:gestures="clr-namespace:Blake.NUI.WPF.Gestures;assembly=Blake.NUI.WPF"
 	mc:Ignorable="d"
-	x:Class="ActivityDesk.DeviceThumbnail"
+	x:Class="ActivityDesk.Viewers.DeviceThumbnail"
 	x:Name="UserControl" MinHeight="150" MinWidth="150" Width="auto" Height="auto">
     <s:ScatterViewItem.Resources>
         <ControlTemplate x:Key="Floating">

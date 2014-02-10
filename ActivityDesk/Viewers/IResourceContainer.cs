@@ -6,7 +6,7 @@ namespace ActivityDesk.Viewers
 {
     public interface IResourceContainer
     {
-        LoadedResource Resource { get; set; }
+        LoadedResource LoadedResource { get; set; }
 
         bool Iconized { get; set; }
 

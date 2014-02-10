@@ -26,7 +26,7 @@ namespace ActivityDesk.Viewers
 
         public StrokeCollection Strokes { get; set; }
 
-        public LoadedResource Resource { get; set; }
+        public LoadedResource LoadedResource { get; set; }
 
 		public Note()
 		{

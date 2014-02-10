@@ -19,14 +19,14 @@ namespace ActivityDesk.Viewers
 
         public Image Image { get; set; }
 
-        public LoadedResource Resource { get; set; }
+        public LoadedResource LoadedResource { get; set; }
 
         public bool Iconized { get; set; }
         public ResourceViewer(LoadedResource res)
         {
             Image = res.Content;
             Name = res.Resource.Name;
-            Resource = res;
+            LoadedResource = res;
 
             InitializeComponent();
 
@@ -69,7 +69,7 @@ namespace ActivityDesk.Viewers
                 time = ConvertToTimestamp(DateTime.Now);
 
             if (Iconized)
-                Copied(this, Resource);
+                Copied(this, LoadedResource);
             else
             {
                 Template = (ControlTemplate)FindResource("Docked");

@@ -4,7 +4,7 @@ using System.Windows.Input;
 using Microsoft.Surface.Presentation.Controls;
 using Microsoft.Surface.Presentation.Input;
 
-namespace Behaviors
+namespace ActivityDesk.Helper
 {
     /// <summary>
     /// Attach this behavior to ScatterViewItems to change their default behavior

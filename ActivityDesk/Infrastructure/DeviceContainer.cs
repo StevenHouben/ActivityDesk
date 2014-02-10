@@ -1,11 +1,8 @@
-﻿
-using System;
-using System.Windows.Controls;
-using ActivityDesk.Infrastructure;
+﻿using ActivityDesk.Viewers;
 using ActivityDesk.Visualizer.Visualizations;
 using NooSphere.Model.Device;
 
-namespace ActivityDesk.Viewers
+namespace ActivityDesk.Infrastructure
 {
     public class DeviceContainer
     {
@@ -90,7 +87,7 @@ namespace ActivityDesk.Viewers
             if (DeviceThumbnail != null)
             {
                 DeviceThumbnail.LoadedResources.Clear();
-                DeviceThumbnail.Resource = null;
+                DeviceThumbnail.LoadedResource = null;
             }
 
 

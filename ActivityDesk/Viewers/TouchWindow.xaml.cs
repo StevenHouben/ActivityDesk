@@ -29,7 +29,7 @@ namespace ActivityDesk.Viewers
 
 		#endregion
 
-        public LoadedResource Resource { get; set; }
+        public LoadedResource LoadedResource { get; set; }
 
         public bool Iconized { get; set; }
 
@@ -44,7 +44,7 @@ namespace ActivityDesk.Viewers
 
 	    public TouchWindow(LoadedResource resource)
 	    {
-	        Resource = resource;
+	        LoadedResource = resource;
 	        Title = resource.Resource.Name;
             ContentType = resource.Resource.FileType;
             Thumbnail = resource.Thumbnail;
@@ -91,7 +91,7 @@ namespace ActivityDesk.Viewers
             time = ConvertToTimestamp(DateTime.Now);
 
             if (Iconized)
-                Copied(this, Resource);
+                Copied(this, LoadedResource);
             else
             {
                 Template = (ControlTemplate)FindResource("Docked");

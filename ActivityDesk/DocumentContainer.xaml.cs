@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
+using ActivityDesk.Helper;
 using ActivityDesk.Infrastructure;
 using ActivityDesk.Viewers;
 using ActivityDesk.Visualizer.Definitions;
@@ -16,40 +19,16 @@ using Microsoft.Surface.Presentation.Controls.TouchVisualizations;
 using Microsoft.Surface.Presentation.Input;
 using NooSphere.Model;
 using NooSphere.Model.Device;
+using Math = ActivityDesk.Helper.Math;
 using Note = ActivityDesk.Viewers.Note;
 
 namespace ActivityDesk
 {
-    public class ResourceHandle
-    {
-        public Device Device { get; set; }
-        public Resource Resource { get; set; }
-    }
     public partial class DocumentContainer
     {
-
-        private static readonly Random Random = new Random();
-        private static readonly object SyncLock = new object();
-        public static int RandomNumber(int min, int max)
-        {
-            lock (SyncLock)
-            { // synchronize
-                return Random.Next(min, max);
-            }
-        }
-
-        public static DependencyProperty DockState;
-        public static DockStates GetDockState(DependencyObject obj)
-        {
-            return (DockStates)obj.GetValue(DockState);
-        }
-        public static void SetDockState(DependencyObject obj, DockStates value)
-        {
-            obj.SetValue(DockState, value);
-        }
-
         public event EventHandler<string> DeviceValueAdded = delegate { };
         public event EventHandler<string> DeviceValueRemoved = delegate { };
+
         public event EventHandler<ResourceHandle> ResourceHandled = delegate { };
         public event EventHandler<ResourceHandle> ResourceHandleReleased = delegate { };
 
@@ -62,64 +41,112 @@ namespace ActivityDesk
         private int _dockSize;
         private Size _minimumDockSize;
         private int _borderSize;
-        private int _iconSize = 100;
+        private const int IconSize = 100;
 
+        private const bool DeviceValidationIsEnabled = true;
 
         public Collection<Note> Notes = new Collection<Note>();
-        public Collection<ScatterViewItem> ResourceViewers = new Collection<ScatterViewItem>();
+        public Collection<ScatterViewItem> VisualizedResources = new Collection<ScatterViewItem>();
         public Dictionary<string, DeviceContainer> DeviceContainers = new Dictionary<string, DeviceContainer>();
-
-        public void ValidateDevice(string value, Device device)
-        {
-            if (DeviceContainers.ContainsKey(value))
-            {
-                DeviceContainers[value].Connected = true;
-                DeviceContainers[value].Device = device;
-                
-            }
-
-        }
 
         public DocumentContainer()
         {
             InitializeComponent();
 
+            //Enable gesture recognition support by the BLAKE NUI toolkit
             Events.RegisterGestureEventSupport(this);
 
+            //Add tags to recognize devices
             InitializeTags();
-            var metadata = new FrameworkPropertyMetadata(DockStates.Floating);
-            DockState = DependencyProperty.RegisterAttached("DockState",
-                typeof (DockStates),
-                typeof (DocumentContainer), metadata);
 
+            //Intialize the dockstate
+            DockStateManager.DockState = DependencyProperty.RegisterAttached("DockState",
+                typeof(DockStates),
+                typeof(DocumentContainer), new FrameworkPropertyMetadata(DockStates.Floating));
+
+            //Enable Tag Visualisation
             TouchVisualizer.SetShowsVisualizations(this, false);
+
+            //Handle to the size change
             SizeChanged += DocumentContainer_SizeChanged;
+
+            //Ignore all non tocuch devices
+            CustomTopmostBehavior.Activate();
         }
 
+        /// <summary>
+        /// Validate that the device visualisation is actually connected to a
+        /// real device
+        /// </summary>
+        internal void ValidateDevice(string tagValue, Device device)
+        {
+            //Device not found
+            if (!DeviceContainers.ContainsKey(tagValue)) 
+                return;
+
+            //Update the device connection state
+            DeviceContainers[tagValue].Connected = true;
+            DeviceContainers[tagValue].Device = device;
+        }
+
+        /// <summary>
+        /// Reconnects a disconnected device to its thumbnail
+        /// </summary>
+        internal void ReconnectDevice(string tagValue, Device device)
+        {
+            //Device not found
+            if (!DeviceContainers.ContainsKey(tagValue))
+                return;
+
+            //Update the device
+            var container = DeviceContainers[tagValue];
+            DeviceContainers[tagValue].Device = device;
+
+            //Grab the local paired resources
+            var resourcesToSend = container.VisualStyle == DeviceVisual.Thumbnail ? container.DeviceThumbnail.LoadedResources : container.DeviceVisualization.LoadedResources;
+
+            //Send all resources to the connected device  by creating a
+            foreach (var res in resourcesToSend)
+            {
+                SendResourceToDevice(device,res.Resource);
+            }
+        }
+
+        /// <summary>
+        /// Builds the desk layout
+        /// </summary>
         internal void Build(Dictionary<string,LoadedResource> resources, DeskConfiguration configuration)
         {
+            //Clear all item from the desk
             Clear();
 
+            //Clear all the remove device by sending a NULL ResourceHandled
             foreach (var dev in DeviceContainers.Values)
             {
-                ResourceHandleReleased(this, new ResourceHandle()
+                ResourceHandleReleased(this, new ResourceHandle
                 {
                     Device = dev.Device,
                     Resource = null
                 });
             }
 
+            //If no configuraton -> simply add all resources
             if (configuration == null)
                 foreach (var res in resources.Values)
                 {
                    AddResource(res,true);
                 }
+            //Build the desk from configuratoiom
             else
                 BuildFromConfiguration(resources, configuration);
         }
 
+        /// <summary>
+        /// Builds the desk layout based on a given configuration
+        /// </summary>
         void BuildFromConfiguration(Dictionary<string, LoadedResource> resources, DeskConfiguration configuration)
         {
+            //Loop the deviceconfigurations
             foreach (var dev in configuration.DeviceConfigurations)
             {
                 // Device exists
@@ -135,49 +162,52 @@ namespace ActivityDesk
                         if (dev.Thumbnail)
                         {
                          
-                            //actual device is thumbnail
+                            //Actual device is thumbnail
                             if (container.VisualStyle == DeviceVisual.Thumbnail)
                             {
+                                //Position the thumbnail
                                 container.DeviceThumbnail.Center = dev.Center;
+
+                                //Dockify the thumbnail if required
                                 HandleDockingFromTouch(container.DeviceThumbnail, dev.Center);
+
+                                //Add pinned state
                                 container.Pinned = dev.Pinned;
+
+                                //Update orientation
                                 container.DeviceThumbnail.Orientation = dev.Orientation;
 
-                                foreach (
-                                    var def in dev.Configurations.Select(res => res as DefaultResourceConfiguration))
-                                {
-                                    container.DeviceThumbnail.AddResource(resources[def.Resource.Id]);
-                                    ResourceHandled(this, new ResourceHandle()
-                                    {
-                                        Device = container.Device,
-                                        Resource = def.Resource
-                                    });
-                                }
-                            }
-                            else
-                            {
+                                //Loop the resources for this device
                                 foreach (var def in dev.Configurations.Select(res => res as DefaultResourceConfiguration))
                                 {
+                                    //Add resource to the device
+                                    container.DeviceThumbnail.AddResource(resources[def.Resource.Id]);
+
+                                    //Send resource to device by
+                                    SendResourceToDevice(container.Device, def.Resource);
+                                    
+                                }
+                            }
+                            //Actual device is not a thumbnail
+                            else
+                            {
+                                //Loop the resources
+                                foreach (var def in dev.Configurations.Select(res => res as DefaultResourceConfiguration))
+                                {
+                                    //Add them to the visualisation of the actual device
                                     container.DeviceVisualization.AddResource(resources[def.Resource.Id]);
-                                    ResourceHandled(this, new ResourceHandle()
-                                    {
-                                        Device = container.Device,
-                                        Resource = def.Resource
-                                    });                           
+
+                                    SendResourceToDevice(container.Device, def.Resource);
                                 }
                             }
                         }
-                        //device is not stored as thumbnail
+                        //Device is not stored as thumbnail
                         else
                         {
                             foreach (var def in dev.Configurations.Select(res => res as DefaultResourceConfiguration))
                             {
                                 container.DeviceVisualization.AddResource(resources[def.Resource.Id]);
-                                ResourceHandled(this, new ResourceHandle()
-                                {
-                                    Device = container.Device,
-                                    Resource = def.Resource
-                                });
+                                SendResourceToDevice(container.Device, def.Resource);
                             }
                         }
                     }
@@ -192,49 +222,58 @@ namespace ActivityDesk
                 else
                 {
                     foreach (var def in dev.Configurations.Select(res => res as DefaultResourceConfiguration))
-                    {
                         AddResource(resources[def.Resource.Id],true);
-                    }
                 }
             }
 
-            //handle all other resources
+            //handle all other resources that are not connected to a device
             foreach (var deskConfig in configuration.Configurations.Select(config => config as DeskResourceConfiguration))
             {
+                //Check if the config exists
                 if (deskConfig == null)
                     return;
 
+                //Create a new resourceviewer and position it
                  var viewer = AddResourceAtLocation(resources[deskConfig.Resource.Id], deskConfig.Center);
 
+                //Update the icon state
                  ((IResourceContainer)viewer).Iconized = deskConfig.Iconized;
-                    viewer.Width = deskConfig.Size.Width;
-                    viewer.Height = deskConfig.Size.Height;
+
+                //Update the size
+                viewer.Width = deskConfig.Size.Width;
+                viewer.Height = deskConfig.Size.Height;
+
+                //Update the orientation
                 viewer.Orientation = deskConfig.Orientation;
             }
         }
 
+        /// <summary>
+        /// Grab the configuration from the desk
+        /// </summary>
         internal DeskConfiguration GetDeskConfiguration()
         {
-
+            //Create the configuration
             var deskConfiguration = new DeskConfiguration();
 
-            //Handle all resources on the desk
-
-            foreach (var resConfig in ResourceViewers.Select(item => new DeskResourceConfiguration()
+            //Loop and grab the properties of all the resources and add them to the list
+            foreach (var resConfig in VisualizedResources.Select(item => new DeskResourceConfiguration
             {
                 Center = item.Center,
-                DockState = GetDockState(item),
-                Resource = ((IResourceContainer) item).Resource.Resource,
-                Iconized = ((IResourceContainer) item).Iconized,
+                DockState = DockStateManager.GetDockState(item),
+                Resource = ((IResourceContainer)item).LoadedResource.Resource,
+                Iconized = ((IResourceContainer)item).Iconized,
                 Orientation = item.Orientation,
-                Size = new Size(item.Width,item.Height)
+                Size = new Size(item.Width, item.Height)
             }))
             {
                 deskConfiguration.Configurations.Add(resConfig);
             }
 
+            //Loop all connected devices
             foreach (var dev in DeviceContainers.Values)
             {
+                //Create a device configuration using the properties
                 var deviceConfig = new DeviceConfiguration
                 {
                     Device = dev.Device,
@@ -242,53 +281,84 @@ namespace ActivityDesk
                     TagValue = dev.TagValue
                 };
 
+                //Device is thumbnail
                 if (dev.VisualStyle == DeviceVisual.Thumbnail)
                 {
+                    //Update the postion
                     deviceConfig.Center = dev.DeviceThumbnail.Center;
+
+                    //Update the orientation
                     deviceConfig.Orientation = dev.DeviceThumbnail.Orientation;
-                    switch(GetDockState(dev.DeviceThumbnail) )
+
+                    //update the dockstate  (translated into x,y)
+                    switch (DockStateManager.GetDockState(dev.DeviceThumbnail))
                     {
                         case DockStates.Left:
                             deviceConfig.Center = new Point(-10, deviceConfig.Center.Y);
                             break;
                         case DockStates.Right:
-                            deviceConfig.Center = new Point(2000,deviceConfig.Center.Y);
+                            deviceConfig.Center = new Point(2000, deviceConfig.Center.Y);
                             break;
                         case DockStates.Top:
-                            deviceConfig.Center = new Point( deviceConfig.Center.X,-10);
+                            deviceConfig.Center = new Point(deviceConfig.Center.X, -10);
                             break;
 
                     }
+
+                    //Set thumbnail property of configuration to true
                     deviceConfig.Thumbnail = true;
 
+                    //Add all loaded resources to the device configuration
                     foreach (var res in dev.DeviceThumbnail.LoadedResources)
-                    {
-                        deviceConfig.Configurations.Add(new DefaultResourceConfiguration() { Resource = res.Resource });
-                    }
+                        deviceConfig.Configurations.Add(new DefaultResourceConfiguration { Resource = res.Resource });
                 }
+                // Device is actual on desk
                 else
                 {
+                    //Add all loaded resources to the device configuration
                     foreach (var res in dev.DeviceVisualization.LoadedResources)
                     {
-                        deviceConfig.Configurations.Add(new DefaultResourceConfiguration() { Resource = res.Resource });
+                        deviceConfig.Configurations.Add(new DefaultResourceConfiguration { Resource = res.Resource });
                         deviceConfig.Thumbnail = false;
                     }
                 }
+
+                //Add the device configuration to main desk configuration
                 deskConfiguration.DeviceConfigurations.Add(deviceConfig);
             }
 
             return deskConfiguration;
         }
 
+        /// <summary>
+        /// Notifies outsiders that a resource should be send to a device
+        /// </summary>
+        private void SendResourceToDevice(Device device, Resource resource)
+        {
+            ResourceHandled(this, new ResourceHandle
+            {
+                Device = device,
+                Resource = resource
+            });
+        }
+
+        /// <summary>
+        /// Notifies outsiders that a resource should be removed from a device
+        /// </summary>
+        private void SendResourceRemoveToDevice(Device device, Resource resource)
+        {
+             ResourceHandleReleased(this, new ResourceHandle
+             {
+                 Device = device,
+                 Resource = resource
+             });
+        }
+
+        /// <summary>
+        /// Initializes the TagVisualizations
+        /// </summary>
         private void InitializeTags()
         {
-            Visualizer.Definitions.Add(
-                new SmartPhoneDefinition
-                {
-                    Source = new Uri("Visualizer/Visualizations/SmartPhone.xaml", UriKind.Relative),
-                    TagRemovedBehavior = TagRemovedBehavior.Disappear,
-                    LostTagTimeout = 1000
-                });
             Visualizer.Definitions.Add(
                 new TabletDefinition
                 {
@@ -298,62 +368,95 @@ namespace ActivityDesk
                 });
         }
 
+        /// <summary>
+        /// Handles the detection of a physical device
+        /// </summary>
         private void Visualizer_VisualizationAdded(object sender, TagVisualizerEventArgs e)
         {
+            //Grab the tag value of the detected device
+            var tagValue = e.TagVisualization.VisualizedTag.Value.ToString(CultureInfo.InvariantCulture);
 
-            var tagValue = e.TagVisualization.VisualizedTag.Value.ToString();
-
+            //Tag value is not yet added
             if (!DeviceContainers.ContainsKey(tagValue))
             {
+                //Create new device container
                 var dev = new DeviceContainer
                 {
                     DeviceVisualization = e.TagVisualization as VisualizationTablet,
                     TagValue = tagValue
                 };
+
+                //Hook event to handle resource releas
                 dev.ResourceReleased += dev_ResourceReleased;
+
+                //Add to list
                 DeviceContainers.Add(tagValue,dev);
 
-                //Debug.WriteLine("NooSphere Device validation disabled for thumbnails");
-                //ValidateDevice(dev.TagValue, dev.Device);
+                //Debug
+                if (!DeviceValidationIsEnabled)
+                {
+                    Debug.WriteLine("NooSphere Device validation disabled for thumbnails");
+                    ValidateDevice(dev.TagValue, dev.Device);
+                }
             }
+            //Tag value is alreadya dded
             else
             {
+                //Grab the container
                 var container = DeviceContainers[tagValue];
 
+                //We have two physical devices with the same tag
                 if (container.VisualStyle != DeviceVisual.Thumbnail)
                 {
                     Console.WriteLine("Error: double detection. Debug problem?");
                     return;
                 }
 
+                //Change the container visual to real device
                 container.VisualStyle = DeviceVisual.Visualisation;
+
+                //connect the visualisation UI to the container
                 container.DeviceVisualization = e.TagVisualization as VisualizationTablet;
 
-
+                //Loop the resources of the thumbnail and add them to the device
                 foreach (var res in container.DeviceThumbnail.LoadedResources)
                 {
                     if (container.DeviceVisualization != null) 
                         container.DeviceVisualization.AddResource(res);
                 }
+
+                //Remove the thumbnail
                 RemoveDeviceVisualisation(tagValue);
 
+                //Invalidate container to handle the state changes
                 container.Invalidate();
 
-                //ValidateDevice(container.TagValue, container.Device);
+                //Debug
+                if (!DeviceValidationIsEnabled)
+                {
+                    Debug.WriteLine("NooSphere Device validation disabled for thumbnails");
+                    ValidateDevice(container.TagValue, container.Device);
+                }
             }
+
+            //Locked event handler
             ((BaseVisualization)e.TagVisualization).Locked += Device_Locked;
 
+            //Notify outsiders, a new device is added
             if (DeviceValueAdded != null)
                 DeviceValueAdded(this, tagValue);
-
         }
 
+        /// <summary>
+        /// A device has released a resource
+        /// </summary>
         void dev_ResourceReleased(Device sender, ResourceReleasedEventArgs e)
         {
+            //Add it again to the desk at the right position
             RestoreResource(e.LoadedResource, new Point(e.Position.X, e.Position.Y));
 
-           if(ResourceHandleReleased !=null)
-               ResourceHandleReleased(this, new ResourceHandle{Device = e.Device,Resource = e.LoadedResource.Resource});
+            //Remove the resource fromt the physical device
+            SendResourceRemoveToDevice(e.Device,e.LoadedResource.Resource);
         }
         private void Device_Locked(object sender, LockedEventArgs e)
         {
@@ -379,7 +482,7 @@ namespace ActivityDesk
         }
         private void Visualizer_VisualizationRemoved(object sender, TagVisualizerEventArgs e)
         {
-            var tagValue = e.TagVisualization.VisualizedTag.Value.ToString();
+            var tagValue = e.TagVisualization.VisualizedTag.Value.ToString(CultureInfo.InvariantCulture);
             if (!DeviceContainers.ContainsKey(tagValue))
                 return;
 
@@ -433,17 +536,17 @@ namespace ActivityDesk
             foreach (var container in DeviceContainers.Values)
                 container.Clear();
 
-            foreach (var res in ResourceViewers)
+            foreach (var res in VisualizedResources)
             {
                 view.Items.Remove(res);
             }
-            ResourceViewers.Clear();
+            VisualizedResources.Clear();
         }
 
 
         private void Add(ScatterViewItem element)
         {
-            SetDockState(element, DockStates.Floating);
+            DockStateManager.SetDockState(element, DockStates.Floating);
 
             element.AddHandler(ManipulationCompletedEvent, new EventHandler<ManipulationCompletedEventArgs>(element_ManipulationDelta), true);
             element.AddHandler(ManipulationDeltaEvent, new EventHandler<ManipulationDeltaEventArgs>(element_ManipulationDelta), true);
@@ -457,13 +560,13 @@ namespace ActivityDesk
         }
         public ScatterViewItem AddResource(LoadedResource resource, bool iconized = false)
         {
-            return AddResourceAtLocation(resource, new Point(RandomNumber(200, 1000), RandomNumber(200, 800)), iconized);
+            return AddResourceAtLocation(resource, new Point(Math.RandomNumber(200, 1000), Math.RandomNumber(200, 800)), iconized);
         }
         public ScatterViewItem AddResourceAtLocation(LoadedResource resource, Point p, bool iconized = false)
         {
             var res = ResourceViewerFromFileType(resource.Resource.FileType, resource);
             ((IResourceContainer)res).Iconized = iconized;
-            ResourceViewers.Add(res);
+            VisualizedResources.Add(res);
             res.Center = p;
             ((IResourceContainer)res).Copied += res_Copied;
             Add(res);
@@ -494,7 +597,7 @@ namespace ActivityDesk
 
             stb.Completed += (sender, e) =>
             {
-                ResourceViewers.Add(res);
+                VisualizedResources.Add(res);
                 res.Center = (Point)moveCenter.To;
             };
 
@@ -524,13 +627,13 @@ namespace ActivityDesk
         public void AddPdf(LoadedResource loadedResource,bool iconized=false)
         {
             var res = new PdfViewer(loadedResource) { Iconized = iconized };
-            ResourceViewers.Add(res);
+            VisualizedResources.Add(res);
             Add(res);
         }
         public void AddWindow(LoadedResource resource)
         {
             var res = new TouchWindow(resource);
-            ResourceViewers.Add(res);
+            VisualizedResources.Add(res);
             res.Width = 1000;
             res.Height = 600;
             Add(res);
@@ -682,16 +785,11 @@ namespace ActivityDesk
                         {
                             foreach (var res in dev.DeviceThumbnail.LoadedResources)
                             {
-                                if (ResourceHandled != null)
-                                    ResourceHandled(this,
-                                        new ResourceHandle()
-                                        {
-                                            Device = container.Device,
-                                            Resource = res.Resource
-                                        });
+                                SendResourceToDevice(container.Device,res.Resource);
+                              
                                 thumbnail.AddResource(res);
                             }
-                            thumbnail.Resource = dev.DeviceThumbnail.Resource;
+                            thumbnail.LoadedResource = dev.DeviceThumbnail.LoadedResource;
                         }
                     }
                     else if(!result)
@@ -721,8 +819,8 @@ namespace ActivityDesk
                 if (!dev.Connected)
                     return;
                 var rectItem = new Rect(
-                    new Point(item.Center.X - _iconSize/2, item.Center.Y - _iconSize/2),
-                    new Size(_iconSize, _iconSize));
+                    new Point(item.Center.X - IconSize/2, item.Center.Y - IconSize/2),
+                    new Size(IconSize, IconSize));
 
                 var rectDev = new Rect();
 
@@ -762,21 +860,15 @@ namespace ActivityDesk
                     item.SizeChanged -= element_SizeChanged;
 
                     Remove(item);
-                    ResourceViewers.Remove(item);
-                    if (ResourceHandled != null)
-                        ResourceHandled(this,
-                            new ResourceHandle()
-                            {
-                                Device = dev.Device,
-                                Resource = ((IResourceContainer) item).Resource.Resource
-                            });
+                    VisualizedResources.Remove(item);
+                    SendResourceToDevice( dev.Device, ((IResourceContainer) item).LoadedResource.Resource);
                     switch (dev.VisualStyle)
                     {
                         case DeviceVisual.Thumbnail:
-                            dev.DeviceThumbnail.AddResource(((IResourceContainer) item).Resource);
+                            dev.DeviceThumbnail.AddResource(((IResourceContainer) item).LoadedResource);
                             break;
                         case DeviceVisual.Visualisation:
-                            dev.DeviceVisualization.AddResource(((IResourceContainer) item).Resource);
+                            dev.DeviceVisualization.AddResource(((IResourceContainer) item).LoadedResource);
                             break;
                     }
                 }
@@ -784,22 +876,22 @@ namespace ActivityDesk
         }
         private void HandleDockingFromTouch(ScatterViewItem item,Point p)
         {
-            var previousdockState = GetDockState(item);
+            var previousdockState = DockStateManager.GetDockState(item);
             if (!(item.Width <= _minimumDockSize.Width) || !(item.Height <= _minimumDockSize.Height)) return;
             if (p.X < _leftDockTreshhold)
             {
                 item.Template = (ControlTemplate) item.FindResource("Docked");
-                SetDockState(item, DockStates.Left);
+                DockStateManager.SetDockState(item, DockStates.Left);
             }
             else if (p.X > _rightDockTreshhold)
             {
                 item.Template = (ControlTemplate) item.FindResource("Docked");
-                SetDockState(item, DockStates.Right);
+                DockStateManager.SetDockState(item, DockStates.Right);
             }
             else if (p.Y < _upperDockThreshold)
             {
                 item.Template = (ControlTemplate) item.FindResource("Docked");
-                SetDockState(item, DockStates.Top);
+                DockStateManager.SetDockState(item, DockStates.Top);
             }
             else
             {
@@ -807,7 +899,7 @@ namespace ActivityDesk
                     return;
                 if (((IResourceContainer)item).Iconized) item.Template = (ControlTemplate)item.FindResource("Docked");
                 else item.Template = (ControlTemplate)item.FindResource("Floating");
-                SetDockState(item, DockStates.Floating);
+                DockStateManager.SetDockState(item, DockStates.Floating);
             }
             UpdateDock(item);
         }
@@ -817,7 +909,7 @@ namespace ActivityDesk
         }
         private void UpdateDock(ScatterViewItem item)
         {
-            var state = GetDockState(item);
+            var state = DockStateManager.GetDockState(item);
 
             switch (state)
             {
@@ -878,6 +970,8 @@ namespace ActivityDesk
                 DeviceContainers.Remove(container.TagValue);
             });
         }
+
+       
     }
     public enum DockStates
     {

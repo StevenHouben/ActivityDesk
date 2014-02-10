@@ -12,7 +12,7 @@ namespace ActivityDesk.Viewers
     /// </summary>
     public partial class PdfViewer : ScatterViewItem,IResourceContainer
     {
-         public LoadedResource Resource { get; set; }
+         public LoadedResource LoadedResource { get; set; }
          public ImageSource Thumbnail { get; set; }
 
          public event EventHandler<LoadedResource> Copied = delegate { };
@@ -24,7 +24,7 @@ namespace ActivityDesk.Viewers
          public PdfViewer(LoadedResource loadedResource)
          {
 
-            Resource = loadedResource;
+            LoadedResource = loadedResource;
             Thumbnail = loadedResource.Thumbnail;
 
             DataContext = this;
@@ -52,9 +52,9 @@ namespace ActivityDesk.Viewers
                  {
                      if (_panel.Children.Count == 0)
                      {
-                         _panel.Children.Add(Resource.Content);
-                         _panel.Width = Resource.Content.Width;
-                         _panel.Height = Resource.Content.Height;
+                         _panel.Children.Add(LoadedResource.Content);
+                         _panel.Width = LoadedResource.Content.Width;
+                         _panel.Height = LoadedResource.Content.Height;
                      }
                  }
              }
@@ -72,7 +72,7 @@ namespace ActivityDesk.Viewers
                  time = ConvertToTimestamp(DateTime.Now);
 
              if (Iconized)
-                 Copied(this, Resource);
+                 Copied(this, LoadedResource);
              else
              {
                  Template = (ControlTemplate)FindResource("Docked");

@@ -7,9 +7,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using ActivityDesk.Infrastructure;
 using Blake.NUI.WPF.Gestures;
-using ActivityDesk.Viewers;
 
-namespace ActivityDesk
+namespace ActivityDesk.Viewers
 {
 
     public partial class DeviceThumbnail : INotifyPropertyChanged, IResourceContainer
@@ -79,7 +78,7 @@ namespace ActivityDesk
 
         public ObservableCollection<LoadedResource> LoadedResources { get; set; }
 
-        public LoadedResource Resource
+        public LoadedResource LoadedResource
         {
             get { return _resource; }
             set
@@ -92,7 +91,7 @@ namespace ActivityDesk
 
         public void AddResource(LoadedResource res)
         {
-            Resource = res;
+            LoadedResource = res;
             LoadedResources.Add(res);
         }
 
@@ -106,7 +105,7 @@ namespace ActivityDesk
         {
             VisualizedTag = visualizedTagValue;
 
-            Resource = new LoadedResource();
+            LoadedResource = new LoadedResource();
             LoadedResources = new ObservableCollection<LoadedResource>();
             LoadedResources.CollectionChanged += LoadedResources_CollectionChanged;
 
@@ -153,8 +152,8 @@ namespace ActivityDesk
             if (ResourceReleased != null)
                 ResourceReleased(res, point);
 
-            if (Resource == res)
-                Resource = LoadedResources.Count != 0 ? LoadedResources.First() : LoadedResource.EmptyResource;
+            if (LoadedResource == res)
+                LoadedResource = LoadedResources.Count != 0 ? LoadedResources.First() : LoadedResource.EmptyResource;
 
 	    }
 
