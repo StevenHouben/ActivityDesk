@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
@@ -25,8 +26,6 @@ namespace ActivityDesk.Infrastructure
         private readonly List<string> _queuedDeviceDetections = new List<string>();
 
         private DocumentContainer _documentContainer;
-
-        private Dictionary<string, Device> _devices = new Dictionary<string, Device>();
 
         private Activity _selectedActivity;
 
@@ -74,12 +73,6 @@ namespace ActivityDesk.Infrastructure
 
         }
 
-        void _activitySystem_DeviceRemoved(object sender, DeviceRemovedEventArgs e)
-        {
-            _documentContainer.RemoveDevice(e.Id);
-
-        }
-
         private void _activitySystem_MessageReceived(object sender, MessageEventArgs e)
         {
             switch (e.Message.Type)
@@ -117,36 +110,58 @@ namespace ActivityDesk.Infrastructure
 
         private void _documentContainer_DeviceValueRemoved(object sender, string e)
         {
+            //no implications for NooSphere -> just remove visualisation
         }
 
         private void _documentContainer_DeviceValueAdded(object sender, string e)
         {
+            //If device value matches a device connected to NooSphere
             if (_activitySystem.Devices.Values.Any(dev => dev.TagValue == e))
             {
                 var device = _activitySystem.Devices.Values.Where(dev => dev.TagValue == e);
                 _documentContainer.ValidateDevice(e, device.First() as Device);
                 return;
             }
+
+            //Does not match any device connected to NooSphere, so queue uit
             _queuedDeviceDetections.Add(e);
+        }
+        void _activitySystem_DeviceRemoved(object sender, DeviceRemovedEventArgs e)
+        {
+
+            //hard kill of device visualisation since NooSphere device is closes
+            _documentContainer.RemoveDevice(e.Id);
         }
 
         private void _activitySystem_DeviceAdded(object sender, DeviceEventArgs e)
         {
             var value = "";
 
-            if (_documentContainer.DeviceContainers.ContainsKey(e.Device.TagValue))
+            //If no tag is found, we don't need to handle the device now
+            if (!_documentContainer.DeviceContainers.ContainsKey(e.Device.TagValue)) 
+                return;
+
+            //Check whether the added NooSphere device matches a detected tag
+            foreach (var val in _queuedDeviceDetections.Where(val => val == e.Device.TagValue))
             {
+                //Validate it
+                _documentContainer.ValidateDevice(val, e.Device as Device);
+                value = val;
+            }
 
-
-
-                foreach (var val in _queuedDeviceDetections.Where(val => val == e.Device.TagValue))
+            if (value == "")
+            {
+                foreach (var val in _documentContainer.DeviceContainers.Keys.Where(val => val == e.Device.TagValue))
                 {
-                    _documentContainer.ValidateDevice(val, e.Device as Device);
+                    _documentContainer.ReconnectDevice(val, e.Device as Device);
                     value = val;
                 }
-                if (value != "" && _queuedDeviceDetections.Contains(value))
-                    _queuedDeviceDetections.Remove(value);
             }
+ 
+
+            //if no device was found, we add it to
+            if (value != "" && _queuedDeviceDetections.Contains(value))
+                _queuedDeviceDetections.Remove(value);
         }
 
         private void _documentContainer_IntersectionDetected(object sender, ResourceHandle e)

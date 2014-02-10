@@ -10,7 +10,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using Microsoft.Surface.Presentation;
 using Microsoft.Surface.Presentation.Controls;
+using Microsoft.Surface.Presentation.Palettes;
 using NooSphere.Infrastructure;
 using NooSphere.Infrastructure.ActivityBase;
 using NooSphere.Infrastructure.Discovery;
@@ -38,6 +40,8 @@ namespace ActivityTablet
         public Tablet()
         {
             InitializeComponent();
+
+            SurfaceColors.SetDefaultApplicationPalette(new LightSurfacePalette());
 
             LoadedResources = new ObservableCollection<LoadedResource>(); 
 
@@ -112,13 +116,20 @@ namespace ActivityTablet
                 resourceViewer.Visibility = Visibility.Hidden;
                 //inputView.Visibility = Visibility.Hidden;
                 //menu.Visibility = Visibility.Hidden;
-                WindowStyle = WindowStyle.ToolWindow;
+
                 Width = 1280;
                 Height = 800;
                 MaxHeight = 800;
                 MaxWidth = 1280;
 
-                
+
+                if(SystemParameters.PrimaryScreenWidth >1400)
+                    WindowStyle = WindowStyle.ToolWindow;
+                else
+                {
+                    WindowStyle = WindowStyle.ToolWindow;
+                    WindowState = WindowState.Maximized;
+                }
                 //Show resource mode by default
                 resourceViewer.Visibility = Visibility.Visible;
 
@@ -131,6 +142,8 @@ namespace ActivityTablet
                 var srfcBtn = new SurfaceButton {Width = activityScroller.Width, Tag = ac.Id};
                 var p = new Proxy {Activity = ac, Ui = srfcBtn};
                 srfcBtn.Content = ac.Name;
+                srfcBtn.Background = Brushes.White;
+                srfcBtn.Foreground = Brushes.Black;
                 srfcBtn.Click += SrfcBtnClick;
                 srfcBtn.Tag = ac.Id;
                 srfcBtn.Width = 180;

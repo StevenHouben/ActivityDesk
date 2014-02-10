@@ -6,7 +6,7 @@
                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" d:Height="1280" d:Width="800" 
           WindowStyle="None" Width="1280" Height="800" ResizeMode="NoResize" WindowState="Maximized">
     <Grid Name="grid" Background="White" d:LayoutOverrides="HorizontalMargin" Width="auto" Height="auto">
-    	<Grid x:Name="resourceViewer" HorizontalAlignment="Stretch" Width="auto" d:IsLocked="True" d:IsHidden="False">
+        <Grid x:Name="resourceViewer" HorizontalAlignment="Stretch" Width="auto" d:IsLocked="True" d:IsHidden="False">
             <StackPanel Orientation="Horizontal"  HorizontalAlignment="Stretch">
                 <s:SurfaceScrollViewer  Margin="0,50,0,0" x:Name="activityScroller" Width="200" VerticalContentAlignment="Center" 
                                        VerticalScrollBarVisibility="Visible" HorizontalContentAlignment="Center"/>
@@ -39,7 +39,6 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </s:SurfaceScrollViewer>
-                
                     <s:SurfaceScrollViewer x:Name="resourceViewScroller" Height="700" VerticalContentAlignment="Center" VerticalScrollBarVisibility="Visible"
             	HorizontalContentAlignment="Center" IsHitTestVisible="True" IsManipulationEnabled="True"
                                    IsEnabled="True" PanningMode="VerticalOnly" >
@@ -48,15 +47,16 @@
                                 <DrawingAttributes x:Name="attribute" Width="5" Height="5" Color="Red"/>
                             </InkCanvas.DefaultDrawingAttributes>
                             <StackPanel Orientation="Vertical" x:Name="ContentHolder" Width="auto" Height="auto" >
-         
+
                             </StackPanel>
                         </InkCanvas>
-                       
-                </s:SurfaceScrollViewer>
+
+                    </s:SurfaceScrollViewer>
                 </StackPanel>
             </StackPanel>
         </Grid>
-        <StackPanel Width="225" x:Name="activityStack" Orientation="Vertical" HorizontalAlignment="Left" Margin="0,50,0,0"/>
+        <Label Content="ACTIVITIES" FontSize="25" FontWeight="ExtraBold" Margin="0,50,0,0" Width="200" HorizontalAlignment="Left"></Label>
+        <StackPanel Width="180" x:Name="activityStack" Orientation="Vertical" HorizontalAlignment="Left" Margin="0,100,0,0"/>
         <StackPanel x:Name="Menu" Orientation="Horizontal" Height="48" VerticalAlignment="Top">
             <Image Source="Images/quit.png" PreviewMouseDown="BtnQuitClick" PreviewTouchDown="BtnQuitClick"></Image>
             <Image Source="Images/grid.png" Margin="7" PreviewMouseDown="btnMode_Click" PreviewTouchDown="btnMode_Click"></Image>
