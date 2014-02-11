@@ -345,7 +345,10 @@ namespace ActivityTablet
         }
         private void BtnQuitClick(object sender, RoutedEventArgs e)
         {
-            _client.RemoveDevice(_device.Id);
+            if(_client == null)
+                Environment.Exit(0);
+            else
+                _client.RemoveDevice(_device.Id);
         }
         #endregion
 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
@@ -18,20 +17,21 @@ namespace ActivityDesk.Infrastructure
 {
     internal class DeskManager
     {
-        private static ActivitySystem _activitySystem;
+        private ActivitySystem _activitySystem;
         private ActivityService _activityService;
-
-        public Collection<IActivity> Activities { get; set; }
+        private DocumentContainer _documentContainer;
+        private Activity _selectedActivity;
+        private Collection<IActivity> _activities { get; set; }
 
         private readonly List<string> _queuedDeviceDetections = new List<string>();
 
-        private DocumentContainer _documentContainer;
 
-        private Activity _selectedActivity;
-
+        /// <summary>
+        /// Start the desk manager
+        /// </summary>
         public void Start(DocumentContainer documentContainer)
         {
-            Activities = new Collection<IActivity>();
+            _activities = new Collection<IActivity>();
 
             var webconfiguration = WebConfiguration.DefaultWebConfiguration;
 
@@ -40,17 +40,13 @@ namespace ActivityDesk.Infrastructure
             var databaseConfiguration = new DatabaseConfiguration(webconfiguration.Address, webconfiguration.Port,
                 ravenDatabaseName);
 
-
             _activitySystem = new ActivitySystem(databaseConfiguration);
+
             _activitySystem.ActivityAdded += _activitySystem_ActivityAdded;
             _activitySystem.ResourceAdded += _activitySystem_ResourceAdded;
-
             _activitySystem.DeviceAdded += _activitySystem_DeviceAdded;
             _activitySystem.DeviceRemoved += _activitySystem_DeviceRemoved;
-
             _activitySystem.MessageReceived += _activitySystem_MessageReceived;
-
-
 
             _activityService = new ActivityService(_activitySystem, Net.GetIp(IpType.All), 8000);
 
@@ -216,7 +212,7 @@ namespace ActivityDesk.Infrastructure
 
         void _activitySystem_ActivityAdded(object sender, NooSphere.Infrastructure.ActivityEventArgs e)
         {
-            Activities.Add(e.Activity);
+            _activities.Add(e.Activity);
         }
         public string Title { get; set; }
         public string Content { get; set; }

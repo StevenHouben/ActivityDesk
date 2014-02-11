@@ -11,7 +11,7 @@
     <s:ScatterViewItem.Resources>
         <ControlTemplate x:Key="Floating">
             <Grid x:Name="LayoutRoot" Width="250" Height="150" >
-                <Image Source="Images/triangle.png" Height="40" RenderTransformOrigin="2.1,1.275" Margin="-82,181,315,-71">
+                <Image Source="/Images/triangle.png" Height="40" RenderTransformOrigin="2.1,1.275" Margin="-82,181,315,-71">
                     <Image.RenderTransform>
                         <TransformGroup>
                             <ScaleTransform ScaleX="-1"/>
@@ -33,7 +33,7 @@
                         </Style>
                     </Image.Style>
                 </Image>
-                <Image Source="Images/triangle.png" Width="20" Height="40" RenderTransformOrigin="2.1,1.275" Margin="290,183,-60,-73">
+                <Image Source="/Images/triangle.png" Width="20" Height="40" RenderTransformOrigin="2.1,1.275" Margin="290,183,-60,-73">
                     <Image.Style>
                         <Style TargetType="{x:Type Image}">
                             <Style.Triggers>
@@ -80,16 +80,16 @@
                                 <Style TargetType="{x:Type Image}">
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding Pinned}" Value="False">
-                                            <Setter Property="Source" Value="Images/pin.png"/>
+                                            <Setter Property="Source" Value="/Images/pin.png"/>
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding Pinned}" Value="True">
-                                            <Setter Property="Source" Value="Images/pinOK.png"/>
+                                            <Setter Property="Source" Value="/Images/pinOK.png"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </Image.Style>
                         </Image>
-                        <Image Stretch="Fill" Source="Images/connectedWorking.png" Name="Connection" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <Image Stretch="Fill" Source="/Images/connectedWorking.png" Name="Connection" VerticalAlignment="Center" HorizontalAlignment="Center">
                             <Image.Style>
                                 <Style TargetType="{x:Type Image}">
                                     <Style.Triggers>
@@ -103,7 +103,7 @@
                                 </Style>
                             </Image.Style>
                         </Image>
-                        <Image Stretch="Fill" Source="Images/NoInterrupt.png"  VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <Image Stretch="Fill" Source="/Images/NoInterrupt.png"  VerticalAlignment="Center" HorizontalAlignment="Center">
                             <Image.Style>
                                 <Style TargetType="{x:Type Image}">
                                     <Style.Triggers>
@@ -121,10 +121,10 @@
                     <Canvas x:Name="Canvas">
                         <Border x:Name="btnBody" Width="197" Height="131" Canvas.Left="6" Canvas.Top="-47">
                             <Border.Background>
-                                <ImageBrush Stretch="Fill" ImageSource="{Binding Resource.Thumbnail}"></ImageBrush>
+                                <ImageBrush Stretch="Fill" ImageSource="{Binding LoadedResource.Thumbnail}"></ImageBrush>
                             </Border.Background>
                         </Border>
-                        <Image Source="Images/tablet_landscape.png" Canvas.Left="-5" Canvas.Top="-58"/>
+                        <Image Source="/Images/tablet_landscape.png" Canvas.Left="-5" Canvas.Top="-58"/>
                     </Canvas>
                 </StackPanel>
             </Grid>

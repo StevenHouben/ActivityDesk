@@ -84,7 +84,7 @@ namespace ActivityDesk.Viewers
             set
             {
                 _resource = value;
-                OnPropertyChanged("Resource");
+                OnPropertyChanged("LoadedResource");
             }
 
         }
