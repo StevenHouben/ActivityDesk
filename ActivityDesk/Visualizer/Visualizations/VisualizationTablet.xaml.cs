@@ -5,12 +5,13 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using ActivityDesk.Infrastructure;
+using ActivityDesk.Viewers;
 using Blake.NUI.WPF.Gestures;
 using NooSphere.Model.Device;
 
 namespace ActivityDesk.Visualizer.Visualizations
 {
-    public partial class VisualizationTablet : BaseVisualization, INotifyPropertyChanged
+    public partial class VisualizationTablet : BaseVisualization, INotifyPropertyChanged,IResourceContainer
     {
         public event EventHandler<Device> Closed = delegate { };
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
@@ -111,6 +112,23 @@ namespace ActivityDesk.Visualizer.Visualizations
 
             if (Resource == res)
                 Resource = LoadedResources.Count != 0 ? LoadedResources.First() : LoadedResource.EmptyResource;
+        }
+
+        public LoadedResource LoadedResource
+        {
+            get; set;
+        }
+
+        public bool Iconized
+        {
+            get; set;
+        }
+
+        public event EventHandler<LoadedResource> Copied;
+
+        public string ResourceType
+        {
+            get; set;
         }
     }
 }

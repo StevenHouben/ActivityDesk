@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -114,8 +111,6 @@ namespace ActivityTablet
             Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() =>
             {
                 resourceViewer.Visibility = Visibility.Hidden;
-                //inputView.Visibility = Visibility.Hidden;
-                //menu.Visibility = Visibility.Hidden;
 
                 Width = 1280;
                 Height = 800;
@@ -127,7 +122,7 @@ namespace ActivityTablet
                     WindowStyle = WindowStyle.ToolWindow;
                 else
                 {
-                    WindowStyle = WindowStyle.ToolWindow;
+                    WindowStyle = WindowStyle.None;
                     WindowState = WindowState.Maximized;
                 }
                 //Show resource mode by default
@@ -193,11 +188,7 @@ namespace ActivityTablet
                 return;
             try
             {
-                Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() =>
-                {
-                    activityStack.Children.Clear();
-                    //activityMatrix.Children.Clear();
-                }));
+                Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() => activityStack.Children.Clear()));
 
                 _client = new ActivityClient(config.Address, config.Port,
                     _device);

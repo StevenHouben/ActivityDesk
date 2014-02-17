@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActivityTablet", "ActivityT
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDataProducer", "TestDataProducer\TestDataProducer.csproj", "{F7FDCA18-DCFE-49F1-8F8E-202A50219D23}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActivitySpaces", "..\ActivitySpaces\ActivitySpaces\ActivitySpaces.csproj", "{B885C84D-D2C7-4B1A-8167-2D6544AF99E3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,6 +76,18 @@ Global
 		{F7FDCA18-DCFE-49F1-8F8E-202A50219D23}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F7FDCA18-DCFE-49F1-8F8E-202A50219D23}.Release|x64.ActiveCfg = Release|Any CPU
 		{F7FDCA18-DCFE-49F1-8F8E-202A50219D23}.Release|x86.ActiveCfg = Release|Any CPU
+		{B885C84D-D2C7-4B1A-8167-2D6544AF99E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B885C84D-D2C7-4B1A-8167-2D6544AF99E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B885C84D-D2C7-4B1A-8167-2D6544AF99E3}.Debug|x64.ActiveCfg = Debug|x64
+		{B885C84D-D2C7-4B1A-8167-2D6544AF99E3}.Debug|x64.Build.0 = Debug|x64
+		{B885C84D-D2C7-4B1A-8167-2D6544AF99E3}.Debug|x86.ActiveCfg = Debug|x86
+		{B885C84D-D2C7-4B1A-8167-2D6544AF99E3}.Debug|x86.Build.0 = Debug|x86
+		{B885C84D-D2C7-4B1A-8167-2D6544AF99E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B885C84D-D2C7-4B1A-8167-2D6544AF99E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B885C84D-D2C7-4B1A-8167-2D6544AF99E3}.Release|x64.ActiveCfg = Release|x64
+		{B885C84D-D2C7-4B1A-8167-2D6544AF99E3}.Release|x64.Build.0 = Release|x64
+		{B885C84D-D2C7-4B1A-8167-2D6544AF99E3}.Release|x86.ActiveCfg = Release|x86
+		{B885C84D-D2C7-4B1A-8167-2D6544AF99E3}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

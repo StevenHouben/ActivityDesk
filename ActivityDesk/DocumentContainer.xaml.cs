@@ -43,7 +43,7 @@ namespace ActivityDesk
         private int _borderSize;
         private const int IconSize = 100;
 
-        private const bool DeviceValidationIsEnabled = true;
+        private const bool DeviceValidationIsEnabled = false;
 
         public readonly Collection<Note> Notes = new Collection<Note>();
         public readonly Collection<ScatterViewItem> VisualizedResources = new Collection<ScatterViewItem>();
@@ -103,7 +103,7 @@ namespace ActivityDesk
             DeviceContainers[tagValue].Device = device;
 
             //Grab the local paired resources
-            var resourcesToSend = container.VisualStyle == DeviceVisual.Thumbnail ? container.DeviceThumbnail.LoadedResources : container.DeviceVisualization.LoadedResources;
+            var resourcesToSend = container.LoadedResources;
 
             //Send all resources to the connected device  by creating a
             foreach (var res in resourcesToSend)
@@ -146,6 +146,9 @@ namespace ActivityDesk
         /// </summary>
         void BuildFromConfiguration(Dictionary<string, LoadedResource> resources, DeskConfiguration configuration)
         {
+
+            bool noDevice = true;
+
             //Loop the deviceconfigurations
             foreach (var dev in configuration.DeviceConfigurations)
             {
@@ -153,76 +156,41 @@ namespace ActivityDesk
                 if (DeviceContainers.ContainsKey(dev.TagValue))
                 {
                     var container = DeviceContainers[dev.TagValue];
+                    noDevice = false;
 
                     //Device is connected
                     if (container.Connected)
                     {
-                        //device is stored as thumbnail
-                        if (dev.Thumbnail)
+                         if(dev.Thumbnail)
                         {
-                         
                             //Actual device is thumbnail
                             if (container.VisualStyle == DeviceVisual.Thumbnail)
                             {
-                                //Position the thumbnail
                                 container.DeviceThumbnail.Center = dev.Center;
 
-                                //Dockify the thumbnail if required
                                 HandleDockingFromTouch(container.DeviceThumbnail, dev.Center);
 
-                                //Add pinned state
                                 container.Pinned = dev.Pinned;
 
-                                //Update orientation
                                 container.DeviceThumbnail.Orientation = dev.Orientation;
+                                CheckRotation(container.DeviceThumbnail);
 
-                                //Loop the resources for this device
-                                foreach (var def in dev.Configurations.Select(res => res as DefaultResourceConfiguration))
-                                {
-                                    //Add resource to the device
-                                    container.DeviceThumbnail.AddResource(resources[def.Resource.Id]);
-
-                                    //Send resource to device by
-                                    SendResourceToDevice(container.Device, def.Resource);
-                                    
-                                }
-                            }
-                            //Actual device is not a thumbnail
-                            else
-                            {
-                                //Loop the resources
-                                foreach (var def in dev.Configurations.Select(res => res as DefaultResourceConfiguration))
-                                {
-                                    //Add them to the visualisation of the actual device
-                                    container.DeviceVisualization.AddResource(resources[def.Resource.Id]);
-
-                                    SendResourceToDevice(container.Device, def.Resource);
-                                }
                             }
                         }
-                        //Device is not stored as thumbnail
-                        else
-                        {
-                            foreach (var def in dev.Configurations.Select(res => res as DefaultResourceConfiguration))
-                            {
-                                container.DeviceVisualization.AddResource(resources[def.Resource.Id]);
-                                SendResourceToDevice(container.Device, def.Resource);
-                            }
-                        }
-                    }
-                    //Device is not connected
-                    else
-                    {
                         foreach (var def in dev.Configurations.Select(res => res as DefaultResourceConfiguration))
-                            AddResource(resources[def.Resource.Id],true);
+                        {
+                            container.AddResource(resources[def.Resource.Id]);
+
+                            //Send resource to device by
+                            SendResourceToDevice(container.Device, def.Resource);
+                        }
                     }
+                   
                 }
-                //Device is not found
-                else
-                {
+
+                if(noDevice)
                     foreach (var def in dev.Configurations.Select(res => res as DefaultResourceConfiguration))
-                        AddResource(resources[def.Resource.Id],true);
-                }
+                        AddResource(resources[def.Resource.Id], true);
             }
 
             //handle all other resources that are not connected to a device
@@ -304,23 +272,16 @@ namespace ActivityDesk
 
                     }
 
-                    //Set thumbnail property of configuration to true
                     deviceConfig.Thumbnail = true;
-
-                    //Add all loaded resources to the device configuration
-                    foreach (var res in dev.DeviceThumbnail.LoadedResources)
-                        deviceConfig.Configurations.Add(new DefaultResourceConfiguration { Resource = res.Resource });
                 }
-                // Device is actual on desk
                 else
                 {
-                    //Add all loaded resources to the device configuration
-                    foreach (var res in dev.DeviceVisualization.LoadedResources)
-                    {
-                        deviceConfig.Configurations.Add(new DefaultResourceConfiguration { Resource = res.Resource });
-                        deviceConfig.Thumbnail = false;
-                    }
+                    deviceConfig.Thumbnail = false;
                 }
+
+                //Add all loaded resources to the device configuration
+                foreach (var res in dev.LoadedResources)
+                    deviceConfig.Configurations.Add(new DefaultResourceConfiguration { Resource = res.Resource });
 
                 //Add the device configuration to main desk configuration
                 deskConfiguration.DeviceConfigurations.Add(deviceConfig);
@@ -423,11 +384,12 @@ namespace ActivityDesk
                     return;
                 }
 
+                //connect the visualisation UI to the container
+                container.DeviceVisualization = e.TagVisualization as VisualizationTablet;
+
                 //Change the container visual to real device
                 container.VisualStyle = DeviceVisual.Visualisation;
 
-                //connect the visualisation UI to the container
-                container.DeviceVisualization = e.TagVisualization as VisualizationTablet;
 
                 //Loop the resources of the thumbnail and add them to the device
                 foreach (var res in container.DeviceThumbnail.LoadedResources)
@@ -488,7 +450,7 @@ namespace ActivityDesk
 
                 //Add the resource from the detached device to the thumbnail
                 foreach (var res in container.DeviceVisualization.LoadedResources)
-                    container.DeviceThumbnail.AddResource(res);
+                    container.AddResource(res);
 
                 //Debug
                 if (!DeviceValidationIsEnabled)
@@ -501,7 +463,7 @@ namespace ActivityDesk
             else
             {
                 //Add all resources of the detached device to the desk
-                foreach (var res in container.DeviceVisualization.LoadedResources)
+                foreach (var res in container.LoadedResources)
                     AddResource(res, true);
 
                 //Reset resources on remote device

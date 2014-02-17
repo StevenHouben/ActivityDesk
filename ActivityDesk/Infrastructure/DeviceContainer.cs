@@ -1,4 +1,5 @@
-﻿using ActivityDesk.Viewers;
+﻿using System.Collections.ObjectModel;
+using ActivityDesk.Viewers;
 using ActivityDesk.Visualizer.Visualizations;
 using NooSphere.Model.Device;
 
@@ -8,11 +9,34 @@ namespace ActivityDesk.Infrastructure
     {
         public delegate void ResourceReleasedHandler(Device sender, ResourceReleasedEventArgs e);
 
+
         public event ResourceReleasedHandler ResourceReleased; 
-
         private DeviceThumbnail _deviceThumbnail;
+        private VisualizationTablet _deviceVisualization;
+        private bool _connected;
 
-        public bool Intersecting { get; set; }
+
+        public IResourceContainer ActiveDevice
+        {
+            get
+            {
+                if (VisualStyle == DeviceVisual.Thumbnail)
+                    return _deviceThumbnail;
+                return _deviceVisualization;
+            }
+        }
+
+        public ObservableCollection<LoadedResource> LoadedResources
+        {
+            get
+            {
+                if (VisualStyle == DeviceVisual.Thumbnail)
+                    return _deviceThumbnail.LoadedResources;
+                return _deviceVisualization.LoadedResources;
+            }
+        }
+
+
 
         public DeviceThumbnail DeviceThumbnail
         {
@@ -24,11 +48,9 @@ namespace ActivityDesk.Infrastructure
             }
         }
 
-     
+        public bool Intersecting { get; set; }
+
         public Device Device { get; set; }
-
-
-        private VisualizationTablet _deviceVisualization;
 
         public VisualizationTablet DeviceVisualization
         {
@@ -44,8 +66,6 @@ namespace ActivityDesk.Infrastructure
 
         public string TagValue { get; set; }
 
-
-        private bool _connected;
         public bool Connected
         {
             get { return _connected; }
@@ -114,6 +134,13 @@ namespace ActivityDesk.Infrastructure
                     LoadedResource = sender as LoadedResource,
                     Position = e
                 });
+        }
+
+        internal void AddResource(LoadedResource loadedResource)
+        {
+            if (VisualStyle == DeviceVisual.Thumbnail)
+                 _deviceThumbnail.AddResource(loadedResource);
+            else _deviceVisualization.AddResource(loadedResource); ;
         }
     }
 

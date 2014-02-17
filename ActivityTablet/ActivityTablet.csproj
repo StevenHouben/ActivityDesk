@@ -120,7 +120,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="activity1.PNG" />
-    <Resource Include="logo.PNG" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\quit.png" />
