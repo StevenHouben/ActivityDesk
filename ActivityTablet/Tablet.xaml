@@ -42,7 +42,7 @@
                     <s:SurfaceScrollViewer x:Name="resourceViewScroller" Height="700" VerticalContentAlignment="Center" VerticalScrollBarVisibility="Visible"
             	HorizontalContentAlignment="Center" IsHitTestVisible="True" IsManipulationEnabled="True"
                                    IsEnabled="True" PanningMode="VerticalOnly" >
-                        <InkCanvas>
+                        <InkCanvas Width="650" x:Name="Canvas"> 
                             <InkCanvas.DefaultDrawingAttributes>
                                 <DrawingAttributes x:Name="attribute" Width="5" Height="5" Color="Red"/>
                             </InkCanvas.DefaultDrawingAttributes>

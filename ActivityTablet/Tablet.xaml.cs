@@ -275,6 +275,7 @@ namespace ActivityTablet
 
         private void ShowResource(Image img)
         {
+            Canvas.Strokes.Clear();
              ContentHolder.Children.Clear();
              ContentHolder.Height = img.Source.Height;
 
