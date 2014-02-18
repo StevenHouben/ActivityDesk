@@ -496,6 +496,11 @@ namespace ActivityDesk
         /// </summary>
         private void Device_Locked(object sender, LockedEventArgs e)
         {
+
+            //Device not found
+            if (!DeviceContainers.ContainsKey(e.VisualizedTag)) 
+                return;
+
             //Grab container
             var container = DeviceContainers[e.VisualizedTag];
 

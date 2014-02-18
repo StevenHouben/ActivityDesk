@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -17,12 +20,14 @@ using NooSphere.Infrastructure.Helpers;
 using NooSphere.Infrastructure.Web;
 using NooSphere.Model;
 using NooSphere.Model.Device;
+using Action = System.Action;
 
 namespace ActivityTablet
 {
     public partial class Tablet
     {
         #region Private Members
+
         private Device _device;
         private readonly Dictionary<SurfaceButton, Proxy> _proxies = new Dictionary<SurfaceButton, Proxy>();
         private ActivityClient _client;
@@ -34,13 +39,14 @@ namespace ActivityTablet
         #endregion
 
         #region Constructor
+
         public Tablet()
         {
             InitializeComponent();
 
             SurfaceColors.SetDefaultApplicationPalette(new LightSurfacePalette());
 
-            LoadedResources = new ObservableCollection<LoadedResource>(); 
+            LoadedResources = new ObservableCollection<LoadedResource>();
 
             DataContext = this;
 
@@ -55,6 +61,7 @@ namespace ActivityTablet
 
             RunDiscovery();
         }
+
         #endregion
 
         #region Private Methods
@@ -67,7 +74,7 @@ namespace ActivityTablet
 
             var image = new Image();
 
-         
+
             using (var stream = _client.GetResource(res))
             {
                 var bitmap = new BitmapImage();
@@ -83,10 +90,22 @@ namespace ActivityTablet
             loadedResource.Thumbnail = image.Source;
             return loadedResource;
         }
+        private LoadedResource FromResourceAndBitmapSource(Resource res,BitmapSource source)
+        {
+            var loadedResource = new LoadedResource();
+
+            res.FileType = "IMG";
+
+            var image = new Image {Source = source};
+            loadedResource.Resource = res;
+            loadedResource.Content = image;
+            loadedResource.Thumbnail = image.Source;
+            return loadedResource;
+        }
 
         private void RunDiscovery()
         {
-           var disco = new DiscoveryManager();
+            var disco = new DiscoveryManager();
 
             disco.DiscoveryAddressAdded += (sender, e) =>
             {
@@ -97,11 +116,13 @@ namespace ActivityTablet
             disco.Find(DiscoveryType.Zeroconf);
 
         }
-        void activityClient_ActivityRemoved(object sender, ActivityRemovedEventArgs e)
+
+        private void activityClient_ActivityRemoved(object sender, ActivityRemovedEventArgs e)
         {
             RemoveActivityUI(e.Id);
         }
-        void activityClient_ActivityAdded(object sender, ActivityEventArgs e)
+
+        private void activityClient_ActivityAdded(object sender, ActivityEventArgs e)
         {
             AddActivityUI(e.Activity as Activity);
         }
@@ -118,7 +139,7 @@ namespace ActivityTablet
                 MaxWidth = 1280;
 
 
-                if(SystemParameters.PrimaryScreenWidth >1400)
+                if (SystemParameters.PrimaryScreenWidth > 1400)
                     WindowStyle = WindowStyle.ToolWindow;
                 else
                 {
@@ -130,6 +151,7 @@ namespace ActivityTablet
 
             }));
         }
+
         private void AddActivityUI(Activity ac)
         {
             Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() =>
@@ -151,38 +173,41 @@ namespace ActivityTablet
                 //activityMatrix.Children.Add(mtrBtn);
             }));
         }
+
         private SurfaceButton CopyButton(SurfaceButton btn)
         {
             return new SurfaceButton
-                       {
-                           Content = btn.Content, 
-                           Tag=btn.Tag, 
-                           VerticalContentAlignment = VerticalAlignment.Center,
-                           HorizontalContentAlignment = HorizontalAlignment.Center
-                       };
+            {
+                Content = btn.Content,
+                Tag = btn.Tag,
+                VerticalContentAlignment = VerticalAlignment.Center,
+                HorizontalContentAlignment = HorizontalAlignment.Center
+            };
         }
+
         private void SrfcBtnClick(object sender, RoutedEventArgs e)
         {
             var sb = sender as SurfaceButton;
             if (sb.Tag == null)
                 return;
 
-            _client.SendMessage(MessageType.ActivityChanged,sb.Tag as string) ;
+            _client.SendMessage(MessageType.ActivityChanged, sb.Tag as string);
         }
+
         private void RemoveActivityUI(string id)
         {
             Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() =>
             {
-                for (int i = 0; i < activityStack.Children.Count;i++ )
-                    if((string)((SurfaceButton)activityStack.Children[i]).Tag ==id)
+                for (int i = 0; i < activityStack.Children.Count; i++)
+                    if ((string) ((SurfaceButton) activityStack.Children[i]).Tag == id)
                     {
                         activityStack.Children.RemoveAt(i);
                         //activityMatrix.Children.RemoveAt(i);
                     }
             }));
         }
-       
-        void StartClient(WebConfiguration config)
+
+        private void StartClient(WebConfiguration config)
         {
             if (_client != null)
                 return;
@@ -200,6 +225,7 @@ namespace ActivityTablet
                 foreach (var act in _client.Activities.Values)
                 {
                     AddActivityUI(act as Activity);
+                    LoadResources(act);
                 }
             }
             catch (Exception ex)
@@ -207,6 +233,36 @@ namespace ActivityTablet
 
                 MessageBox.Show(ex.ToString());
             }
+        }
+
+        private void LoadResources(IActivity act)
+        {
+            foreach (var res in act.Resources)
+            {
+                Task.Factory.StartNew(() =>
+                {
+                    LoadBitmap(res,_client.GetResource(res));
+                });
+            }
+        }
+
+        private void LoadBitmap(Resource res,Stream s)
+        {
+            var bitmap = new BitmapImage();
+            using (s)
+            {
+                bitmap.BeginInit();
+                bitmap.StreamSource = s;
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.EndInit();
+                bitmap.Freeze();
+            }
+            Dispatcher.Invoke(DispatcherPriority.Send, new Action<Resource,BitmapImage>(AddLoadedResourceFromCachedBitmap),res,bitmap);
+        }
+
+        private void AddLoadedResourceFromCachedBitmap(Resource resource,BitmapImage img)
+        {
+            ResourceCache.Add(resource.Id, FromResourceAndBitmapSource(resource, img));
         }
 
         void _client_DeviceRemoved(object sender, DeviceRemovedEventArgs e)
@@ -281,8 +337,6 @@ namespace ActivityTablet
 
             if (img.Source.Height > 1500)
             {
-                var src = img.Source;
-               
 
                 var height = 9240; // (int)bitmapsource.Height;
                 var width = 502; //(int)bitmapsource.Width;
@@ -339,8 +393,8 @@ namespace ActivityTablet
         {
             if(_client == null)
                 Environment.Exit(0);
-            else
-                _client.RemoveDevice(_device.Id);
+           _client.RemoveDevice(_device.Id);
+           Environment.Exit(0);
         }
         #endregion
 
