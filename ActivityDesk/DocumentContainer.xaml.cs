@@ -43,7 +43,7 @@ namespace ActivityDesk
         private int _borderSize;
         private const int IconSize = 100;
 
-        private const bool DeviceValidationIsEnabled = false;
+        private const bool DeviceValidationIsEnabled = true;
 
         public readonly Collection<Note> Notes = new Collection<Note>();
         public readonly Collection<ScatterViewItem> VisualizedResources = new Collection<ScatterViewItem>();

@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Net.NetworkInformation;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,26 +21,20 @@ using NooSphere.Infrastructure.Helpers;
 using NooSphere.Infrastructure.Web;
 using NooSphere.Model;
 using NooSphere.Model.Device;
-using Action = System.Action;
 
 namespace ActivityTablet
 {
     public partial class Tablet
     {
-        #region Private Members
-
-        private Device _device;
-        private readonly Dictionary<SurfaceButton, Proxy> _proxies = new Dictionary<SurfaceButton, Proxy>();
+        private int _maxItemsCount;
+        private int _preloadedCount;
+        private readonly Device _device;
         private ActivityClient _client;
-
+        private DisplayMode _displayMode = DisplayMode.ResourceViewer;
         public ObservableCollection<LoadedResource> LoadedResources { get; set; }
-
         public Dictionary<string, LoadedResource> ResourceCache = new Dictionary<string, LoadedResource>();
 
-        #endregion
-
-        #region Constructor
-
+        private ObservableCollection<LoadedResource> ViewerConfiguration = new ObservableCollection<LoadedResource>();
         public Tablet()
         {
             InitializeComponent();
@@ -54,7 +47,6 @@ namespace ActivityTablet
 
             BuildUI();
 
-
             _device = new Device()
             {
                 DeviceType = DeviceType.Tablet,
@@ -63,11 +55,6 @@ namespace ActivityTablet
 
             RunDiscovery();
         }
-
-        #endregion
-
-        #region Private Methods
-
         private LoadedResource FromResource(Resource res)
         {
             var loadedResource = new LoadedResource();
@@ -104,7 +91,6 @@ namespace ActivityTablet
             loadedResource.Thumbnail = image.Source;
             return loadedResource;
         }
-
         private void RunDiscovery()
         {
             var disco = new DiscoveryManager();
@@ -118,17 +104,14 @@ namespace ActivityTablet
             disco.Find(DiscoveryType.Zeroconf);
 
         }
-
         private void activityClient_ActivityRemoved(object sender, ActivityRemovedEventArgs e)
         {
             RemoveActivityUI(e.Id);
         }
-
         private void activityClient_ActivityAdded(object sender, ActivityEventArgs e)
         {
             AddActivityUI(e.Activity as Activity);
         }
-
         private void BuildUI()
         {
             Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() =>
@@ -153,7 +136,6 @@ namespace ActivityTablet
 
             }));
         }
-
         private void AddActivityUI(Activity ac)
         {
             Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() =>
@@ -175,7 +157,6 @@ namespace ActivityTablet
                 //activityMatrix.Children.Add(mtrBtn);
             }));
         }
-
         private SurfaceButton CopyButton(SurfaceButton btn)
         {
             return new SurfaceButton
@@ -186,14 +167,47 @@ namespace ActivityTablet
                 HorizontalContentAlignment = HorizontalAlignment.Center
             };
         }
-
         private void SrfcBtnClick(object sender, RoutedEventArgs e)
         {
             var sb = sender as SurfaceButton;
             if (sb.Tag == null)
                 return;
 
-            _client.SendMessage(MessageType.ActivityChanged, sb.Tag as string);
+            SwitchActivity(sb.Tag as string);
+        }
+
+        private void SwitchActivity(string id)
+        {
+            if(_displayMode == DisplayMode.Controller)
+                PopulateResources(id);
+            else
+                _client.SendMessage(MessageType.ActivityChanged, id);
+        }
+
+        private void PopulateResources(string id)
+        {
+            if (!_client.Activities.ContainsKey(id)) return;
+
+            var activity = _client.Activities[id];
+
+            ClearResources();
+            foreach (var res in activity.Resources)
+            {
+                LoadedResource loadedResource;
+                if (ResourceCache.ContainsKey(res.Id))
+                {
+                    loadedResource = ResourceCache[res.Id];
+                }
+                else
+                {
+                    loadedResource = FromResource(res);
+                    ResourceCache.Add(res.Id, loadedResource);
+                }
+
+                ShowResource(loadedResource.Content);
+
+                LoadedResources.Add(loadedResource);
+            }
         }
 
         private void RemoveActivityUI(string id)
@@ -238,19 +252,17 @@ namespace ActivityTablet
                 MessageBox.Show(ex.ToString());
             }
         }
-
         private void LoadResources(IActivity act)
         {
             foreach (var res in act.Resources)
             {
                 Task.Factory.StartNew(() =>
                 {
-                    maxItemsCount ++;
+                    _maxItemsCount ++;
                     LoadBitmap(res,_client.GetResource(res));
                 });
             }
         }
-
         private void LoadBitmap(Resource res,Stream s)
         {
             var bitmap = new BitmapImage();
@@ -263,29 +275,24 @@ namespace ActivityTablet
             s.Dispose();
             Dispatcher.Invoke(DispatcherPriority.Send, new Action<Resource,BitmapImage>(AddLoadedResourceFromCachedBitmap),res,bitmap);
         }
-
-        private int maxItemsCount;
-        private int preloadedCount;
         private void AddLoadedResourceFromCachedBitmap(Resource resource,BitmapImage img)
         {
             if (!ResourceCache.ContainsKey(resource.Id))
                 ResourceCache.Add(resource.Id, FromResourceAndBitmapSource(resource, img));
-            Output.Text = "Cached " + resource.Id +" -- "+ preloadedCount++ +"/"+maxItemsCount;
+            Output.Text = "Cached " + resource.Id +" -- "+ _preloadedCount++ +"/"+_maxItemsCount;
 
-            if (preloadedCount == maxItemsCount)
+            if (_preloadedCount == _maxItemsCount)
             {
                 Output.Text = "";
                 Output.Height = 0;
 
             }
         }
-
         void _client_DeviceRemoved(object sender, DeviceRemovedEventArgs e)
         {
             if(e.Id == _device.Id)
                 Environment.Exit(0);
         }
-
         void _client_MessageReceived(object sender, MessageEventArgs e)
         {
             switch (e.Message.Type)
@@ -333,20 +340,18 @@ namespace ActivityTablet
                     }
                     else
                     {
-                        Dispatcher.Invoke(() =>
-                        {
-                            LoadedResources.Clear();
-                            ContentHolder.Background = Brushes.White;
-                        });
+                        Dispatcher.Invoke(ClearResources);
                     }
+                    break;
+                    case MessageType.ActivityChanged:
+
                     break;
 
             }
         }
-
         private void ShowResource(Image img)
         {
-            Canvas.Strokes.Clear();
+             Canvas.Strokes.Clear();
              ContentHolder.Children.Clear();
              ContentHolder.Height = img.Source.Height;
 
@@ -380,10 +385,6 @@ namespace ActivityTablet
             resourceViewScroller.ScrollToHome();
 
         }
-     
-        #endregion
-
-        #region Events Handlers
         private void ITouchDown(object sender, TouchEventArgs e)
         {
             var fe = sender as FrameworkElement;
@@ -411,23 +412,28 @@ namespace ActivityTablet
            _client.RemoveDevice(_device.Id);
            Environment.Exit(0);
         }
-        #endregion
-
         private void btnMode_Click(object sender, RoutedEventArgs e)
         {
             _displayMode = _displayMode == DisplayMode.ResourceViewer ? DisplayMode.Controller : DisplayMode.ResourceViewer;
             switch (_displayMode)
             {
                 case DisplayMode.ResourceViewer:
-                    resourceViewer.Visibility = Visibility.Visible;
-
+                    ClearResources();
+                    _client.SendMessage(MessageType.Control, "slave");
                     break;
                 case DisplayMode.Controller:
-                    resourceViewer.Visibility = Visibility.Hidden;
+                    PopulateResources(_client.Activities.First().Value.Id);
                     break;
             }
         }
-        private DisplayMode _displayMode;
+        private void ClearResources()
+        {
+            LoadedResources.Clear();
+            ContentHolder.Background = Brushes.White;
+            Canvas.Strokes.Clear();
+            ContentHolder.Children.Clear();
+        }
+
     }
 
     public enum DisplayMode

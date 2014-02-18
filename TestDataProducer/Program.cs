@@ -50,6 +50,9 @@ namespace Debug.Datagenerator
             _activitySystem.AddResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\Users\Public\Pictures\Sample Pictures\Koala.jpg")), "IMG");
             _activitySystem.AddResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\Users\Public\Pictures\Sample Pictures\Lighthouse.jpg")), "IMG");
             _activitySystem.AddResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\Users\Public\Pictures\Sample Pictures\Penguins.jpg")), "IMG");
+            _activitySystem.AddResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\papers\1.png")), "PDF");
+            _activitySystem.AddResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\papers\2.png")), "PDF");
+            _activitySystem.AddResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\papers\3.png")), "PDF");
 
             if (count++ < 5)
                 _activitySystem.AddActivity(new Activity());
