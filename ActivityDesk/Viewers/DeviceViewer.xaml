@@ -132,7 +132,7 @@
         <ControlTemplate x:Key="Docked">
             <Grid x:Name="LayoutRoot" Height="100" Width="100" Background="Transparent" >
                 <Border x:Name="btnBody" BorderBrush="Transparent" BorderThickness="5" Margin="10" >
-                    <Image Source="Images/tablet_icon.png"></Image>
+                    <Image Source="/Images/tablet_icon.png"></Image>
                 </Border>
             </Grid>
         </ControlTemplate>

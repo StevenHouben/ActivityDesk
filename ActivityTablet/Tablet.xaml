@@ -39,6 +39,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </s:SurfaceScrollViewer>
+                    <TextBlock x:Name="Output" Background="Black" Foreground="White" Height="25"></TextBlock>
                     <s:SurfaceScrollViewer x:Name="resourceViewScroller" Height="700" Margin="0,0,5,0" VerticalContentAlignment="Center" VerticalScrollBarVisibility="Visible"
             	HorizontalContentAlignment="Center" IsHitTestVisible="True" IsManipulationEnabled="False"
                                    IsEnabled="True" PanningMode="None" >
@@ -52,6 +53,7 @@
                         </InkCanvas>
 
                     </s:SurfaceScrollViewer>
+
                 </StackPanel>
             </StackPanel>
         </Grid>

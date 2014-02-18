@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -222,10 +223,13 @@ namespace ActivityTablet
                 _client.MessageReceived += _client_MessageReceived;
                 _client.DeviceRemoved += _client_DeviceRemoved;
 
+
                 foreach (var act in _client.Activities.Values)
                 {
                     AddActivityUI(act as Activity);
+                    maxItemsCount += act.Resources.Count;
                     LoadResources(act);
+
                 }
             }
             catch (Exception ex)
@@ -259,11 +263,14 @@ namespace ActivityTablet
             Dispatcher.Invoke(DispatcherPriority.Send, new Action<Resource,BitmapImage>(AddLoadedResourceFromCachedBitmap),res,bitmap);
         }
 
+        private int maxItemsCount = 0;
+        private int preloadedCount = 0;
         private void AddLoadedResourceFromCachedBitmap(Resource resource,BitmapImage img)
         {
-            if (!ResourceCache.ContainsKey(resource.Id))
-                ResourceCache.Add(resource.Id, FromResourceAndBitmapSource(resource, img));
-           
+            if (ResourceCache.ContainsKey(resource.Id)) return;
+
+            ResourceCache.Add(resource.Id, FromResourceAndBitmapSource(resource, img));
+            Output.Text = "Cached " + resource.Id +" -- "+ preloadedCount++ +"/"+maxItemsCount;
         }
 
         void _client_DeviceRemoved(object sender, DeviceRemovedEventArgs e)
