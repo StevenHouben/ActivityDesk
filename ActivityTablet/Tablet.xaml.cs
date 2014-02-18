@@ -169,7 +169,7 @@ namespace ActivityTablet
                 var srfcBtn = new SurfaceButton {Width = activityScroller.Width, Tag = ac.Id};
                 var p = new Proxy {Activity = ac, Ui = srfcBtn};
                 srfcBtn.Content = ac.Name;
-                srfcBtn.Background = Brushes.White;
+                srfcBtn.Background = Brushes.Transparent;
                 srfcBtn.Foreground = Brushes.Black;
                 srfcBtn.Click += SrfcBtnClick;
                 srfcBtn.Tag = ac.Id;
