@@ -268,9 +268,8 @@ namespace ActivityTablet
         private int preloadedCount;
         private void AddLoadedResourceFromCachedBitmap(Resource resource,BitmapImage img)
         {
-            if (ResourceCache.ContainsKey(resource.Id)) return;
-
-            ResourceCache.Add(resource.Id, FromResourceAndBitmapSource(resource, img));
+            if (!ResourceCache.ContainsKey(resource.Id))
+                ResourceCache.Add(resource.Id, FromResourceAndBitmapSource(resource, img));
             Output.Text = "Cached " + resource.Id +" -- "+ preloadedCount++ +"/"+maxItemsCount;
 
             if (preloadedCount == maxItemsCount)
