@@ -99,6 +99,7 @@ namespace ActivityDesk.Infrastructure
                     case MessageType.Control:
                     if (e.Message.Content != null && (string) e.Message.Content == "slave")
                     {
+                        if (e.Message.From == null) return;
                         if (_activitySystem.Devices.ContainsKey(e.Message.From))
                         {
                             var dev = _activitySystem.Devices[e.Message.From] as Device;
