@@ -249,21 +249,21 @@ namespace ActivityTablet
         private void LoadBitmap(Resource res,Stream s)
         {
             var bitmap = new BitmapImage();
-            using (s)
-            {
-                bitmap.BeginInit();
-                bitmap.StreamSource = s;
-                bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                bitmap.EndInit();
-                bitmap.Freeze();
-            }
+            bitmap.BeginInit();
+            bitmap.StreamSource = s;
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.EndInit();
+            bitmap.Freeze();
+            s.Close();
+            s.Dispose();
             Dispatcher.Invoke(DispatcherPriority.Send, new Action<Resource,BitmapImage>(AddLoadedResourceFromCachedBitmap),res,bitmap);
         }
 
         private void AddLoadedResourceFromCachedBitmap(Resource resource,BitmapImage img)
         {
-            if(!ResourceCache.ContainsKey(resource.Id))
+            if (!ResourceCache.ContainsKey(resource.Id))
                 ResourceCache.Add(resource.Id, FromResourceAndBitmapSource(resource, img));
+           
         }
 
         void _client_DeviceRemoved(object sender, DeviceRemovedEventArgs e)
