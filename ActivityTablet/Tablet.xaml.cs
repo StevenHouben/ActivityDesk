@@ -262,7 +262,8 @@ namespace ActivityTablet
 
         private void AddLoadedResourceFromCachedBitmap(Resource resource,BitmapImage img)
         {
-            ResourceCache.Add(resource.Id, FromResourceAndBitmapSource(resource, img));
+            if(!ResourceCache.ContainsKey(resource.Id))
+                ResourceCache.Add(resource.Id, FromResourceAndBitmapSource(resource, img));
         }
 
         void _client_DeviceRemoved(object sender, DeviceRemovedEventArgs e)
