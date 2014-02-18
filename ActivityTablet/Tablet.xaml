@@ -57,9 +57,9 @@
                 </StackPanel>
             </StackPanel>
         </Grid>
-        <Label Content="ACTIVITIES" FontSize="25" FontWeight="ExtraBold" Margin="10,60,0,0" Width="200" HorizontalAlignment="Left"></Label>
-        <StackPanel Width="180" x:Name="activityStack" Orientation="Vertical" HorizontalAlignment="Left" Margin="10,110,0,0"/>
-        <StackPanel x:Name="Menu" Orientation="Horizontal" Height="48" VerticalAlignment="Top" Margin="10,10,0,0">
+        <Label Content="ACTIVITIES" FontSize="25" FontWeight="ExtraBold" Margin="10,80,0,0" Width="200" HorizontalAlignment="Left"></Label>
+        <StackPanel Width="180" x:Name="activityStack" Orientation="Vertical" HorizontalAlignment="Left" Margin="10,130,0,0"/>
+        <StackPanel x:Name="Menu" Orientation="Horizontal" Height="70" VerticalAlignment="Top" Margin="10,10,0,0">
             <Image Source="Images/quit.png" PreviewMouseDown="BtnQuitClick" PreviewTouchDown="BtnQuitClick"></Image>
             <Image Source="Images/grid.png" Margin="7" PreviewMouseDown="btnMode_Click" PreviewTouchDown="btnMode_Click"></Image>
             
