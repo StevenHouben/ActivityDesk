@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,8 +24,32 @@ using NooSphere.Model.Device;
 
 namespace ActivityTablet
 {
-    public partial class Tablet
+    public partial class Tablet : INotifyPropertyChanged
     {
+
+        public event PropertyChangedEventHandler PropertyChanged = delegate { };
+
+        protected void OnPropertyChanged(string name)
+        {
+            var handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(name));
+            }
+        }
+
+        private bool _master;
+        public bool Master
+        {
+            get { return _master; }
+            set
+            {
+                _master = value;
+                OnPropertyChanged("Master");
+            }
+
+        }
+
         private int _maxItemsCount;
         private int _preloadedCount;
         private readonly Device _device;
@@ -32,6 +57,8 @@ namespace ActivityTablet
         private DisplayMode _displayMode = DisplayMode.ResourceViewer;
         public ObservableCollection<LoadedResource> LoadedResources { get; set; }
         public Dictionary<string, LoadedResource> ResourceCache = new Dictionary<string, LoadedResource>();
+
+
 
         private ObservableCollection<LoadedResource> ViewerConfiguration = new ObservableCollection<LoadedResource>();
         public Tablet()
@@ -424,8 +451,10 @@ namespace ActivityTablet
                 case DisplayMode.ResourceViewer:
                     ClearResources();
                     _client.SendMessage(MessageType.Control, "slave");
+                    Master = false;
                     break;
                 case DisplayMode.Controller:
+                    Master = true;
                     PopulateResources(_client.Activities.First().Value.Id);
                     break;
             }
