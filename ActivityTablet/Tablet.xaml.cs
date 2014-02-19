@@ -149,6 +149,10 @@ namespace ActivityTablet
                             prox.Url = _client.GetResourceUri(e.Activity.Logo);
 
                      prox.Activity = (Activity)e.Activity;
+
+
+                     if (_selectedActivity != null && _selectedActivity.Id == prox.Activity.Id && _displayMode == DisplayMode.Controller)
+                         PopulateResources(_selectedActivity.Id);
                 }
 
             }));
@@ -208,6 +212,12 @@ namespace ActivityTablet
                 return;
 
             _selectedActivity = prox.Activity;
+
+            foreach (var proxies in Activities)
+            {
+                proxies.Selected = _selectedActivity.Id == proxies.Activity.Id;
+            }
+
             SwitchActivity(prox.Activity.Id);
         }
 
@@ -239,11 +249,18 @@ namespace ActivityTablet
                     ResourceCache.Add(res.Id, loadedResource);
                 }
 
-                ShowResource(loadedResource.Content);
+                foreach (var lr in LoadedResources)
+                {
+                    lr.Selected = false;
+                }
+                loadedResource.Selected = true;
 
                 LoadedResources.Add(loadedResource);
+                ShowResource(loadedResource.Content);
+
             }
         }
+
 
         private void RemoveActivityUI(string id)
         {
@@ -329,9 +346,6 @@ namespace ActivityTablet
         {
             if (!ResourceCache.ContainsKey(resource.Id))
                 ResourceCache.Add(resource.Id, FromResourceAndBitmapSource(resource, img));
-
-            if(_displayMode == DisplayMode.Controller && _selectedActivity !=null)
-                PopulateResources(_selectedActivity.Id);
 
             Output.Text = "Cached " + resource.Id +" -- "+ _preloadedCount++ +"/"+_maxItemsCount;
 
@@ -440,15 +454,9 @@ namespace ActivityTablet
         }
         private void ITouchDown(object sender, TouchEventArgs e)
         {
-            var fe = sender as FrameworkElement;
-            if (fe == null) return;
-
-            var res = fe.DataContext as LoadedResource;
-            if (res == null) return;
- 
-            ShowResource(res.Content);
+            IMouseDown(sender,e);
         }
-        private void IMouseDown(object sender, MouseButtonEventArgs e)
+        private void IMouseDown(object sender, EventArgs e)
         {
             var fe = sender as FrameworkElement;
             if (fe == null) return;
@@ -457,6 +465,9 @@ namespace ActivityTablet
             if (res == null) return;
 
             ShowResource(res.Content);
+
+            foreach (var lr in LoadedResources)
+                lr.Selected = lr.Resource.Id == res.Resource.Id;
         }
         private void BtnQuitClick(object sender, RoutedEventArgs e)
         {

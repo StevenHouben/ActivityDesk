@@ -38,6 +38,19 @@ namespace ActivityTablet
 
         }
 
+        private bool _selected;
+
+        public bool Selected
+        {
+            get { return _selected; }
+            set
+            {
+                _selected = value;
+                OnPropertyChanged("Selected");
+            }
+
+        }
+
         private Image _image;
 
         public Image Content
