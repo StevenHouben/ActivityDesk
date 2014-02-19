@@ -1,6 +1,4 @@
-﻿
-using System.Collections.Generic;
-using System.Drawing;
+﻿using System.Collections.Generic;
 using NooSphere.Model;
 using NooSphere.Model.Configuration;
 using NooSphere.Model.Device;

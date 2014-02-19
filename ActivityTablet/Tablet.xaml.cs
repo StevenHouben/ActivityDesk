@@ -56,6 +56,8 @@ namespace ActivityTablet
         public ObservableCollection<LoadedResource> LoadedResources { get; set; }
         public Dictionary<string, LoadedResource> ResourceCache = new Dictionary<string, LoadedResource>();
 
+        private Activity _selectedActivity;
+
         public ObservableCollection<Proxy> Activities { get; set; }
 
         public Tablet()
@@ -143,8 +145,9 @@ namespace ActivityTablet
             {
                 foreach (var prox in Activities.Where(prox => prox.Activity.Id == e.Activity.Id))
                 {
-                    if (e.Activity.Logo != null && prox.Activity.Logo.Id != e.Activity.Logo.Id)
-                        prox.Url = _client.GetResourceUri(e.Activity.Logo);
+                    if(e.Activity.Logo != null)
+                            prox.Url = _client.GetResourceUri(e.Activity.Logo);
+
                      prox.Activity = (Activity)e.Activity;
                 }
 
@@ -204,6 +207,7 @@ namespace ActivityTablet
             if (prox == null)
                 return;
 
+            _selectedActivity = prox.Activity;
             SwitchActivity(prox.Activity.Id);
         }
 
@@ -262,11 +266,7 @@ namespace ActivityTablet
                 return;
             try
             {
-                Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() =>
-                {
-                    Activities.Clear();
-
-                }));
+                Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() => Activities.Clear()));
 
 
                 _client = new ActivityClient(config.Address, config.Port,
@@ -274,6 +274,7 @@ namespace ActivityTablet
                 _client.ActivityAdded += activityClient_ActivityAdded;
                 _client.ActivityChanged += _client_ActivityChanged;
                 _client.ActivityRemoved += activityClient_ActivityRemoved;
+                _client.ResourceAdded += _client_ResourceAdded;
                 _client.MessageReceived += _client_MessageReceived;
                 _client.DeviceRemoved += _client_DeviceRemoved;
 
@@ -289,6 +290,15 @@ namespace ActivityTablet
 
                 MessageBox.Show(ex.ToString());
             }
+        }
+
+        void _client_ResourceAdded(object sender, ResourceEventArgs e)
+        {
+             Task.Factory.StartNew(() =>
+                {
+                    _maxItemsCount ++;
+                    LoadBitmap(e.Resource,_client.GetResource(e.Resource));
+                });
         }
 
 
@@ -319,13 +329,16 @@ namespace ActivityTablet
         {
             if (!ResourceCache.ContainsKey(resource.Id))
                 ResourceCache.Add(resource.Id, FromResourceAndBitmapSource(resource, img));
+
+            if(_displayMode == DisplayMode.Controller && _selectedActivity !=null)
+                PopulateResources(_selectedActivity.Id);
+
             Output.Text = "Cached " + resource.Id +" -- "+ _preloadedCount++ +"/"+_maxItemsCount;
 
             if (_preloadedCount == _maxItemsCount)
             {
                 Output.Text = "";
                 Output.Height = 0;
-
             }
         }
         void _client_DeviceRemoved(object sender, DeviceRemovedEventArgs e)
@@ -384,7 +397,7 @@ namespace ActivityTablet
                     }
                     break;
                     case MessageType.ActivityChanged:
-
+                        _selectedActivity = e.Message.Content as Activity;
                     break;
 
             }

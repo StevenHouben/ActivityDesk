@@ -49,6 +49,8 @@ namespace ActivityDesk
         public readonly Collection<ScatterViewItem> VisualizedResources = new Collection<ScatterViewItem>();
         public readonly Dictionary<string, DeviceContainer> DeviceContainers = new Dictionary<string, DeviceContainer>();
 
+        public Dictionary<string,LoadedResource> ResourceCache = new Dictionary<string, LoadedResource>();
+
         public DocumentContainer()
         {
             InitializeComponent();
@@ -72,6 +74,10 @@ namespace ActivityDesk
 
             //Ignore all non tocuch devices
             CustomTopmostBehavior.Activate();
+        }
+        internal void UpdateContainer(Activity activity)
+        {
+           
         }
 
         /// <summary>
@@ -115,15 +121,14 @@ namespace ActivityDesk
         /// <summary>
         /// Builds the desk layout
         /// </summary>
-        internal void Build(Dictionary<string,LoadedResource> resources, DeskConfiguration configuration)
+        internal void Build(Activity act)
         {
-
-
+            var configuration = act.Configuration as DeskConfiguration;
 
             //Clear all item from the desk
             Clear();
 
-            //Clear all the remove device by sending a NULL ResourceHandled
+            //Clear all the devices by sending a NULL ResourceHandled
             foreach (var dev in DeviceContainers.Values)
             {
                 ResourceHandleReleased(this, new ResourceHandle
@@ -135,20 +140,21 @@ namespace ActivityDesk
 
             //If no configuraton -> simply add all resources
             if (configuration == null)
-                foreach (var res in resources.Values)
+                foreach (var res in act.Resources)
                 {
-                   AddResource(res,true);
+                   AddResource(ResourceCache[res.Id],true);
                 }
             //Build the desk from configuratoiom
             else
-                BuildFromConfiguration(resources, configuration);
+                BuildFromConfiguration(act,configuration);
         }
 
         /// <summary>
         /// Builds the desk layout based on a given configuration
         /// </summary>
-        void BuildFromConfiguration(Dictionary<string, LoadedResource> resources, DeskConfiguration configuration)
+        void BuildFromConfiguration(Activity act, DeskConfiguration configuration)
         {
+            var handledResources = new List<string>();
 
             bool noDevice = true;
 
@@ -182,7 +188,8 @@ namespace ActivityDesk
                         }
                         foreach (var def in dev.Configurations.Select(res => res as DefaultResourceConfiguration))
                         {
-                            container.AddResource(resources[def.Resource.Id]);
+                            container.AddResource(ResourceCache[def.Resource.Id]);
+                            handledResources.Add(def.Resource.Id);
 
                             //Send resource to device by
                             SendResourceToDevice(container.Device, def.Resource);
@@ -193,7 +200,11 @@ namespace ActivityDesk
 
                 if(noDevice)
                     foreach (var def in dev.Configurations.Select(res => res as DefaultResourceConfiguration))
-                        AddResource(resources[def.Resource.Id], true);
+                    {
+                        AddResource(ResourceCache[def.Resource.Id], true);
+                        handledResources.Add(def.Resource.Id);
+                    }
+             
             }
 
             //handle all other resources that are not connected to a device
@@ -204,7 +215,8 @@ namespace ActivityDesk
                     return;
 
 
-                var viewer = AddResourceAtLocation(resources[deskConfig.Resource.Id], deskConfig.Center);
+                var viewer = AddResourceAtLocation(ResourceCache[deskConfig.Resource.Id], deskConfig.Center);
+                handledResources.Add(deskConfig.Resource.Id);
 
                 //Update the icon state
                  ((IResourceContainer)viewer).Iconized = deskConfig.Iconized;
@@ -215,6 +227,13 @@ namespace ActivityDesk
 
                 //Update the orientation
                 viewer.Orientation = deskConfig.Orientation;
+            }
+            foreach (var res in act.Resources)
+            {
+                if (!handledResources.Contains(res.Id))
+                {
+                    AddResource(ResourceCache[res.Id], true);
+                }
             }
         }
 
@@ -1200,7 +1219,7 @@ namespace ActivityDesk
             });
         }
 
-       
+
     }
     public enum DockStates
     {
