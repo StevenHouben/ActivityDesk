@@ -1,16 +1,34 @@
 ﻿using System;
+using System.ComponentModel;
 using NooSphere.Model;
 
 namespace ActivityTablet
 {
-    public class Proxy
+    public class Proxy: INotifyPropertyChanged
     {
-        public Activity Activity { get; set; }
-        public Object Ui { get; set; }
-        public System.Windows.Controls.Image Image
+        public event PropertyChangedEventHandler PropertyChanged = delegate { };
+
+        protected void OnPropertyChanged(string name)
         {
-            get;
-            set;
+            var handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(name));
+            }
         }
+
+        private Uri _url;
+        public Uri Url
+        {
+            get { return _url; }
+            set
+            {
+                _url = value;
+                OnPropertyChanged("Url");
+            }
+        }
+
+        public Activity Activity { get; set; }
+
     }
 }

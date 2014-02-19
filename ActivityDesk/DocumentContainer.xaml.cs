@@ -117,6 +117,9 @@ namespace ActivityDesk
         /// </summary>
         internal void Build(Dictionary<string,LoadedResource> resources, DeskConfiguration configuration)
         {
+
+
+
             //Clear all item from the desk
             Clear();
 
@@ -200,8 +203,8 @@ namespace ActivityDesk
                 if (deskConfig == null)
                     return;
 
-                //Create a new resourceviewer and position it
-                 var viewer = AddResourceAtLocation(resources[deskConfig.Resource.Id], deskConfig.Center);
+
+                var viewer = AddResourceAtLocation(resources[deskConfig.Resource.Id], deskConfig.Center);
 
                 //Update the icon state
                  ((IResourceContainer)viewer).Iconized = deskConfig.Iconized;

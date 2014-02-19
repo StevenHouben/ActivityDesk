@@ -34,7 +34,12 @@ namespace Debug.Datagenerator
             Console.WriteLine("Press any key to create dummy data");
             Console.ReadKey();
 
-            _activitySystem.AddActivity(new Activity());
+            _activitySystem.AddActivity(
+                new Activity()
+                {
+                    
+                }
+                );
 
             while (Working) ;
 

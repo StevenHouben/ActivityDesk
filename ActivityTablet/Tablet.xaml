@@ -3,7 +3,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:s="http://schemas.microsoft.com/surface/2008"
     Title="ActivityTablet" mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" d:Height="1280" d:Width="800" 
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:activityTablet="clr-namespace:ActivityTablet"
+                 d:Height="1280" d:Width="800" 
           WindowStyle="None" Width="1280" Height="800" ResizeMode="NoResize" WindowState="Maximized">
     <Grid Name="grid" Background="White" d:LayoutOverrides="HorizontalMargin" Width="auto" Height="auto">
         <Grid x:Name="resourceViewer" HorizontalAlignment="Stretch" Width="auto" d:IsLocked="True" d:IsHidden="False">
@@ -40,7 +42,7 @@
                         </ItemsControl>
                     </s:SurfaceScrollViewer>
                     <TextBlock x:Name="Output" Background="Black" Foreground="White" Height="25"></TextBlock>
-                    <s:SurfaceScrollViewer x:Name="resourceViewScroller" Height="700" Margin="0,0,5,0" VerticalContentAlignment="Center" VerticalScrollBarVisibility="Visible"
+                    <s:SurfaceScrollViewer  x:Name="resourceViewScroller" Height="680" Margin="10,0,5,0" VerticalContentAlignment="Center" VerticalScrollBarVisibility="Visible"
             	HorizontalContentAlignment="Center" IsHitTestVisible="True" IsManipulationEnabled="False"
                                    IsEnabled="True" PanningMode="None" >
                         <InkCanvas x:Name="Canvas"> 
@@ -48,7 +50,7 @@
                                 <DrawingAttributes x:Name="attribute" Width="5" Height="5" Color="Red"/>
                             </InkCanvas.DefaultDrawingAttributes>
                             <StackPanel Orientation="Vertical" x:Name="ContentHolder" Width="auto" Height="auto" >
-
+                            
                             </StackPanel>
                         </InkCanvas>
 
@@ -76,8 +78,31 @@
                 </Image>
 
             </StackPanel>
-            <Label Content="ACTIVITIES" FontSize="25" FontWeight="ExtraBold" Margin="10,0,0,0" Width="200" HorizontalAlignment="Left"></Label>
-            <StackPanel Width="180" x:Name="activityStack" Orientation="Vertical" HorizontalAlignment="Left" Margin="10,0,0,0"/>
+            <Border BorderBrush="Black" BorderThickness="0,0,0,1">
+                <Label Content="ACTIVITIES" FontSize="25" FontWeight="ExtraBold" Margin="10,0,0,0" Width="180" HorizontalAlignment="Center"></Label>
+            </Border>
+
+            <s:SurfaceScrollViewer Width="180" Height="680" x:Name="activityStack" HorizontalAlignment="Left" Margin="10,0,0,0">
+                <ItemsControl ItemsSource="{Binding Path=Activities}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Width="180" Orientation="Vertical" Height="668"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="Black" BorderThickness="0,0,0,1">
+                                <s:SurfaceButton Background="Transparent" Foreground="Black" Click="SrfcBtnClick">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="{Binding Path=Url}" Width="30" Height="30" Margin="0,0,10,0"/>
+                                        <TextBlock Text="{Binding Path=Activity.Name}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </s:SurfaceButton>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </s:SurfaceScrollViewer>
         </StackPanel>
 
     </Grid>

@@ -26,7 +26,6 @@ namespace ActivityTablet
 {
     public partial class Tablet : INotifyPropertyChanged
     {
-
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
 
         protected void OnPropertyChanged(string name)
@@ -47,7 +46,6 @@ namespace ActivityTablet
                 _master = value;
                 OnPropertyChanged("Master");
             }
-
         }
 
         private int _maxItemsCount;
@@ -58,12 +56,13 @@ namespace ActivityTablet
         public ObservableCollection<LoadedResource> LoadedResources { get; set; }
         public Dictionary<string, LoadedResource> ResourceCache = new Dictionary<string, LoadedResource>();
 
+        public ObservableCollection<Proxy> Activities { get; set; }
 
-
-        private ObservableCollection<LoadedResource> ViewerConfiguration = new ObservableCollection<LoadedResource>();
         public Tablet()
         {
             InitializeComponent();
+
+            Activities = new ObservableCollection<Proxy>();
 
             SurfaceColors.SetDefaultApplicationPalette(new LightSurfacePalette());
 
@@ -138,6 +137,19 @@ namespace ActivityTablet
         {
             AddActivityUI(e.Activity as Activity);
         }
+        void _client_ActivityChanged(object sender, ActivityEventArgs e)
+        {
+            Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() =>
+            {
+                foreach (var prox in Activities.Where(prox => prox.Activity.Id == e.Activity.Id))
+                {
+                    if (e.Activity.Logo != null && prox.Activity.Logo.Id != e.Activity.Logo.Id)
+                        prox.Url = _client.GetResourceUri(e.Activity.Logo);
+                     prox.Activity = (Activity)e.Activity;
+                }
+
+            }));
+        }
         private void BuildUI()
         {
             Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() =>
@@ -166,21 +178,12 @@ namespace ActivityTablet
         {
             Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() =>
             {
-                var srfcBtn = new SurfaceButton {Width = activityScroller.Width, Tag = ac.Id};
-                var p = new Proxy {Activity = ac, Ui = srfcBtn};
-                srfcBtn.Content = ac.Name;
-                srfcBtn.Background = Brushes.Transparent;
-                srfcBtn.Foreground = Brushes.Black;
-                srfcBtn.Click += SrfcBtnClick;
-                srfcBtn.Tag = ac.Id;
-                srfcBtn.Width = 180;
-                activityStack.Children.Add(srfcBtn);
-
-                var mtrBtn = CopyButton(srfcBtn);
-                mtrBtn.Width = mtrBtn.Height = 200;
-                mtrBtn.Click += SrfcBtnClick;
-                mtrBtn.Tag = ac.Id;
-                //activityMatrix.Children.Add(mtrBtn);
+                var prox = new Proxy()
+                {
+                    Activity = ac,
+                    Url = ac.Logo != null ? _client.GetResourceUri(ac.Logo) : new Uri("pack://application:,,,/Images/activity.PNG")
+                };
+                Activities.Add(prox);
             }));
         }
         private SurfaceButton CopyButton(SurfaceButton btn)
@@ -196,10 +199,12 @@ namespace ActivityTablet
         private void SrfcBtnClick(object sender, RoutedEventArgs e)
         {
             var sb = sender as SurfaceButton;
-            if (sb.Tag == null)
+
+            var prox = sb.DataContext as Proxy;
+            if (prox == null)
                 return;
 
-            SwitchActivity(sb.Tag as string);
+            SwitchActivity(prox.Activity.Id);
         }
 
         private void SwitchActivity(string id)
@@ -240,12 +245,14 @@ namespace ActivityTablet
         {
             Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() =>
             {
-                for (int i = 0; i < activityStack.Children.Count; i++)
-                    if ((string) ((SurfaceButton) activityStack.Children[i]).Tag == id)
-                    {
-                        activityStack.Children.RemoveAt(i);
-                        //activityMatrix.Children.RemoveAt(i);
-                    }
+                Proxy proxToRemove = null;
+                foreach (var prox in Activities.Where(prox => prox.Activity.Id == id))
+                    proxToRemove = prox;
+
+                if (proxToRemove == null) return;
+
+                Activities.Remove(proxToRemove);
+
             }));
         }
 
@@ -255,11 +262,17 @@ namespace ActivityTablet
                 return;
             try
             {
-                Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() => activityStack.Children.Clear()));
+                Dispatcher.Invoke(DispatcherPriority.Background, new System.Action(() =>
+                {
+                    Activities.Clear();
+
+                }));
+
 
                 _client = new ActivityClient(config.Address, config.Port,
                     _device);
                 _client.ActivityAdded += activityClient_ActivityAdded;
+                _client.ActivityChanged += _client_ActivityChanged;
                 _client.ActivityRemoved += activityClient_ActivityRemoved;
                 _client.MessageReceived += _client_MessageReceived;
                 _client.DeviceRemoved += _client_DeviceRemoved;
@@ -268,7 +281,6 @@ namespace ActivityTablet
                 foreach (var act in _client.Activities.Values)
                 {
                     AddActivityUI(act as Activity);
-
                     LoadResources(act);
                 }
             }
@@ -278,6 +290,8 @@ namespace ActivityTablet
                 MessageBox.Show(ex.ToString());
             }
         }
+
+
         private void LoadResources(IActivity act)
         {
             foreach (var res in act.Resources)

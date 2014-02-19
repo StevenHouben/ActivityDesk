@@ -62,7 +62,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ActivityButton.cs" />
     <Compile Include="LoadedResource.cs" />
     <Compile Include="Proxy.cs" />
     <Compile Include="Tablet.xaml.cs" />
@@ -119,9 +118,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="activity1.PNG" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Images\quit.png" />
   </ItemGroup>
   <ItemGroup>
@@ -134,6 +130,9 @@
   <ItemGroup>
     <Resource Include="Images\linked.png" />
     <Resource Include="Images\unlinked.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\activity.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
