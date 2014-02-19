@@ -216,6 +216,7 @@ namespace ActivityDesk
 
 
                 var viewer = AddResourceAtLocation(ResourceCache[deskConfig.Resource.Id], deskConfig.Center);
+                HandleDockingFromTouch(viewer, deskConfig.Center);
                 handledResources.Add(deskConfig.Resource.Id);
 
                 //Update the icon state

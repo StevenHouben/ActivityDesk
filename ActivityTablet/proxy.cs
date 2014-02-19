@@ -28,7 +28,16 @@ namespace ActivityTablet
             }
         }
 
-        public Activity Activity { get; set; }
+        private Activity _activity;
+        public Activity Activity
+        {
+            get { return _activity; }
+            set
+            {
+                _activity = value;
+                OnPropertyChanged("Activity");
+            }
+        }
 
     }
 }
