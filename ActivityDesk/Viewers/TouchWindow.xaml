@@ -34,14 +34,16 @@
         </ControlTemplate>
         <ControlTemplate x:Key="Docked">
             <Grid x:Name="grid" Height="100" Width="100"  gestures:Events.DoubleTapGesture="Grid_OnDoubleTapGesture">
-                <Border x:Name="body" BorderBrush="Black" BorderThickness="5" Margin="10" >
-                    <Border.Background>
-                        <ImageBrush ImageSource="{Binding Thumbnail}"></ImageBrush>
-                    </Border.Background>
-
-                    <Canvas Width="auto" Height="auto">
-                        <Label Canvas.Left="40" Canvas.Top="55" HorizontalContentAlignment="Center" VerticalContentAlignment="Top" Width="40" Height="25" Background="Black" Foreground="White" Content="{Binding ContentType}"></Label>
-                    </Canvas>
+                <Border x:Name="body" BorderBrush="Black" BorderThickness="5" Margin="10" Background="White">
+                   
+                    <Border>
+                        <Border.Background>
+                            <ImageBrush ImageSource="{Binding Thumbnail}"></ImageBrush>
+                        </Border.Background>
+                        <Canvas Width="auto" Height="auto">
+                            <Label Canvas.Left="40" Canvas.Top="55" HorizontalContentAlignment="Center" VerticalContentAlignment="Top" Width="40" Height="25" Background="Black" Foreground="White" Content="{Binding ContentType}"></Label>
+                        </Canvas>
+                    </Border>
                 </Border>
             </Grid>
         </ControlTemplate>

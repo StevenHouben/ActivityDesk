@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Shapes;
 using ActivityDesk.Infrastructure;
 using ActivityDesk.Viewers;
 using Blake.NUI.WPF.Gestures;
@@ -16,6 +17,9 @@ namespace ActivityDesk.Visualizer.Visualizations
         public event EventHandler<Device> Closed = delegate { };
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
         public event EventHandler<Point> ResourceReleased = delegate { };
+
+        public Connection Connector { get; set;
+        }
 
         protected void OnPropertyChanged(string name)
         {

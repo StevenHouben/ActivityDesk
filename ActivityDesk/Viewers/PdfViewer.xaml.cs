@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using ActivityDesk.Infrastructure;
 using Blake.NUI.WPF.Gestures;
 using Microsoft.Surface.Presentation.Controls;
@@ -16,7 +17,7 @@ namespace ActivityDesk.Viewers
          public ImageSource Thumbnail { get; set; }
 
          public event EventHandler<LoadedResource> Copied = delegate { };
-
+         public Connection Connector { get; set; }
         public bool Iconized { get; set; }
 
         public string ResourceType { get; set; }

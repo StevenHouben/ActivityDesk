@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using ActivityDesk.Infrastructure;
 using Microsoft.Surface.Presentation.Controls;
 
@@ -22,8 +23,8 @@ namespace ActivityDesk.Viewers
         public string ResourceType { get; set; }
 
         public string Name { get; set; }
-            
 
+        public Connection Connector { get; set; }
         public StrokeCollection Strokes { get; set; }
 
         public LoadedResource LoadedResource { get; set; }
@@ -68,11 +69,7 @@ namespace ActivityDesk.Viewers
             {
                 painter = GetTemplateChild("Painter") as SurfaceInkCanvas;
                 // Set up the DrawingAttributes for the pen.
-                var inkDA = new DrawingAttributes();
-                inkDA.Color = Colors.Black;
-                inkDA.Height = 1;
-                inkDA.Width = 1;
-                inkDA.FitToCurve = false;
+                var inkDA = new DrawingAttributes {Color = Colors.Black, Height = 1, Width = 1, FitToCurve = false};
                 painter.UsesTouchShape = false;
 
                 painter.DefaultDrawingAttributes = inkDA;
@@ -101,5 +98,7 @@ namespace ActivityDesk.Viewers
             if (Close != null)
                 Close(this, new EventArgs());
         }
+
+
 	}
 }

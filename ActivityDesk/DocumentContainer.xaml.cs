@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
+using System.Windows.Shapes;
 using ActivityDesk.Helper;
 using ActivityDesk.Infrastructure;
 using ActivityDesk.Viewers;
@@ -21,9 +24,18 @@ using NooSphere.Model;
 using NooSphere.Model.Device;
 using Math = ActivityDesk.Helper.Math;
 using Note = ActivityDesk.Viewers.Note;
+using Point = System.Windows.Point;
+using Size = System.Windows.Size;
+using System.Windows.Media;
 
 namespace ActivityDesk
 {
+    public class IconConnection
+    {
+        public ScatterViewItem Origin { get; set; }
+        public ScatterViewItem Destination { get; set; }
+    }
+
     public partial class DocumentContainer
     {
         public event EventHandler<string> DeviceValueAdded = delegate { };
@@ -50,6 +62,8 @@ namespace ActivityDesk
         public readonly Dictionary<string, DeviceContainer> DeviceContainers = new Dictionary<string, DeviceContainer>();
 
         public Dictionary<string,LoadedResource> ResourceCache = new Dictionary<string, LoadedResource>();
+
+        public Dictionary<Line,IconConnection> Connections = new Dictionary<Line, IconConnection>();
 
         public DocumentContainer()
         {
@@ -704,10 +718,75 @@ namespace ActivityDesk
         void res_Copied(object sender, LoadedResource e)
         {
             //Grab the sender
-            var rv =  sender as ScatterViewItem;
+            var item =  sender as ScatterViewItem;
+
+            //var removeCopy = false;
+
+            //ScatterViewItem itemToRemove = null;
+            //foreach (var rv in VisualizedResources)
+            //{
+
+            //    if (((IResourceContainer)rv).Iconized && !(Equals(item, rv)))
+            //    {
+            //        var rectItem = new Rect(
+            //      new Point(item.Center.X - IconSize / 2, item.Center.Y - IconSize / 2),
+            //      new Size(IconSize, IconSize));
+
+            //        var rvItem = new Rect(
+            //          new Point(rv.Center.X - IconSize / 2, rv.Center.Y - IconSize / 2),
+            //          new Size(IconSize, IconSize));
+
+            //        if (rectItem.IntersectsWith(rvItem))
+            //        {
+            //            if (((IResourceContainer)rv).LoadedResource.Resource.Id ==
+            //                ((IResourceContainer)item).LoadedResource.Resource.Id)
+            //            {
+            //                itemToRemove = item;
+            //            }
+
+            //        }
+            //    }
+
+            //}
+
+            var iRes = item as IResourceContainer;
+            if(iRes.Connector !=null)
+            {
+                RemoveLineBinding(item);
+                RemoveLineBinding(iRes.Connector.Item);
+                ((IResourceContainer) iRes.Connector.Item).Connector = null;
+                Remove(item);
+                
+                VisualizedResources.Remove(item);
+                return;
+            }
 
             //Add a new resource visualization at the same postion + slight offset
-            AddResourceAtLocation(e, new Point(rv.ActualCenter.X+20,rv.ActualCenter.Y+20),true);
+            var rv_copy = AddResourceAtLocation(e, new Point(item.ActualCenter.X+20,item.ActualCenter.Y+20),true);
+
+            var line = new Line { Stroke = PickBrush(), StrokeThickness = 4 };
+            BindLineToScatterViewItems(line, item, rv_copy);
+
+            Connections.Add(line, new IconConnection(){Origin = item,Destination = rv_copy});
+
+            Canvas.Children.Add(line);
+        }
+
+      
+        private Brush PickBrush()
+        {
+            Brush result = Brushes.Transparent;
+
+            Random rnd = new Random();
+
+            Type brushesType = typeof(Brushes);
+
+            PropertyInfo[] properties = brushesType.GetProperties();
+
+            int random = rnd.Next(properties.Length);
+            result = (Brush)properties[random].GetValue(null, null);
+
+            return result;
         }
 
         /// <summary>
@@ -1020,67 +1099,85 @@ namespace ActivityDesk
             foreach (var dev in DeviceContainers.Values)
             {
                 //Disallow dragging to disconnected devices
-                if (!dev.Connected)
-                    return;
-
-                //Calculate the collision rectangle of the resource
-                var rectItem = new Rect(
-                    new Point(item.Center.X - IconSize/2, item.Center.Y - IconSize/2),
-                    new Size(IconSize, IconSize));
-
-                //Calculate the collision rectangle of the device based on the visual
-                var rectDev = new Rect();
-
-                switch (dev.VisualStyle)
+                if (dev.Connected)
                 {
-                    case DeviceVisual.Thumbnail:
-                        rectDev = new Rect(
-                            new Point(
-                                dev.DeviceThumbnail.Center.X - dev.DeviceThumbnail.ActualWidth/2 + 80,
-                                dev.DeviceThumbnail.Center.Y - dev.DeviceThumbnail.ActualHeight/2 + 30),
-                            new Size(
-                                dev.DeviceThumbnail.ActualWidth - 50,
-                                dev.DeviceThumbnail.ActualHeight - 50));
-                        break;
-                    case DeviceVisual.Visualisation:
-                        rectDev = new Rect(
-                            new Point(
-                                dev.DeviceVisualization.Center.X - dev.DeviceVisualization.ActualWidth/2 +
-                                80,
-                                dev.DeviceVisualization.Center.Y - dev.DeviceVisualization.ActualHeight/2 +
-                                30),
-                            new Size(
-                                dev.DeviceVisualization.ActualWidth - 50,
-                                dev.DeviceVisualization.ActualHeight - 50));
-                        break;
-                }
 
-                //Intersection found
-                if (rectItem.IntersectsWith(rectDev))
-                {
-                    //Remove handlers to make sure the event is not called again
-                    item.RemoveHandler(ManipulationCompletedEvent, new EventHandler<ManipulationCompletedEventArgs>(element_ManipulationDeltaComplete));
-                    item.RemoveHandler(ManipulationDeltaEvent, new EventHandler<ManipulationDeltaEventArgs>(element_ManipulationDelta));
-                    item.Loaded -= element_Loaded;
-                    item.PreviewTouchDown -= element_PreviewTouchDown;
-                    item.SizeChanged -= element_SizeChanged;
+                    //Calculate the collision rectangle of the resource
+                    var rectItem = new Rect(
+                        new Point(item.Center.X - IconSize/2, item.Center.Y - IconSize/2),
+                        new Size(IconSize, IconSize));
 
-                    //Remove the resource
-                    Remove(item);
-                    VisualizedResources.Remove(item);
+                    //Calculate the collision rectangle of the device based on the visual
+                    var rectDev = new Rect();
 
-                    //Send it to the device
-                    SendResourceToDevice( dev.Device, ((IResourceContainer) item).LoadedResource.Resource);
-
-                    //Update the container based on the visual
                     switch (dev.VisualStyle)
                     {
                         case DeviceVisual.Thumbnail:
-                            dev.DeviceThumbnail.AddResource(((IResourceContainer) item).LoadedResource);
+                            rectDev = new Rect(
+                                new Point(
+                                    dev.DeviceThumbnail.Center.X - dev.DeviceThumbnail.ActualWidth/2 + 80,
+                                    dev.DeviceThumbnail.Center.Y - dev.DeviceThumbnail.ActualHeight/2 + 30),
+                                new Size(
+                                    dev.DeviceThumbnail.ActualWidth - 50,
+                                    dev.DeviceThumbnail.ActualHeight - 50));
                             break;
                         case DeviceVisual.Visualisation:
-                            dev.DeviceVisualization.AddResource(((IResourceContainer) item).LoadedResource);
+                            rectDev = new Rect(
+                                new Point(
+                                    dev.DeviceVisualization.Center.X - dev.DeviceVisualization.ActualWidth/2 +
+                                    80,
+                                    dev.DeviceVisualization.Center.Y - dev.DeviceVisualization.ActualHeight/2 +
+                                    30),
+                                new Size(
+                                    dev.DeviceVisualization.ActualWidth - 50,
+                                    dev.DeviceVisualization.ActualHeight - 50));
                             break;
+                    }
+
+                    //Intersection found
+                    if (rectItem.IntersectsWith(rectDev))
+                    {
+                        //Remove handlers to make sure the event is not called again
+                        item.RemoveHandler(ManipulationCompletedEvent,
+                            new EventHandler<ManipulationCompletedEventArgs>(element_ManipulationDeltaComplete));
+                        item.RemoveHandler(ManipulationDeltaEvent,
+                            new EventHandler<ManipulationDeltaEventArgs>(element_ManipulationDelta));
+                        item.Loaded -= element_Loaded;
+                        item.PreviewTouchDown -= element_PreviewTouchDown;
+                        item.SizeChanged -= element_SizeChanged;
+
+
+                        var iRes = item as IResourceContainer;
+                        if (iRes.Connector != null)
+                        {
+                            RemoveLineBinding(item);
+                            RemoveLineBinding(iRes.Connector.Item);
+                            ((IResourceContainer)iRes.Connector.Item).Connector = null;
+                        }
+                        //Remove the resource
+                        Remove(item);
+                        VisualizedResources.Remove(item);
+
+    
+
+                       
+
+
+                        RemoveLineBinding(item);
+
+                        //Send it to the device
+                        SendResourceToDevice(dev.Device, ((IResourceContainer) item).LoadedResource.Resource);
+
+                        //Update the container based on the visual
+                        switch (dev.VisualStyle)
+                        {
+                            case DeviceVisual.Thumbnail:
+                                dev.DeviceThumbnail.AddResource(((IResourceContainer) item).LoadedResource);
+                                break;
+                            case DeviceVisual.Visualisation:
+                                dev.DeviceVisualization.AddResource(((IResourceContainer) item).LoadedResource);
+                                break;
+                        }
                     }
                 }
             }
@@ -1220,6 +1317,46 @@ namespace ActivityDesk
             });
         }
 
+        private void RemoveLineBinding(ScatterViewItem item)
+        {
+            BindingOperations.ClearAllBindings(item);
+
+            var resContainer = item as IResourceContainer;
+            if (resContainer != null && resContainer.Connector == null) return;
+
+            if (resContainer != null) Canvas.Children.Remove(resContainer.Connector.ConnectionLine);
+        }
+        private void BindLineToScatterViewItems(Line line, ScatterViewItem origin,
+    ScatterViewItem destination)
+        {
+
+            // Bind line.(X1,Y1) to origin.ActualCenter  
+            BindingOperations.SetBinding(line, Line.X1Property, new Binding
+            {
+                Source = origin,
+                Path = new PropertyPath("ActualCenter.X")
+            });
+            BindingOperations.SetBinding(line, Line.Y1Property, new Binding
+            {
+                Source = origin,
+                Path = new PropertyPath("ActualCenter.Y")
+            });
+
+            // Bind line.(X2,Y2) to destination.ActualCenter  
+            BindingOperations.SetBinding(line, Line.X2Property, new Binding
+            {
+                Source = destination,
+                Path = new PropertyPath("ActualCenter.X")
+            });
+            BindingOperations.SetBinding(line, Line.Y2Property, new Binding
+            {
+                Source = destination,
+                Path = new PropertyPath("ActualCenter.Y")
+            });
+
+            ((IResourceContainer)origin).Connector = new Connection() { ConnectionLine = line, Item = destination };
+                ((IResourceContainer) destination).Connector = new Connection() {ConnectionLine = line, Item = origin};
+        }
 
     }
     public enum DockStates

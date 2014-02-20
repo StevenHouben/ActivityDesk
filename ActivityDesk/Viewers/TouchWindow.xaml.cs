@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using ActivityDesk.Helper;
 using ActivityDesk.Infrastructure;
 using Blake.NUI.WPF.Gestures;
@@ -31,6 +32,8 @@ namespace ActivityDesk.Viewers
 
         public LoadedResource LoadedResource { get; set; }
 
+        public Connection Connector { get; set; }
+
         public bool Iconized { get; set; }
 
         public event EventHandler<LoadedResource> Copied = delegate { };
@@ -53,9 +56,13 @@ namespace ActivityDesk.Viewers
             DataContext = this;
 	        InitializeComponent();
 
+	        MaxHeight = 600;
+	        MaxWidth = 800;
 
-            Width = 1024;
-            Height = 768;
+	        CanRotate = false;
+
+            Width = 400;
+           Height = 300;
             Events.RegisterGestureEventSupport(this);
 	    }
 

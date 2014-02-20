@@ -80,6 +80,8 @@ namespace ActivityTablet
                 TagValue = "170"
             };
 
+            btnMode.IsEnabled = false;
+
             RunDiscovery();
         }
         private LoadedResource FromResource(Resource res)
@@ -151,7 +153,9 @@ namespace ActivityTablet
                      prox.Activity = (Activity)e.Activity;
 
 
-                     if (_selectedActivity != null && _selectedActivity.Id == prox.Activity.Id && _displayMode == DisplayMode.Controller)
+                     if (_selectedActivity == null)
+                        PopulateResources(prox.Activity.Id);
+                     else if (_selectedActivity.Id == prox.Activity.Id && _displayMode == DisplayMode.Controller)
                          PopulateResources(_selectedActivity.Id);
                 }
 
@@ -179,6 +183,8 @@ namespace ActivityTablet
                 //Show resource mode by default
                 resourceViewer.Visibility = Visibility.Visible;
 
+                Output.Text = "";
+                Output.Height = 0;
             }));
         }
         private void AddActivityUI(Activity ac)
@@ -298,10 +304,17 @@ namespace ActivityTablet
                 _client.DeviceRemoved += _client_DeviceRemoved;
 
 
+
                 foreach (var act in _client.Activities.Values)
                 {
-                    AddActivityUI(act as Activity);
-                    LoadResources(act);
+
+                    Dispatcher.Invoke(() =>
+                    {
+                        btnMode.IsEnabled = true;
+                        AddActivityUI(act as Activity);
+                        LoadResources(act);
+
+                    });
                 }
             }
             catch (Exception ex)
@@ -330,6 +343,15 @@ namespace ActivityTablet
                     _maxItemsCount ++;
                     LoadBitmap(res,_client.GetResource(res));
                 });
+            }
+            if ( _maxItemsCount==0)
+            {
+                Output.Text = "";
+                Output.Height = 0;
+            }
+            else
+            {
+                Output.Height = 25;
             }
         }
         private void LoadBitmap(Resource res,Stream s)
@@ -426,7 +448,6 @@ namespace ActivityTablet
 
             if (img.Source.Height > 1500)
             {
-
                 var height = (int)img.Source.Height;
                 var width = (int)img.Source.Width;
                 var imageHeight = height/10;
@@ -434,7 +455,7 @@ namespace ActivityTablet
 
                 for (var i = 0; i < runs; i++)
                 {
-                    var croppedImage = new Image {Width = width, Height = imageHeight, Stretch = Stretch.Fill};
+                    var croppedImage = new Image {Width = width, Height = imageHeight};
                     var rect = new Int32Rect(0, i*imageHeight, width, imageHeight);
 
                     var cb = new CroppedBitmap(
@@ -442,8 +463,6 @@ namespace ActivityTablet
                         );
 
                     croppedImage.Source = cb;
-                    croppedImage.Width = 800;
-                    croppedImage.Height = 1056;
                     ContentHolder.Children.Add(croppedImage);
                 }
             }

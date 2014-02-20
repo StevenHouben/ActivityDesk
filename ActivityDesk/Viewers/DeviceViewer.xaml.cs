@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Shapes;
 using ActivityDesk.Infrastructure;
 using Blake.NUI.WPF.Gestures;
 
@@ -70,6 +71,18 @@ namespace ActivityDesk.Viewers
             {
                 _pinned = value;
                 OnPropertyChanged("Connected");
+            }
+
+        }
+
+        private Connection _connector;
+        public Connection Connector
+        {
+            get { return _connector; }
+            set
+            {
+                _connector = value;
+                OnPropertyChanged("Connector");
             }
 
         }
