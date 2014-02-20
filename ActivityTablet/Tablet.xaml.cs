@@ -274,6 +274,8 @@ namespace ActivityTablet
 
                 Activities.Remove(proxToRemove);
 
+                ClearResources();
+
             }));
         }
 
@@ -425,8 +427,8 @@ namespace ActivityTablet
             if (img.Source.Height > 1500)
             {
 
-                var height = 9240; // (int)bitmapsource.Height;
-                var width = 502; //(int)bitmapsource.Width;
+                var height = (int)img.Source.Height;
+                var width = (int)img.Source.Width;
                 var imageHeight = height/10;
                 var runs = height/imageHeight;
 

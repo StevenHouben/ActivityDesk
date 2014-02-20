@@ -42,6 +42,7 @@ namespace ActivityDesk.Infrastructure
 
             _activitySystem.ActivityAdded += _activitySystem_ActivityAdded;
             _activitySystem.ActivityChanged += _activitySystem_ActivityChanged;
+            _activitySystem.ActivityRemoved += _activitySystem_ActivityRemoved;
             _activitySystem.ResourceAdded += _activitySystem_ResourceAdded;
             _activitySystem.DeviceAdded += _activitySystem_DeviceAdded;
             _activitySystem.DeviceRemoved += _activitySystem_DeviceRemoved;
@@ -74,8 +75,17 @@ namespace ActivityDesk.Infrastructure
 
         }
 
+        void _activitySystem_ActivityRemoved(object sender, NooSphere.Infrastructure.ActivityRemovedEventArgs e)
+        {
+            if (_selectedActivity == null) return;
+            if (_selectedActivity.Id != e.Id) return;
+            Application.Current.Dispatcher.Invoke(() => _documentContainer.Clear());
+            _selectedActivity = null;
+        }
+
         void _activitySystem_ActivityChanged(object sender, NooSphere.Infrastructure.ActivityEventArgs e)
         {
+
         }
 
         private void _activitySystem_MessageReceived(object sender, MessageEventArgs e)
@@ -231,7 +241,6 @@ namespace ActivityDesk.Infrastructure
         private void InitializeContainer(Activity act)
         {
             Application.Current.Dispatcher.Invoke(() => _documentContainer.Build(act));
-
         }
 
         void _activitySystem_ActivityAdded(object sender, NooSphere.Infrastructure.ActivityEventArgs e)
