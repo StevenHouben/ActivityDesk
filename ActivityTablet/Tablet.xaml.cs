@@ -421,10 +421,9 @@ namespace ActivityTablet
                         Dispatcher.Invoke(() =>
                         {
                             LoadedResource rToR = null;
-                            foreach (var res in LoadedResources)
+                            foreach (var res in LoadedResources.Where(res => res.Resource.Id == resourceToRemove.Id))
                             {
-                                if (res.Resource.Id == resourceToRemove.Id)
-                                    rToR = res;
+                                rToR = res;
                             }
                             if (rToR != null)
                             {

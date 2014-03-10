@@ -49,15 +49,31 @@ namespace Debug.Datagenerator
         {
             var act = e.Activity as Activity;
 
-            _activitySystem.AddFileResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\Users\Public\Pictures\Sample Pictures\Desert.jpg")), "IMG");
-            _activitySystem.AddFileResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\Users\Public\Pictures\Sample Pictures\Hydrangeas.jpg")), "IMG");
-            _activitySystem.AddFileResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\Users\Public\Pictures\Sample Pictures\Jellyfish.jpg")), "IMG");
-            _activitySystem.AddFileResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\Users\Public\Pictures\Sample Pictures\Koala.jpg")), "IMG");
-            _activitySystem.AddFileResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\Users\Public\Pictures\Sample Pictures\Lighthouse.jpg")), "IMG");
-            _activitySystem.AddFileResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\Users\Public\Pictures\Sample Pictures\Penguins.jpg")), "IMG");
-            _activitySystem.AddFileResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\papers\1.png")), "PDF");
-            _activitySystem.AddFileResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\papers\2.png")), "PDF");
-            _activitySystem.AddFileResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\papers\3.png")), "PDF");
+            _activitySystem.AddFileResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\Users\Public\Pictures\Sample Pictures\Desert.jpg")), "IMG", Path.GetFileName(@"C:\Users\Public\Pictures\Sample Pictures\Desert.jpg"));
+
+            _activitySystem.AddFileResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\Users\Public\Pictures\Sample Pictures\Hydrangeas.jpg")), "IMG",
+                Path.GetFileName(@"C:\Users\Public\Pictures\Sample Pictures\Hydrangeas.jpg"));
+
+            _activitySystem.AddFileResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\Users\Public\Pictures\Sample Pictures\Jellyfish.jpg")), "IMG",
+                Path.GetFileName(@"C:\Users\Public\Pictures\Sample Pictures\Jellyfish.jpg"));
+
+            _activitySystem.AddFileResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\Users\Public\Pictures\Sample Pictures\Koala.jpg")), "IMG",
+                Path.GetFileName(@"C:\Users\Public\Pictures\Sample Pictures\Koala.jpg"));
+
+            _activitySystem.AddFileResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\Users\Public\Pictures\Sample Pictures\Lighthouse.jpg")), "IMG",
+                Path.GetFileName(@"C:\Users\Public\Pictures\Sample Pictures\Lighthouse.jpg"));
+
+            _activitySystem.AddFileResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\Users\Public\Pictures\Sample Pictures\Penguins.jpg")), "IMG",
+                Path.GetFileName(@"C:\Users\Public\Pictures\Sample Pictures\Lighthouse.jpg"));
+
+            _activitySystem.AddFileResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\papers\1.png")), "PDF",
+                Path.GetFileName(@"C:\papers\1.png"));
+            _activitySystem.AddFileResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\papers\2.png")),
+                "PDF",
+                Path.GetFileName(@"C:\papers\2.png"));
+
+            _activitySystem.AddFileResourceToActivity(act, new MemoryStream(File.ReadAllBytes(@"C:\papers\3.png")), "PDF",
+                Path.GetFileName(@"C:\papers\1.png"));
 
             if (count++ < 5)
                 _activitySystem.AddActivity(new Activity());
