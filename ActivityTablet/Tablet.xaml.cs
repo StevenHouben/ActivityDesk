@@ -84,7 +84,7 @@ namespace ActivityTablet
 
             RunDiscovery();
         }
-        private LoadedResource FromResource(Resource res)
+        private LoadedResource FromResource(FileResource res)
         {
             var loadedResource = new LoadedResource();
 
@@ -93,7 +93,7 @@ namespace ActivityTablet
             var image = new Image();
 
 
-            using (var stream = _client.GetResource(res))
+            using (var stream = _client.GetFileResource(res))
             {
                 var bitmap = new BitmapImage();
                 bitmap.BeginInit();
@@ -108,7 +108,7 @@ namespace ActivityTablet
             loadedResource.Thumbnail = image.Source;
             return loadedResource;
         }
-        private LoadedResource FromResourceAndBitmapSource(Resource res,BitmapSource source)
+        private LoadedResource FromResourceAndBitmapSource(FileResource res, BitmapSource source)
         {
             var loadedResource = new LoadedResource();
 
@@ -148,15 +148,15 @@ namespace ActivityTablet
                 foreach (var prox in Activities.Where(prox => prox.Activity.Id == e.Activity.Id))
                 {
                     if(e.Activity.Logo != null)
-                            prox.Url = _client.GetResourceUri(e.Activity.Logo);
+                            prox.Url = _client.GetFileResourceUri(e.Activity.Logo);
 
                      prox.Activity = (Activity)e.Activity;
 
 
-                     if (_selectedActivity == null)
-                        PopulateResources(prox.Activity.Id);
-                     else if (_selectedActivity.Id == prox.Activity.Id && _displayMode == DisplayMode.Controller)
-                         PopulateResources(_selectedActivity.Id);
+                     //if (_selectedActivity == null)
+                     //   PopulateResources(prox.Activity.Id);
+                     //else if (_selectedActivity.Id == prox.Activity.Id && _displayMode == DisplayMode.Controller)
+                     //    PopulateResources(_selectedActivity.Id);
                 }
 
             }));
@@ -194,7 +194,7 @@ namespace ActivityTablet
                 var prox = new Proxy()
                 {
                     Activity = ac,
-                    Url = ac.Logo != null ? _client.GetResourceUri(ac.Logo) : new Uri("pack://application:,,,/Images/activity.PNG")
+                    Url = ac.Logo != null ? _client.GetFileResourceUri(ac.Logo) : new Uri("pack://application:,,,/Images/activity.PNG")
                 };
                 Activities.Add(prox);
             }));
@@ -229,10 +229,13 @@ namespace ActivityTablet
 
         private void SwitchActivity(string id)
         {
-            if(_displayMode == DisplayMode.Controller)
+            if (_displayMode == DisplayMode.Controller)
                 PopulateResources(id);
             else
+            {
                 _client.SendMessage(MessageType.ActivityChanged, id);
+                ClearResources();
+            }
         }
 
         private void PopulateResources(string id)
@@ -242,7 +245,7 @@ namespace ActivityTablet
             var activity = _client.Activities[id];
 
             ClearResources();
-            foreach (var res in activity.Resources)
+            foreach (var res in activity.FileResources)
             {
                 LoadedResource loadedResource;
                 if (ResourceCache.ContainsKey(res.Id))
@@ -299,7 +302,7 @@ namespace ActivityTablet
                 _client.ActivityAdded += activityClient_ActivityAdded;
                 _client.ActivityChanged += _client_ActivityChanged;
                 _client.ActivityRemoved += activityClient_ActivityRemoved;
-                _client.ResourceAdded += _client_ResourceAdded;
+                _client.FileResourceAdded += _client_ResourceAdded;
                 _client.MessageReceived += _client_MessageReceived;
                 _client.DeviceRemoved += _client_DeviceRemoved;
 
@@ -324,24 +327,24 @@ namespace ActivityTablet
             }
         }
 
-        void _client_ResourceAdded(object sender, ResourceEventArgs e)
+        void _client_ResourceAdded(object sender, FileResourceEventArgs e)
         {
              Task.Factory.StartNew(() =>
                 {
                     _maxItemsCount ++;
-                    LoadBitmap(e.Resource,_client.GetResource(e.Resource));
+                    LoadBitmap(e.Resource,_client.GetFileResource(e.Resource));
                 });
         }
 
 
         private void LoadResources(IActivity act)
         {
-            foreach (var res in act.Resources)
+            foreach (var res in act.FileResources)
             {
                 Task.Factory.StartNew(() =>
                 {
                     _maxItemsCount ++;
-                    LoadBitmap(res,_client.GetResource(res));
+                    LoadBitmap(res,_client.GetFileResource(res));
                 });
             }
             if ( _maxItemsCount==0)
@@ -354,7 +357,7 @@ namespace ActivityTablet
                 Output.Height = 25;
             }
         }
-        private void LoadBitmap(Resource res,Stream s)
+        private void LoadBitmap(FileResource res, Stream s)
         {
             var bitmap = new BitmapImage();
             bitmap.BeginInit();
@@ -364,9 +367,9 @@ namespace ActivityTablet
             bitmap.Freeze();
             s.Close();
             s.Dispose();
-            Dispatcher.Invoke(DispatcherPriority.Send, new Action<Resource,BitmapImage>(AddLoadedResourceFromCachedBitmap),res,bitmap);
+            Dispatcher.Invoke(DispatcherPriority.Send, new Action<FileResource, BitmapImage>(AddLoadedResourceFromCachedBitmap), res, bitmap);
         }
-        private void AddLoadedResourceFromCachedBitmap(Resource resource,BitmapImage img)
+        private void AddLoadedResourceFromCachedBitmap(FileResource resource, BitmapImage img)
         {
             if (!ResourceCache.ContainsKey(resource.Id))
                 ResourceCache.Add(resource.Id, FromResourceAndBitmapSource(resource, img));
@@ -389,7 +392,7 @@ namespace ActivityTablet
             switch (e.Message.Type)
             {
                 case MessageType.Resource:
-                    var resource = e.Message.Content as Resource;
+                    var resource = e.Message.Content as FileResource;
                     if (resource != null)
                     {
                         Dispatcher.Invoke(() =>
@@ -412,7 +415,7 @@ namespace ActivityTablet
                     }
                     break;
                     case MessageType.ResourceRemove:
-                    var resourceToRemove = e.Message.Content as Resource;
+                    var resourceToRemove = e.Message.Content as FileResource;
                     if (resourceToRemove != null)
                     {
                         Dispatcher.Invoke(() =>

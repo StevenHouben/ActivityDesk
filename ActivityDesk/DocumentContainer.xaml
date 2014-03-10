@@ -11,7 +11,11 @@
     <Grid>
         <s:TagVisualizer x:Name="Visualizer" visualizer:TagVisualizerEvents.Mode="Off" VisualizationAdded="Visualizer_VisualizationAdded" VisualizationRemoved="Visualizer_VisualizationRemoved" Width="auto" Height="auto">
         </s:TagVisualizer>
-        <Canvas x:Name="Canvas"/>
+        <Canvas x:Name="Canvas">
+            <DockPanel Canvas.Top="100" Width="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Canvas}}}">
+                <Label x:Name="ActivityName" VerticalAlignment="Center" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Content="{Binding SelectedActivity.Name}" FontSize="120" Foreground="#30FFFFFF" Background="Transparent"/>
+            </DockPanel>
+        </Canvas>
         <s:ScatterView Name="view" />
     </Grid>
 </UserControl>

@@ -20,7 +20,7 @@ namespace ActivityDesk.Infrastructure
         private ActivitySystem _activitySystem;
         private ActivityService _activityService;
         private DocumentContainer _documentContainer;
-        private Activity _selectedActivity;
+        public Activity SelectedActivity { get; set; }
 
         private readonly List<string> _queuedDeviceDetections = new List<string>();
 
@@ -43,7 +43,7 @@ namespace ActivityDesk.Infrastructure
             _activitySystem.ActivityAdded += _activitySystem_ActivityAdded;
             _activitySystem.ActivityChanged += _activitySystem_ActivityChanged;
             _activitySystem.ActivityRemoved += _activitySystem_ActivityRemoved;
-            _activitySystem.ResourceAdded += _activitySystem_ResourceAdded;
+            _activitySystem.FileResourceAdded += _activitySystem_ResourceAdded;
             _activitySystem.DeviceAdded += _activitySystem_DeviceAdded;
             _activitySystem.DeviceRemoved += _activitySystem_DeviceRemoved;
             _activitySystem.MessageReceived += _activitySystem_MessageReceived;
@@ -61,31 +61,35 @@ namespace ActivityDesk.Infrastructure
             _documentContainer.DeviceValueAdded += _documentContainer_DeviceValueAdded;
             _documentContainer.DeviceValueRemoved += _documentContainer_DeviceValueRemoved;
 
-            foreach (var res in _activitySystem.Activities.Values.SelectMany(act => act.Resources))
+            foreach (var res in _activitySystem.Activities.Values.SelectMany(act => act.FileResources))
             {
                 _documentContainer.ResourceCache.Add(res.Id, FromResource(res));
             }
            
 
             if (_activitySystem.Activities.Count>0)
-                _selectedActivity = _activitySystem.Activities.Values.First() as Activity;
+                SelectedActivity = _activitySystem.Activities.Values.First() as Activity;
 
-            if (_selectedActivity != null)
-                InitializeContainer(_selectedActivity);
+            if (SelectedActivity != null)
+                InitializeContainer(SelectedActivity);
 
         }
 
         void _activitySystem_ActivityRemoved(object sender, NooSphere.Infrastructure.ActivityRemovedEventArgs e)
         {
-            if (_selectedActivity == null) return;
-            if (_selectedActivity.Id != e.Id) return;
+            if (SelectedActivity == null) return;
+            if (SelectedActivity.Id != e.Id) return;
             Application.Current.Dispatcher.Invoke(() => _documentContainer.Clear());
-            _selectedActivity = null;
+            SelectedActivity = null;
         }
 
         void _activitySystem_ActivityChanged(object sender, NooSphere.Infrastructure.ActivityEventArgs e)
         {
-
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                if (e.Activity.Id == _documentContainer.SelectedActivity.Id)
+                    _documentContainer.SelectedActivity = (Activity)e.Activity;
+            });
         }
 
         private void _activitySystem_MessageReceived(object sender, MessageEventArgs e)
@@ -97,19 +101,19 @@ namespace ActivityDesk.Infrastructure
                     {
                         Application.Current.Dispatcher.Invoke(() =>
                         {
-                            if (_selectedActivity != null)
+                            if (SelectedActivity != null)
                             {
-                                _selectedActivity.Configuration =
+                                SelectedActivity.Configuration =
                                     _documentContainer.GetDeskConfiguration() as ISituatedConfiguration;
 
-                                _activitySystem.UpdateActivity(_selectedActivity);
+                                _activitySystem.UpdateActivity(SelectedActivity);
                             }
 
 
-                            _selectedActivity = _activitySystem.Activities[e.Message.Content as string] as Activity;
+                            SelectedActivity = _activitySystem.Activities[e.Message.Content as string] as Activity;
 
-                            if (_selectedActivity != null)
-                                InitializeContainer(_selectedActivity);
+                            if (SelectedActivity != null)
+                                InitializeContainer(SelectedActivity);
                         });
                     }
 
@@ -204,7 +208,7 @@ namespace ActivityDesk.Infrastructure
             _activityService.SendMessage(e.Device, MessageType.Resource, e.Resource);
         }
 
-        private void _activitySystem_ResourceAdded(object sender, ResourceEventArgs e)
+        private void _activitySystem_ResourceAdded(object sender, FileResourceEventArgs e)
         {
             _documentContainer.Dispatcher.Invoke(DispatcherPriority.Background,
                 new System.Action(() =>
@@ -212,16 +216,16 @@ namespace ActivityDesk.Infrastructure
                     var loadedResource = FromResource(e.Resource);
                     _documentContainer.ResourceCache.Add(e.Resource.Id, loadedResource);
 
-                    if (e.Resource.ActivityId == _selectedActivity.Id)
+                    if (e.Resource.ActivityId == SelectedActivity.Id)
                         _documentContainer.AddResource(loadedResource, true);
                 }));
         }
-        internal LoadedResource FromResource(Resource res)
+        internal LoadedResource FromResource(FileResource res)
         {
             var loadedResource = new LoadedResource();
 
             var image = new Image();
-            using (var stream = _activitySystem.GetStreamFromResource(res.Id))
+            using (var stream = _activitySystem.GetStreamFromFileResource(res.Id))
             {
                 var bitmap = new BitmapImage();
                 bitmap.BeginInit();
@@ -245,22 +249,22 @@ namespace ActivityDesk.Infrastructure
 
         void _activitySystem_ActivityAdded(object sender, NooSphere.Infrastructure.ActivityEventArgs e)
         {
-            if (_selectedActivity != null)
+            if (SelectedActivity != null)
             {
                  Application.Current.Dispatcher.Invoke(() =>
                         {
-                                            _selectedActivity.Configuration =
+                                            SelectedActivity.Configuration =
                     _documentContainer.GetDeskConfiguration() as ISituatedConfiguration;
 
-                         _activitySystem.UpdateActivity(_selectedActivity);
+                         _activitySystem.UpdateActivity(SelectedActivity);
                         });
 
             }
 
-            _selectedActivity = (Activity)e.Activity;
+            SelectedActivity = (Activity)e.Activity;
 
-            if (_selectedActivity != null)
-                InitializeContainer(_selectedActivity);
+            if (SelectedActivity != null)
+                InitializeContainer(SelectedActivity);
         }
         public string Title { get; set; }
         public string Content { get; set; }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -36,8 +37,32 @@ namespace ActivityDesk
         public ScatterViewItem Destination { get; set; }
     }
 
-    public partial class DocumentContainer
+    public partial class DocumentContainer:INotifyPropertyChanged
     {
+
+        public event PropertyChangedEventHandler PropertyChanged = delegate { };
+        internal event EventHandler<Point> ResourceReleased = delegate { };
+
+        private Activity _selectedActivity;
+        public Activity SelectedActivity
+        {
+            get { return _selectedActivity; }
+            set
+            {
+                _selectedActivity = value;
+                OnPropertyChanged("SelectedActivity");
+            }
+
+        }
+
+        protected void OnPropertyChanged(string name)
+        {
+            var handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(name));
+            }
+        }
         public event EventHandler<string> DeviceValueAdded = delegate { };
         public event EventHandler<string> DeviceValueRemoved = delegate { };
 
@@ -69,6 +94,8 @@ namespace ActivityDesk
         {
             InitializeComponent();
 
+            DataContext = this;
+
             //Enable gesture recognition support by the BLAKE NUI toolkit
             Events.RegisterGestureEventSupport(this);
 
@@ -88,10 +115,6 @@ namespace ActivityDesk
 
             //Ignore all non tocuch devices
             CustomTopmostBehavior.Activate();
-        }
-        internal void UpdateContainer(Activity activity)
-        {
-           
         }
 
         /// <summary>
@@ -137,6 +160,8 @@ namespace ActivityDesk
         /// </summary>
         internal void Build(Activity act)
         {
+            SelectedActivity = act;
+
             var configuration = act.Configuration as DeskConfiguration;
 
             //Clear all item from the desk
@@ -330,7 +355,7 @@ namespace ActivityDesk
         /// <summary>
         /// Notifies outsiders that a resource should be send to a device
         /// </summary>
-        private void SendResourceToDevice(Device device, Resource resource)
+        private void SendResourceToDevice(Device device, FileResource resource)
         {
             ResourceHandled(this, new ResourceHandle
             {
@@ -342,7 +367,7 @@ namespace ActivityDesk
         /// <summary>
         /// Notifies outsiders that a resource should be removed from a device
         /// </summary>
-        private void SendResourceRemoveToDevice(Device device, Resource resource)
+        private void SendResourceRemoveToDevice(Device device, FileResource resource)
         {
              ResourceHandleReleased(this, new ResourceHandle
              {
@@ -1157,11 +1182,6 @@ namespace ActivityDesk
                         //Remove the resource
                         Remove(item);
                         VisualizedResources.Remove(item);
-
-    
-
-                       
-
 
                         RemoveLineBinding(item);
 

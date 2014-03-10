@@ -51,9 +51,9 @@ namespace ActivityDesk.Infrastructure
 
         }
 
-        private Resource _resource;
+        private FileResource _resource;
 
-        public Resource Resource
+        public FileResource Resource
         {
             get { return _resource; }
             set

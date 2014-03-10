@@ -24,12 +24,12 @@ namespace ActivityDesk.Infrastructure
 
     public class DefaultResourceConfiguration : IResourceConfiguration
     {
-        public Resource Resource { get; set; }
+        public FileResource Resource { get; set; }
     }
 
     public class DeskResourceConfiguration : IResourceConfiguration
     {
-        public Resource Resource { get; set; }
+        public FileResource Resource { get; set; }
 
         public DockStates DockState { get; set; }
 
@@ -63,6 +63,6 @@ namespace ActivityDesk.Infrastructure
         }
 
 
-        public Resource Resource { get; set; }
+        public FileResource Resource { get; set; }
     }
 }

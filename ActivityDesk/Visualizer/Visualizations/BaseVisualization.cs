@@ -1,13 +1,14 @@
 ﻿using System;
 using Microsoft.Surface.Presentation.Controls;
 using NooSphere.Model;
+using NooSphere.Model.Resources;
 
 namespace ActivityDesk.Visualizer.Visualizations
 {
     public abstract class BaseVisualization : TagVisualization
     {
         public event LockedEventHandler Locked = delegate { }; 
-        public event EventHandler<Resource> ReleaseResource = delegate { };
+        public event EventHandler<FileResource> ReleaseResource = delegate { };
 
         protected BaseVisualization()
         {
@@ -20,7 +21,7 @@ namespace ActivityDesk.Visualizer.Visualizations
                 Locked(this, new LockedEventArgs(VisualizedTag.Value.ToString()));
         }
 
-        protected virtual void OnReleaseResource(Resource resource)
+        protected virtual void OnReleaseResource(FileResource resource)
         {
             if (ReleaseResource != null)
                 ReleaseResource(this, resource);
