@@ -69,6 +69,8 @@ namespace ActivityDesk
         public event EventHandler<ResourceHandle> ResourceHandled = delegate { };
         public event EventHandler<ResourceHandle> ResourceHandleReleased = delegate { };
 
+        public Device MasterDevice;
+
         private int _rightDockX = 1820;
         private int _leftDockX = 100;
         private int _upperDockY = 100;
@@ -179,7 +181,7 @@ namespace ActivityDesk
 
             //If no configuraton -> simply add all resources
             if (configuration == null)
-                foreach (var res in act.Resources)
+                foreach (var res in act.FileResources)
                 {
                    AddResource(ResourceCache[res.Id],true);
                 }
@@ -268,7 +270,7 @@ namespace ActivityDesk
                 //Update the orientation
                 viewer.Orientation = deskConfig.Orientation;
             }
-            foreach (var res in act.Resources)
+            foreach (var res in act.FileResources)
             {
                 if (!handledResources.Contains(res.Id))
                 {

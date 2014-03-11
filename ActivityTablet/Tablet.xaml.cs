@@ -336,7 +336,6 @@ namespace ActivityTablet
                 });
         }
 
-
         private void LoadResources(IActivity act)
         {
             foreach (var res in act.FileResources)

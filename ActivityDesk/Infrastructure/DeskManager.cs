@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media.Imaging;
@@ -67,8 +66,8 @@ namespace ActivityDesk.Infrastructure
             }
            
 
-            if (_activitySystem.Activities.Count>0)
-                SelectedActivity = _activitySystem.Activities.Values.First() as Activity;
+            //if (_activitySystem.Activities.Count>0)
+            //    SelectedActivity = _activitySystem.Activities.Values.First() as Activity;
 
             if (SelectedActivity != null)
                 InitializeContainer(SelectedActivity);
@@ -183,8 +182,11 @@ namespace ActivityDesk.Infrastructure
             //Check whether the added NooSphere device matches a detected tag
             foreach (var val in _queuedDeviceDetections.Where(val => val == e.Device.TagValue))
             {
+                if (_documentContainer.MasterDevice == null)
+                    _documentContainer.MasterDevice = (Device)e.Device;
+
                 //Validate it
-                _documentContainer.ValidateDevice(val, e.Device as Device);
+                _documentContainer.ValidateDevice(val, (Device)e.Device);
                 value = val;
             }
 
