@@ -3,8 +3,53 @@
     xmlns:s="http://schemas.microsoft.com/surface/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     x:Class="ActivityDesk.Visualizer.Visualizations.VisualizationTablet" mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:visualizations="clr-namespace:ActivityDesk.Visualizer.Visualizations">
-    <Grid x:Name="LayoutRoot">
+    xmlns:visualizations="clr-namespace:ActivityDesk.Visualizer.Visualizations"
+    xmlns:gestures="clr-namespace:Blake.NUI.WPF.Gestures;assembly=Blake.NUI.WPF">
+    <Grid x:Name="LayoutRoot" Width="800">
+        <Image Source="/Images/triangle.png" Height="40" RenderTransformOrigin="2.1,1.275" Margin="-452,516,685,-68">
+            <Image.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform ScaleX="-1"/>
+                    <SkewTransform/>
+                    <RotateTransform/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Image.RenderTransform>
+            <Image.Style>
+                <Style TargetType="{x:Type Image}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding UiOverflow}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding UiOverflow}" Value="False">
+                            <Setter Property="Visibility" Value="Hidden"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Image.Style>
+        </Image>
+        <Image Source="/Images/triangle.png" Height="40" RenderTransformOrigin="2.1,1.275" Margin="576,456,-343,-8">
+            <Image.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform ScaleX="-1"/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="-179.884"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Image.RenderTransform>
+            <Image.Style>
+                <Style TargetType="{x:Type Image}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding UiOverflow}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding UiOverflow}" Value="False">
+                            <Setter Property="Visibility" Value="Hidden"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Image.Style>
+        </Image>
         <s:SurfaceScrollViewer Margin="-10,488,-40,-100" Height="100" PanningMode="HorizontalOnly" 
                                VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Hidden">
             <ItemsControl ItemsSource="{Binding Path=LoadedResources}">
@@ -15,9 +60,8 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Grid x:Name="grid" Height="100" Width="100" xmlns:gestures="clr-namespace:Blake.NUI.WPF.Gestures;assembly=Blake.NUI.WPF"
-      gestures:Events.DoubleTapGesture="OnDoubleTapGesture" >
-                            <Border BorderBrush="DarkOliveGreen" BorderThickness="2" Margin="8" >
+                        <Grid x:Name="grid" Height="100" Width="100" gestures:Events.DoubleTapGesture="OnDoubleTapGesture" >
+                            <Border BorderBrush="DarkOliveGreen" BorderThickness="2" Margin="8" Background="White" >
                                 <Border x:Name="body" BorderBrush="Black" BorderThickness="5">
                                     <Border.Background>
                                         <ImageBrush ImageSource="{Binding Thumbnail}"></ImageBrush>
@@ -33,7 +77,7 @@
             </ItemsControl>
         </s:SurfaceScrollViewer>
         <StackPanel Orientation="Horizontal">
-                <StackPanel x:Name="pnlButtons" Width="43.334" HorizontalAlignment="Left" d:LayoutOverrides="Height" VerticalAlignment="Center">
+            <StackPanel x:Name="pnlButtons" Width="43.334" HorizontalAlignment="Left" d:LayoutOverrides="Height" VerticalAlignment="Center">
                 <Image TouchDown="UIElement_OnTouchDown" VerticalAlignment="Center" HorizontalAlignment="Center">
                     <Image.Style>
                         <Style TargetType="{x:Type Image}">
@@ -63,10 +107,10 @@
                     </Image.Style>
                 </Image>
             </StackPanel>
-                <Border x:Name="btnBody" Height="488">
-                    <Image Source="tablet_landscape.png" Height="525" Width="732"></Image>
-                </Border>
-            </StackPanel>
+            <Border x:Name="btnBody" Height="488">
+                <Image Source="tablet_landscape.png" Height="525" Width="732"></Image>
+            </Border>
+        </StackPanel>
     </Grid>
 </visualizations:BaseVisualization>
 

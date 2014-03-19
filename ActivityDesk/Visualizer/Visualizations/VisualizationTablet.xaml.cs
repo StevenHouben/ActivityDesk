@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Shapes;
 using ActivityDesk.Infrastructure;
 using ActivityDesk.Viewers;
 using Blake.NUI.WPF.Gestures;
@@ -17,6 +16,19 @@ namespace ActivityDesk.Visualizer.Visualizations
         public event EventHandler<Device> Closed = delegate { };
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
         public event EventHandler<Point> ResourceReleased = delegate { };
+
+
+        private bool _uiOverflow;
+        public bool UiOverflow
+        {
+            get { return _uiOverflow; }
+            set
+            {
+                _uiOverflow = value;
+                OnPropertyChanged("UiOverflow");
+            }
+
+        }
 
         public Connection Connector { get; set;
         }
@@ -83,6 +95,7 @@ namespace ActivityDesk.Visualizer.Visualizations
 	    {
             Resource = new LoadedResource();
             LoadedResources = new ObservableCollection<LoadedResource>();
+            LoadedResources.CollectionChanged += LoadedResources_CollectionChanged;
 
             InitializeComponent();
 
@@ -90,6 +103,11 @@ namespace ActivityDesk.Visualizer.Visualizations
             Events.RegisterGestureEventSupport(this);
 
 	    }
+
+         void LoadedResources_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+         {
+             UiOverflow = LoadedResources.Count > 8;
+         }
         
         private void UIElement_OnTouchDown(object sender, TouchEventArgs e)
         {

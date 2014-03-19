@@ -132,6 +132,12 @@ namespace ActivityDesk
             //Update the device connection state
             DeviceContainers[tagValue].Connected = true;
             DeviceContainers[tagValue].Device = device;
+
+            if (device == MasterDevice)
+            {
+                if(SelectedActivity != null)
+                    Build(SelectedActivity);
+            }
         }
 
         /// <summary>
@@ -179,15 +185,24 @@ namespace ActivityDesk
                 });
             }
 
-            //If no configuraton -> simply add all resources
+            ////If no configuraton -> simply add all resources
             if (configuration == null)
                 foreach (var res in act.FileResources)
                 {
-                   AddResource(ResourceCache[res.Id],true);
+                    if (GlobalProperties.DeviceMode)
+                    {
+                        if (MasterDevice != null)
+                        {
+                            if (DeviceContainers.ContainsKey(MasterDevice.TagValue))
+                            {
+                                DeviceContainers[MasterDevice.TagValue].AddResource(ResourceCache[res.Id]);
+                            }
+                        }
+                    }
+                    else AddResource(ResourceCache[res.Id], true);
                 }
-            //Build the desk from configuratoiom
-            else
-                BuildFromConfiguration(act,configuration);
+            ////Build the desk from configuratoiom
+            else BuildFromConfiguration(act,configuration);
         }
 
         /// <summary>
@@ -274,7 +289,18 @@ namespace ActivityDesk
             {
                 if (!handledResources.Contains(res.Id))
                 {
-                    AddResource(ResourceCache[res.Id], true);
+                    if (GlobalProperties.DeviceMode)
+                    {
+                        if (MasterDevice != null)
+                        {
+                            if (DeviceContainers.ContainsKey(MasterDevice.TagValue))
+                            {
+                                DeviceContainers[MasterDevice.TagValue].AddResource(ResourceCache[res.Id]);
+                            }
+                        }
+                    }
+                    else AddResource(ResourceCache[res.Id], true);
+                    handledResources.Add(res.Id);
                 }
             }
         }
@@ -526,10 +552,8 @@ namespace ActivityDesk
             //container is not pinned -> so remove detached device
             else
             {
-                //Add all resources of the detached device to the desk
-                foreach (var res in container.LoadedResources)
-                    AddResource(res, true);
-
+                ResetResourcesAfterDeviceRemove(container); 
+               
                 //Reset resources on remote device
                 SendResourceResetToDevice(container.Device);
 
@@ -583,9 +607,8 @@ namespace ActivityDesk
                     //Reset remove resource collection
                     SendResourceResetToDevice(container.Device);
 
-                    //Add all released resources to the desk
-                    foreach (var res in container.DeviceThumbnail.LoadedResources)
-                        AddResource(res,true);
+                    ResetResourcesAfterDeviceRemove(container);
+
                 }
 
                 RemoveDeviceVisualisation(e.VisualizedTag);
@@ -661,6 +684,26 @@ namespace ActivityDesk
         public ScatterViewItem AddResource(LoadedResource resource, bool iconized = false)
         {
             return AddResourceAtLocation(resource, new Point(Math.RandomNumber(200, 1000), Math.RandomNumber(200, 800)), iconized);
+        }
+
+        /// <summary>
+        /// Adds a loaded resource to the view
+        /// </summary>
+        public void AddResourceToMaster(LoadedResource resource)
+        {
+            if (MasterDevice != null)
+            {
+                if (DeviceContainers.ContainsKey(MasterDevice.TagValue))
+                    DeviceContainers[MasterDevice.TagValue].AddResource(resource);
+                else
+                {
+                    if (DeviceContainers.Count > 0) ;
+                    {
+                        MasterDevice = DeviceContainers.First().Value.Device;
+                        AddResourceToMaster(resource);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -896,9 +939,8 @@ namespace ActivityDesk
             if (container.VisualStyle != DeviceVisual.Thumbnail) 
                 return;
 
-            //Restore all the resource of the thumbnail
-            foreach (var res in container.DeviceThumbnail.LoadedResources)
-                AddResource(res,true);
+            ResetResourcesAfterDeviceRemove(container);
+               
 
             //Remove the thumbnail and container
             RemoveDeviceVisualisation(dev);
@@ -1324,19 +1366,42 @@ namespace ActivityDesk
                 //Reset the resource on remote device
                 SendResourceResetToDevice(container.Device);
 
+                ResetResourcesAfterDeviceRemove(container);
                 //Remove thumbnail visual
                 if (container.VisualStyle == DeviceVisual.Thumbnail)
-                {
-                    foreach (var res in container.DeviceThumbnail.LoadedResources)
-                        AddResource(res, true);
                     RemoveDeviceVisualisation(container.TagValue);
-                }
-                //Remove the actual device resource vis
                 else
-                    foreach (var res in container.DeviceVisualization.LoadedResources)
-                        AddResource(res, true);
-                DeviceContainers.Remove(container.TagValue);
+                    DeviceContainers.Remove(container.TagValue);
             });
+        }
+
+        private void ResetResourcesAfterDeviceRemove(DeviceContainer container)
+        {
+            if (GlobalProperties.DeviceMode)
+            {
+                var otherDeviceInSpace = false;
+                foreach (var dev in DeviceContainers.Values)
+                {
+                    if (dev != container)
+                    {
+                        MasterDevice = container.Device;
+                        foreach (var res in container.LoadedResources)
+                            AddResource(res, true);
+                        otherDeviceInSpace = true;
+                    }
+                }
+                if (!otherDeviceInSpace)
+                {
+                    MasterDevice = null;
+                    Clear();
+                }
+            }
+            else
+            {
+                //Add all resources of the detached device to the desk
+                foreach (var res in container.LoadedResources)
+                    AddResource(res, true);
+            }
         }
 
         private void RemoveLineBinding(ScatterViewItem item)

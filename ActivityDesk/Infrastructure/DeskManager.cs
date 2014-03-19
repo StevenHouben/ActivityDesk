@@ -30,6 +30,8 @@ namespace ActivityDesk.Infrastructure
         public void Start(DocumentContainer documentContainer)
         {
 
+            GlobalProperties.DeviceMode = true;
+
             var webconfiguration = WebConfiguration.DefaultWebConfiguration;
 
             const string ravenDatabaseName = "desksystem";
@@ -64,10 +66,14 @@ namespace ActivityDesk.Infrastructure
             {
                 _documentContainer.ResourceCache.Add(res.Id, FromResource(res));
             }
-           
 
-            //if (_activitySystem.Activities.Count>0)
-            //    SelectedActivity = _activitySystem.Activities.Values.First() as Activity;
+
+            if (!GlobalProperties.DeviceMode)
+            {
+                if (_activitySystem.Activities.Count>0)
+                    SelectedActivity = _activitySystem.Activities.Values.First() as Activity;
+            }
+           
 
             if (SelectedActivity != null)
                 InitializeContainer(SelectedActivity);
@@ -86,6 +92,7 @@ namespace ActivityDesk.Infrastructure
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
+                if (_documentContainer.SelectedActivity == null) return;
                 if (e.Activity.Id == _documentContainer.SelectedActivity.Id)
                     _documentContainer.SelectedActivity = (Activity)e.Activity;
             });
@@ -157,7 +164,14 @@ namespace ActivityDesk.Infrastructure
             if (_activitySystem.Devices.Values.Any(dev => dev.TagValue == e))
             {
                 var device = _activitySystem.Devices.Values.Where(dev => dev.TagValue == e);
-                _documentContainer.ValidateDevice(e, device.First() as Device);
+                if (GlobalProperties.DeviceMode)
+                {
+                    if (_documentContainer.MasterDevice == null)
+                        _documentContainer.MasterDevice = (Device)device.First();
+                }
+
+                _documentContainer.Dispatcher.Invoke(DispatcherPriority.Background,
+                new System.Action(() => _documentContainer.ValidateDevice(e, (Device)device.First())));
                 return;
             }
 
@@ -182,11 +196,15 @@ namespace ActivityDesk.Infrastructure
             //Check whether the added NooSphere device matches a detected tag
             foreach (var val in _queuedDeviceDetections.Where(val => val == e.Device.TagValue))
             {
-                if (_documentContainer.MasterDevice == null)
-                    _documentContainer.MasterDevice = (Device)e.Device;
 
-                //Validate it
-                _documentContainer.ValidateDevice(val, (Device)e.Device);
+                if (GlobalProperties.DeviceMode)
+                {
+                    if (_documentContainer.MasterDevice == null)
+                        _documentContainer.MasterDevice = (Device) e.Device;
+                }
+                _documentContainer.Dispatcher.Invoke(DispatcherPriority.Background,
+                new System.Action(() => _documentContainer.ValidateDevice(val, (Device)e.Device)));
+                
                 value = val;
             }
 
@@ -218,8 +236,19 @@ namespace ActivityDesk.Infrastructure
                     var loadedResource = FromResource(e.Resource);
                     _documentContainer.ResourceCache.Add(e.Resource.Id, loadedResource);
 
-                    if (e.Resource.ActivityId == SelectedActivity.Id)
-                        _documentContainer.AddResource(loadedResource, true);
+                    if(SelectedActivity ==null)
+                        return;
+                    
+                    if (GlobalProperties.DeviceMode)
+                    {
+                        if (e.Resource.ActivityId == SelectedActivity.Id)
+                            _documentContainer.AddResourceToMaster(loadedResource);
+                    }
+                    else
+                    {
+                        if (e.Resource.ActivityId == SelectedActivity.Id)
+                            _documentContainer.AddResource(loadedResource,true);
+                    }
                 }));
         }
         internal LoadedResource FromResource(FileResource res)

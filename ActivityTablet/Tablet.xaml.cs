@@ -265,11 +265,13 @@ namespace ActivityTablet
                 loadedResource.Selected = true;
 
                 LoadedResources.Add(loadedResource);
+                lastShownResource = loadedResource;
                 ShowResource(loadedResource.Content);
 
             }
         }
 
+        private LoadedResource lastShownResource = new LoadedResource();
 
         private void RemoveActivityUI(string id)
         {
@@ -407,6 +409,7 @@ namespace ActivityTablet
                                 ResourceCache.Add(resource.Id,loadedResource);
                             }
 
+                            lastShownResource = loadedResource;
                             ShowResource(loadedResource.Content);
 
                             LoadedResources.Add(loadedResource);
@@ -441,6 +444,7 @@ namespace ActivityTablet
 
             }
         }
+
         private void ShowResource(Image img)
         {
              Canvas.Strokes.Clear();
@@ -486,6 +490,7 @@ namespace ActivityTablet
             var res = fe.DataContext as LoadedResource;
             if (res == null) return;
 
+            lastShownResource = res;
             ShowResource(res.Content);
 
             foreach (var lr in LoadedResources)
