@@ -430,6 +430,13 @@ namespace ActivityTablet
                             if (rToR != null)
                             {
                                 LoadedResources.Remove(rToR);
+                                if (lastShownResource.Resource.Id == rToR.Resource.Id)
+                                {
+                                    ContentHolder.Background = Brushes.White;
+                                    Canvas.Strokes.Clear();
+                                    ContentHolder.Children.Clear();
+                                }
+
                             }
                         });
                     }
