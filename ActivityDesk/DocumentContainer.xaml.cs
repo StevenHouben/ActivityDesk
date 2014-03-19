@@ -114,9 +114,6 @@ namespace ActivityDesk
 
             //Handle to the size change
             SizeChanged += DocumentContainer_SizeChanged;
-
-            //Ignore all non tocuch devices
-            CustomTopmostBehavior.Activate();
         }
 
         /// <summary>
@@ -135,7 +132,7 @@ namespace ActivityDesk
 
             if (device == MasterDevice)
             {
-                if(SelectedActivity != null)
+                if (SelectedActivity != null)
                     Build(SelectedActivity);
             }
         }
@@ -460,6 +457,10 @@ namespace ActivityDesk
                     Debug.WriteLine("NooSphere Device validation disabled for thumbnails");
                     ValidateDevice(dev.TagValue, dev.Device);
                 }
+
+                //Notify outsiders, a new device is added
+                if (DeviceValueAdded != null)
+                    DeviceValueAdded(this, tagValue);
             }
             //Tag value is already added
             else
@@ -505,9 +506,7 @@ namespace ActivityDesk
             //Locked event handler
             ((BaseVisualization)e.TagVisualization).Locked += Device_Locked;
 
-            //Notify outsiders, a new device is added
-            if (DeviceValueAdded != null)
-                DeviceValueAdded(this, tagValue);
+          
         }
 
         /// <summary>
