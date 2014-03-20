@@ -11,7 +11,6 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
-using ActivityDesk.Helper;
 using ActivityDesk.Infrastructure;
 using ActivityDesk.Viewers;
 using ActivityDesk.Visualizer.Definitions;
@@ -75,8 +74,9 @@ namespace ActivityDesk
         private int _leftDockX = 100;
         private int _upperDockY = 100;
         private int _upperDockThreshold = 100;
-        private int _leftDockTreshhold = 100;
-        private int _rightDockTreshhold = 1820;
+        private int _leftDockTreshold = 100;
+        private int _rightDockTreshold = 1820;
+        private int _downTreshold = 1000;
         private int _dockSize;
         private Size _minimumDockSize;
         private int _borderSize;
@@ -627,10 +627,12 @@ namespace ActivityDesk
             _dockSize = 65;
             _borderSize = 20;
             _rightDockX = (int)(ActualWidth - _dockSize);
-            _rightDockTreshhold = (int) (ActualWidth - _dockSize);
+            _rightDockTreshold = (int) (ActualWidth - _dockSize);
+
+            _downTreshold = (int) (ActualHeight - _dockSize);
 
             _leftDockX = _dockSize;
-            _leftDockTreshhold = _dockSize;
+            _leftDockTreshold = _dockSize;
 
             _upperDockY = _dockSize;
             _upperDockThreshold = _dockSize;
@@ -1259,12 +1261,12 @@ namespace ActivityDesk
                 return;
 
             //Dock the resource based on the x,y of the resource item
-            if (p.X < _leftDockTreshhold)
+            if (p.X < _leftDockTreshold)
             {
                 item.Template = (ControlTemplate) item.FindResource("Docked");
                 DockStateManager.SetDockState(item, DockStates.Left);
             }
-            else if (p.X > _rightDockTreshhold)
+            else if (p.X > _rightDockTreshold)
             {
                 item.Template = (ControlTemplate) item.FindResource("Docked");
                 DockStateManager.SetDockState(item, DockStates.Right);
@@ -1273,6 +1275,10 @@ namespace ActivityDesk
             {
                 item.Template = (ControlTemplate) item.FindResource("Docked");
                 DockStateManager.SetDockState(item, DockStates.Top);
+            }
+            else if (p.Y >_downTreshold)
+            {
+                item.Center = new Point(item.Center.X,_downTreshold);
             }
             else
             {
