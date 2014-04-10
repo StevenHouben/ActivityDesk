@@ -31,12 +31,10 @@ namespace ActivityDesk.Infrastructure
 
         private void UpdateVisbility(bool vis)
         {
-            FrameworkElement element;
-            if (VisualStyle == DeviceVisual.Thumbnail)
-                element = _deviceThumbnail;
-            else element = _deviceVisualization;
-
-            element.Visibility = vis ? Visibility.Visible : Visibility.Hidden;
+            if(_deviceThumbnail !=null)
+                _deviceThumbnail.Visibility = vis ? Visibility.Visible : Visibility.Hidden;
+            if(_deviceVisualization != null)
+                _deviceVisualization.Visibility = vis ? Visibility.Visible : Visibility.Hidden;
         }
 
 
