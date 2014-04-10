@@ -145,6 +145,7 @@ namespace ActivityDesk.Infrastructure
         {
             Connected = Connected;
             Pinned = Pinned;
+            Visible = Visible;
         }
 
         void resourceReleased(object sender, System.Windows.Point e)
