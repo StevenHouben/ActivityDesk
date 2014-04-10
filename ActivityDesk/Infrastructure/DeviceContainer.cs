@@ -11,10 +11,9 @@ namespace ActivityDesk.Infrastructure
     {
         public delegate void ResourceReleasedHandler(Device sender, ResourceReleasedEventArgs e);
 
-
         public event ResourceReleasedHandler ResourceReleased; 
         private DeviceThumbnail _deviceThumbnail;
-        private VisualizationTablet _deviceVisualization;
+        private BaseVisualization _deviceVisualization;
         private bool _connected;
 
 
@@ -74,7 +73,7 @@ namespace ActivityDesk.Infrastructure
 
         public Device Device { get; set; }
 
-        public VisualizationTablet DeviceVisualization
+        public BaseVisualization DeviceVisualization
         {
             get { return _deviceVisualization; }
             set

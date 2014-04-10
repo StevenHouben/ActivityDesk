@@ -1,0 +1,238 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="12.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{94919648-ACAC-4E13-817C-5F41B9123C77}</ProjectGuid>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <RootNamespace>ActivityDesk</RootNamespace>
+    <AssemblyName>ActivityDesk</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <WarningLevel>4</WarningLevel>
+    <OutputType>winexe</OutputType>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+    <PublishUrl>Publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Web</InstallFrom>
+    <UpdateEnabled>true</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>false</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <Utf8Output>true</Utf8Output>
+    <ExpressionBlendVersion>4.0.20525.0</ExpressionBlendVersion>
+    <TargetFrameworkProfile />
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>.\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>false</DebugSymbols>
+    <Optimize>true</Optimize>
+    <OutputPath>.\bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>
+    </ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
+    <Compile Include="DockStateManager.cs" />
+    <Compile Include="Helper\CustomTopmostBehavior.cs" />
+    <Compile Include="Helper\Math.cs" />
+    <Compile Include="Mode.cs" />
+    <Compile Include="ResourceHandle.cs" />
+    <Compile Include="Viewers\DeviceViewer.xaml.cs">
+      <DependentUpon>DeviceViewer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DocumentContainer.xaml.cs">
+      <DependentUpon>DocumentContainer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Helper\Pdf\PDFConverter.cs" />
+    <Compile Include="Infrastructure\DeskConfiguration.cs" />
+    <Compile Include="Infrastructure\DeskManager.cs" />
+    <Compile Include="Infrastructure\LoadedResource.cs" />
+    <Compile Include="ResourceReleasedEventArgs.cs" />
+    <Compile Include="Infrastructure\DeviceContainer.cs" />
+    <Compile Include="Viewers\IResourceContainer.cs" />
+    <Compile Include="Viewers\NoteViewer.xaml.cs">
+      <DependentUpon>NoteViewer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Viewers\PdfViewer.xaml.cs">
+      <DependentUpon>PdfViewer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Viewers\ResourceViewer.xaml.cs">
+      <DependentUpon>ResourceViewer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Visualizer\Definitions\SmartPhoneDefinition.cs" />
+    <Compile Include="Visualizer\Definitions\TabletDefinition.cs" />
+    <Compile Include="Visualizer\Visualizations\SmartPhone.xaml.cs">
+      <DependentUpon>SmartPhone.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Visualizer\Visualizations\VisualizationTablet.xaml.cs">
+      <DependentUpon>VisualizationTablet.xaml</DependentUpon>
+    </Compile>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Visualizer\Visualizations\BaseVisualization.cs" />
+    <Compile Include="Visualizer\Visualizations\VisualizationSmartPhone.xaml.cs">
+      <DependentUpon>VisualizationSmartPhone.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Helper\GuiHelpers.cs" />
+    <Compile Include="Viewers\TouchWindow.xaml.cs">
+      <DependentUpon>TouchWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Helper\GlobalSuppressions.cs" />
+    <Compile Include="Desk.xaml.cs">
+      <DependentUpon>Desk.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Visualizer\AncestryChain.cs" />
+    <Compile Include="Visualizer\TagVisualizationEnterLeaveEventArgs.cs" />
+    <Compile Include="Visualizer\TagVisualizerEvents.cs" />
+    <Compile Include="Visualizer\TagVisualizerSynchronizationMode.cs" />
+    <AppDesigner Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.0">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\NooSphere\NooSphere\NooSphere.Infrastructure\NooSphere.Infrastructure.csproj">
+      <Project>{cf6bf4de-e88f-448e-8f6b-f5e2a9e3b033}</Project>
+      <Name>NooSphere.Infrastructure</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NooSphere\NooSphere\NooSphere.Model\NooSphere.Model.csproj">
+      <Project>{dc2a799f-b985-4a95-9b3c-fecfe14b8597}</Project>
+      <Name>NooSphere.Model</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <ItemGroup>
+    <ReferencePath Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\Libraries\Blake.NUI.WPF.dll" />
+    <ReferencePath Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\Libraries\Blake.NUI.WPF.Surface.dll" />
+    <ReferencePath Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\Libraries\Blake.NUI.WPF.SurfaceToolkit.dll" />
+    <ReferencePath Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\packages\Magick.NET-Q16-x64.6.8.8.201\lib\net40-client\Magick.NET-x64.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Microsoft SDKs\Surface\v2.0\Reference Assemblies\Microsoft.Surface.Core.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Microsoft SDKs\Surface\v2.0\Reference Assemblies\Microsoft.Surface.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Microsoft SDKs\Surface\v2.0\Reference Assemblies\Microsoft.Surface.Presentation.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Microsoft SDKs\Surface\v2.0\Reference Assemblies\Microsoft.Surface.Presentation.Generic.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\mscorlib.dll" />
+    <ReferencePath Include="C:\Users\Pitlab\Documents\GitHub\NooSphere\NooSphere\NooSphere.Infrastructure\bin\Debug\NooSphere.Infrastructure.dll" />
+    <ReferencePath Include="C:\Users\Pitlab\Documents\GitHub\NooSphere\NooSphere\NooSphere.Model\bin\Debug\NooSphere.Model.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\PresentationCore.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\PresentationFramework.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Core.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Data.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Drawing.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Web.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Windows.Forms.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Xaml.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Xml.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\WindowsBase.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\Viewers\DeviceViewer.g.cs" />
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\DocumentContainer.g.cs" />
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\Viewers\NoteViewer.g.cs" />
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\Viewers\PdfViewer.g.cs" />
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\Viewers\ResourceViewer.g.cs" />
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\Visualizer\Visualizations\SmartPhone.g.cs" />
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\Visualizer\Visualizations\VisualizationSmartPhone.g.cs" />
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\Desk.g.cs" />
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\Viewers\TouchWindow.g.cs" />
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\Visualizer\Visualizations\VisualizationTablet.g.cs" />
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\App.g.cs" />
+    <Compile Include="C:\Users\Pitlab\Documents\GitHub\ActivityDesk\ActivityDesk\obj\Debug\GeneratedInternalTypeHelper.g.cs" />
+  </ItemGroup>
+</Project>

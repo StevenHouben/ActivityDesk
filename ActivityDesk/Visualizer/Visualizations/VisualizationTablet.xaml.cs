@@ -14,102 +14,15 @@ namespace ActivityDesk.Visualizer.Visualizations
 {
     public partial class VisualizationTablet : BaseVisualization, INotifyPropertyChanged,IResourceContainer
     {
-        public event EventHandler<Device> Closed = delegate { };
-        public event PropertyChangedEventHandler PropertyChanged = delegate { };
-        public event EventHandler<Point> ResourceReleased = delegate { };
 
-
-        private bool _uiOverflow;
-        public bool UiOverflow
-        {
-            get { return _uiOverflow; }
-            set
-            {
-                _uiOverflow = value;
-                OnPropertyChanged("UiOverflow");
-            }
-
-        }
-
-        public Connection Connector { get; set;
-        }
-
-        protected void OnPropertyChanged(string name)
-        {
-            var handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(name));
-            }
-        }
-
-
-        private LoadedResource _resource = LoadedResource.EmptyResource;
-
-        public ObservableCollection<LoadedResource> LoadedResources { get; set; }
-
-        public LoadedResource Resource
-        {
-            get { return _resource; }
-            set
-            {
-                _resource = value;
-                OnPropertyChanged("Resource");
-            }
-
-        }
-
-        private bool _connected;
-        public bool Connected
-        {
-            get { return _connected; }
-            set
-            {
-                _connected = value;
-                OnPropertyChanged("Connected");
-            }
-
-        }
-
-        private bool _pinned;
-        public bool Pinned
-        {
-            get { return _pinned; }
-            set
-            {
-                _pinned = value;
-                OnPropertyChanged("Pinned");
-            }
-
-        }
-
-        public void AddResource(LoadedResource res)
-        {
-            Resource = res;
-            LoadedResources.Add(res);
-        }
-
-
-         public Device Device { get; private set; }
-
-         public VisualizationTablet()
+      
+      
+        public VisualizationTablet()
 	    {
-            Resource = new LoadedResource();
-            LoadedResources = new ObservableCollection<LoadedResource>();
-            LoadedResources.CollectionChanged += LoadedResources_CollectionChanged;
-
             InitializeComponent();
-
-            DataContext = this;
-            Events.RegisterGestureEventSupport(this);
-
 	    }
 
-         void LoadedResources_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-         {
-             UiOverflow = LoadedResources.Count > 8;
-         }
-        
+      
         private void UIElement_OnTouchDown(object sender, TouchEventArgs e)
         {
             OnLocked();
@@ -130,29 +43,12 @@ namespace ActivityDesk.Visualizer.Visualizations
 
             LoadedResources.Remove(res);
 
-            if (ResourceReleased != null)
-                ResourceReleased(res, point);
+             OnResourceReleased(res, point);
 
             if (Resource == res)
                 Resource = LoadedResources.Count != 0 ? LoadedResources.First() : LoadedResource.EmptyResource;
         }
 
-        public LoadedResource LoadedResource
-        {
-            get; set;
-        }
-
-        public bool Iconized
-        {
-            get; set;
-        }
-
-        public event EventHandler<LoadedResource> Copied;
-
-        public string ResourceType
-        {
-            get; set;
-        }
 
         private void Grid_OnTouchDown(object sender, TouchEventArgs e)
         {
@@ -179,8 +75,8 @@ namespace ActivityDesk.Visualizer.Visualizations
 
             LoadedResources.Remove(res);
 
-            if (ResourceReleased != null)
-                ResourceReleased(res, point);
+
+            OnResourceReleased(res,point);
 
             if (Resource == res)
                 Resource = LoadedResources.Count != 0 ? LoadedResources.First() : LoadedResource.EmptyResource;

@@ -14,7 +14,7 @@
                 <Label x:Name="ActivityName" VerticalAlignment="Center" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Content="{Binding SelectedActivity.Name}" FontSize="120" Foreground="#30FFFFFF" Background="Transparent"/>
             </DockPanel>
         </Canvas>
-        <s:TagVisualizer x:Name="Visualizer" visualizer:TagVisualizerEvents.Mode="Off" VisualizationAdded="Visualizer_VisualizationAdded" VisualizationRemoved="Visualizer_VisualizationRemoved" Width="auto" Height="auto">
+        <s:TagVisualizer x:Name="Visualizer" VisualizationMoved="Visualizer_OnVisualizationMoved" visualizer:TagVisualizerEvents.Mode="Off" VisualizationAdded="Visualizer_VisualizationAdded" VisualizationRemoved="Visualizer_VisualizationRemoved" Width="auto" Height="auto">
         </s:TagVisualizer>
 
         <s:ScatterView Name="view" />

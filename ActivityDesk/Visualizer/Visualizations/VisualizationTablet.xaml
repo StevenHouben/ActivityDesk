@@ -106,6 +106,20 @@
                         </Style>
                     </Image.Style>
                 </Image>
+                <Image Stretch="Fill" Source="/Images/NoInterrupt.png"  VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Image.Style>
+                        <Style TargetType="{x:Type Image}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Interruptable}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Interruptable}" Value="False">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Image.Style>
+                </Image>
             </StackPanel>
             <Border x:Name="btnBody" Height="488">
                 <Image Source="tablet_landscape.png" Height="525" Width="732"></Image>

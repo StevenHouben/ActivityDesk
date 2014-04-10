@@ -235,7 +235,8 @@ namespace ActivityDesk
                                 container.Pinned = dev.Pinned;
 
                                 container.DeviceThumbnail.Orientation = dev.Orientation;
-                                CheckRotation(container.DeviceThumbnail);
+
+                                container.DeviceThumbnail.Interruptable = container.DeviceThumbnail.Orientation > 180 && container.DeviceThumbnail.Orientation < 260;
 
                             }
                         }
@@ -425,6 +426,13 @@ namespace ActivityDesk
                     TagRemovedBehavior = TagRemovedBehavior.Fade,
                     LostTagTimeout = 1000
                 });
+            Visualizer.Definitions.Add(
+               new SmartPhoneDefinition
+               {
+                   Source = new Uri("Visualizer/Visualizations/VisualizationSmartPhone.xaml", UriKind.Relative),
+                   TagRemovedBehavior = TagRemovedBehavior.Fade,
+                   LostTagTimeout = 1000
+               });
         }
 
         /// <summary>
@@ -441,7 +449,7 @@ namespace ActivityDesk
                 //Create new device container
                 var dev = new DeviceContainer
                 {
-                    DeviceVisualization = e.TagVisualization as VisualizationTablet,
+                    DeviceVisualization = e.TagVisualization as BaseVisualization,
                     TagValue = tagValue
                 };
 
@@ -476,7 +484,7 @@ namespace ActivityDesk
                 }
 
                 //connect the visualisation UI to the container
-                container.DeviceVisualization = e.TagVisualization as VisualizationTablet;
+                container.DeviceVisualization = e.TagVisualization as BaseVisualization;
 
                 //Change the container visual to real device
                 container.VisualStyle = DeviceVisual.Visualisation;
@@ -1022,7 +1030,7 @@ namespace ActivityDesk
             if (thumbnail != null)
             {
                 //Check if the device is being rotated
-                CheckRotation(thumbnail);
+                thumbnail.Interruptable = thumbnail.Orientation > 180 && thumbnail.Orientation < 260; ;
 
                 //Check if the device intesects with anoter device
                 CheckDeviceIntersections(thumbnail);
@@ -1144,18 +1152,6 @@ namespace ActivityDesk
             }
         }
 
-        /// <summary>
-        /// Checks the rotation angle of a device
-        /// </summary>
-        private void CheckRotation(DeviceThumbnail deviceThumbnail)
-        {
-            var or = deviceThumbnail.Orientation;
-
-            //Mark the interruptability based on the angle
-            deviceThumbnail.Interruptable = or > 180 && or <260;
-        }
-
-        
         /// <summary>
         /// Checks the intersections between resource and devices
         /// </summary>
@@ -1450,6 +1446,11 @@ namespace ActivityDesk
                 ((IResourceContainer) destination).Connector = new Connection() {ConnectionLine = line, Item = origin};
         }
 
+        private void Visualizer_OnVisualizationMoved(object sender, TagVisualizerEventArgs e)
+        {
+            //Mark the interruptability based on the angle
+            ((BaseVisualization)e.TagVisualization).Interruptable = e.TagVisualization.Orientation > 180 && e.TagVisualization.Orientation < 260;
+        }
     }
     public enum DockStates
     {
