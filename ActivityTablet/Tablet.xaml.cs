@@ -54,6 +54,7 @@ namespace ActivityTablet
         private ActivityClient _client;
         private DisplayMode _displayMode = DisplayMode.ResourceViewer;
         public ObservableCollection<LoadedResource> LoadedResources { get; set; }
+
         public Dictionary<string, LoadedResource> ResourceCache = new Dictionary<string, LoadedResource>();
 
         private Activity _selectedActivity;
@@ -82,7 +83,7 @@ namespace ActivityTablet
 
             btnMode.IsEnabled = false;
 
-            RunDiscovery();
+            StartClient(new WebConfiguration("10.6.6.121", 8000));
         }
         private LoadedResource FromResource(FileResource res)
         {
@@ -528,6 +529,7 @@ namespace ActivityTablet
                 case DisplayMode.Controller:
                     Master = true;
                     PopulateResources(_client.Activities.First().Value.Id);
+                    _client.SendMessage(MessageType.Control, "disconnected");
                     break;
             }
         }

@@ -125,25 +125,52 @@ namespace ActivityDesk.Infrastructure
 
                     break;
                     case MessageType.Control:
-                    if (e.Message.Content != null && (string) e.Message.Content == "slave")
+                    Application.Current.Dispatcher.Invoke(() =>
                     {
-                        if (e.Message.From == null) return;
-                        if (_activitySystem.Devices.ContainsKey(e.Message.From))
+                        if (e.Message.Content != null && (string) e.Message.Content == "slave")
                         {
-                            var dev = _activitySystem.Devices[e.Message.From] as Device;
- 
-                            DeviceContainer container = null;
-                            foreach (var con in _documentContainer.DeviceContainers.Values.Where(con => con.Device.Id == e.Message.From))
-                                container = con;
-                            if (container == null)
-                                return;
-                            foreach (var lr in container.LoadedResources)
+                            if (e.Message.From == null) return;
+                            if (_activitySystem.Devices.ContainsKey(e.Message.From))
                             {
-                                _activityService.SendMessage(dev, MessageType.Resource, lr.Resource);
+                                var dev = _activitySystem.Devices[e.Message.From] as Device;
+
+                                DeviceContainer container = null;
+                                foreach (
+                                    var con in
+                                        _documentContainer.DeviceContainers.Values.Where(
+                                            con => con.Device.Id == e.Message.From))
+                                    container = con;
+                                if (container == null)
+                                    return;
+                                foreach (var lr in container.LoadedResources)
+                                {
+                                    container.Visible = true;
+                                    _activityService.SendMessage(dev, MessageType.Resource, lr.Resource);
+
+                                }
+
                             }
-                          
                         }
-                    }
+                        if (e.Message.Content != null && (string) e.Message.Content == "disconnected")
+                        {
+                            if (e.Message.From == null) return;
+                            if (_activitySystem.Devices.ContainsKey(e.Message.From))
+                            {
+                                var dev = _activitySystem.Devices[e.Message.From] as Device;
+
+                                DeviceContainer container = null;
+                                foreach (
+                                    var con in
+                                        _documentContainer.DeviceContainers.Values.Where(
+                                            con => con.Device.Id == e.Message.From))
+                                    container = con;
+                                if (container == null)
+                                    return;
+                                container.Visible = false;
+
+                            }
+                        }
+                    });
                     break;
             }
         }

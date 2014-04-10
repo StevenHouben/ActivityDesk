@@ -698,7 +698,7 @@ namespace ActivityDesk
                     DeviceContainers[MasterDevice.TagValue].AddResource(resource);
                 else
                 {
-                    if (DeviceContainers.Count > 0) ;
+                    if (DeviceContainers.Count > 0)
                     {
                         MasterDevice = DeviceContainers.First().Value.Device;
                         AddResourceToMaster(resource);
@@ -833,12 +833,12 @@ namespace ActivityDesk
             }
 
             //Add a new resource visualization at the same postion + slight offset
-            var rv_copy = AddResourceAtLocation(e, new Point(item.ActualCenter.X+20,item.ActualCenter.Y+20),true);
+            var rvCopy = AddResourceAtLocation(e, new Point(item.ActualCenter.X+20,item.ActualCenter.Y+20),true);
 
             var line = new Line { Stroke = PickBrush(), StrokeThickness = 4 };
-            BindLineToScatterViewItems(line, item, rv_copy);
+            BindLineToScatterViewItems(line, item, rvCopy);
 
-            Connections.Add(line, new IconConnection(){Origin = item,Destination = rv_copy});
+            Connections.Add(line, new IconConnection(){Origin = item,Destination = rvCopy});
 
             Canvas.Children.Add(line);
         }

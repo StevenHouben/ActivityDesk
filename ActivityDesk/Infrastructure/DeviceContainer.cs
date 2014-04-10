@@ -1,4 +1,6 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics.Eventing.Reader;
+using System.Windows;
 using ActivityDesk.Viewers;
 using ActivityDesk.Visualizer.Visualizations;
 using NooSphere.Model.Device;
@@ -14,6 +16,28 @@ namespace ActivityDesk.Infrastructure
         private DeviceThumbnail _deviceThumbnail;
         private VisualizationTablet _deviceVisualization;
         private bool _connected;
+
+
+        private bool visible;
+        public bool Visible
+        {
+            get { return visible; }
+            set
+            {
+                visible = value;
+                UpdateVisbility(visible);
+            }
+        }
+
+        private void UpdateVisbility(bool vis)
+        {
+            FrameworkElement element;
+            if (VisualStyle == DeviceVisual.Thumbnail)
+                element = _deviceThumbnail;
+            else element = _deviceVisualization;
+
+            element.Visibility = vis ? Visibility.Visible : Visibility.Hidden;
+        }
 
 
         public IResourceContainer ActiveDevice

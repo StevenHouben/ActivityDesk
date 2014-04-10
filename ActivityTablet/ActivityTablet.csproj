@@ -64,6 +64,7 @@
     </ApplicationDefinition>
     <Compile Include="LoadedResource.cs" />
     <Compile Include="Proxy.cs" />
+    <Compile Include="SoundHelper.cs" />
     <Compile Include="Tablet.xaml.cs" />
     <Page Include="ColoredButtons.xaml">
       <Generator>MSBuild:Compile</Generator>
