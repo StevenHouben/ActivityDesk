@@ -142,9 +142,9 @@ namespace ActivityDesk.Infrastructure
                                     container = con;
                                 if (container == null)
                                     return;
+                                container.Visible = true;
                                 foreach (var lr in container.LoadedResources)
                                 {
-                                    container.Visible = true;
                                     _activityService.SendMessage(dev, MessageType.Resource, lr.Resource);
 
                                 }

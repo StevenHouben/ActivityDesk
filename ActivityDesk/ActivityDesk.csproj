@@ -106,6 +106,7 @@
     <Compile Include="DockStateManager.cs" />
     <Compile Include="Helper\CustomTopmostBehavior.cs" />
     <Compile Include="Helper\Math.cs" />
+    <Compile Include="Helper\ScreenCapture.cs" />
     <Compile Include="Mode.cs" />
     <Compile Include="ResourceHandle.cs" />
     <Compile Include="Viewers\DeviceViewer.xaml.cs">

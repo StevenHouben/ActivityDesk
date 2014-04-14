@@ -118,6 +118,7 @@ namespace ActivityDesk.Infrastructure
 
         public DeviceContainer()
         {
+            Visible = true;
             Pinned = false;
             VisualStyle=DeviceVisual.Visualisation;
             Device = new Device();

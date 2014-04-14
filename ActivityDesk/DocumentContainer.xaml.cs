@@ -2,14 +2,20 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using ActivityDesk.Infrastructure;
 using ActivityDesk.Viewers;
@@ -20,13 +26,18 @@ using Microsoft.Surface.Presentation.Controls;
 using System.Collections.ObjectModel;
 using Microsoft.Surface.Presentation.Controls.TouchVisualizations;
 using Microsoft.Surface.Presentation.Input;
+using NooSphere.Infrastructure.Web.Controllers;
 using NooSphere.Model;
 using NooSphere.Model.Device;
+using Binding = System.Windows.Data.Binding;
 using Math = ActivityDesk.Helper.Math;
 using Note = ActivityDesk.Viewers.Note;
 using Point = System.Windows.Point;
 using Size = System.Windows.Size;
-using System.Windows.Media;
+using Brush = System.Windows.Media.Brush;
+using Brushes = System.Windows.Media.Brushes;
+using Rectangle = System.Windows.Shapes.Rectangle;
+using Timer = System.Timers.Timer;
 
 namespace ActivityDesk
 {
@@ -114,6 +125,61 @@ namespace ActivityDesk
 
             //Handle to the size change
             SizeChanged += DocumentContainer_SizeChanged;
+
+            StartDataCapture();
+        }
+
+        private void StartDataCapture()
+        {
+            log.AppendLine(DateTime.Now + " Log started");
+
+            var time = new Timer(30000);
+            time.Elapsed += time_Tick;
+            time.Start();
+        }
+
+        private 
+
+        void time_Tick(object sender, EventArgs e)
+        {
+            SaveScreen();
+            File.AppendAllText(System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) + "/Log/log.txt",log.ToString());
+            log.Clear();
+        }
+
+        StringBuilder log = new StringBuilder();
+        private static void SaveScreen()
+        {
+            var left = Screen.AllScreens.Min(screen => screen.Bounds.X);
+            var top = Screen.AllScreens.Min(screen => screen.Bounds.Y);
+            var right = Screen.AllScreens.Max(screen => screen.Bounds.X + screen.Bounds.Width);
+            var bottom = Screen.AllScreens.Max(screen => screen.Bounds.Y + screen.Bounds.Height);
+            var width = right - left;
+            var height = bottom - top;
+
+            using (var screenBmp = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
+            {
+                using (var bmpGraphics = Graphics.FromImage(screenBmp))
+                {
+                    bmpGraphics.CopyFromScreen(left, top, 0, 0, new System.Drawing.Size(width, height));
+                    var bm= Imaging.CreateBitmapSourceFromHBitmap(
+                        screenBmp.GetHbitmap(),
+                        IntPtr.Zero,
+                        Int32Rect.Empty,
+                        BitmapSizeOptions.FromEmptyOptions());
+
+                    JpegBitmapEncoder encoder = new JpegBitmapEncoder();
+                    BitmapFrame outputFrame = BitmapFrame.Create(bm);
+                    encoder.Frames.Add(outputFrame);
+
+                    using (FileStream file = 
+                        File.OpenWrite(
+                        System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) + "/Log/"+Guid.NewGuid()+".jpg"))
+                    {
+                        encoder.Save(file);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -255,7 +321,7 @@ namespace ActivityDesk
                 if(noDevice)
                     foreach (var def in dev.Configurations.Select(res => res as DefaultResourceConfiguration))
                     {
-                        AddResource(ResourceCache[def.Resource.Id], true);
+                        var item = AddResource(ResourceCache[def.Resource.Id], true);
                         handledResources.Add(def.Resource.Id);
                     }
              
@@ -268,8 +334,8 @@ namespace ActivityDesk
                 if (deskConfig == null)
                     return;
 
-
                 var viewer = AddResourceAtLocation(ResourceCache[deskConfig.Resource.Id], deskConfig.Center);
+
                 HandleDockingFromTouch(viewer, deskConfig.Center);
                 handledResources.Add(deskConfig.Resource.Id);
 
@@ -440,6 +506,8 @@ namespace ActivityDesk
         /// </summary>
         private void Visualizer_VisualizationAdded(object sender, TagVisualizerEventArgs e)
         {
+
+            log.AppendLine(DateTime.Now + " Visualisation added on" + e.TagVisualization.TranslatePoint(new Point(0,0), this));
             //Grab the tag value of the detected device
             var tagValue = e.TagVisualization.VisualizedTag.Value.ToString(CultureInfo.InvariantCulture);
 
@@ -522,6 +590,7 @@ namespace ActivityDesk
         /// </summary>
         private void Visualizer_VisualizationRemoved(object sender, TagVisualizerEventArgs e)
         {
+            log.AppendLine(DateTime.Now + " Visualisation removed on" + e.TagVisualization.TranslatePoint(new Point(0, 0), this));
             //Grab the tag value of the remove device
             var tagValue = e.TagVisualization.VisualizedTag.Value.ToString(CultureInfo.InvariantCulture);
 
@@ -986,6 +1055,8 @@ namespace ActivityDesk
 
             //Handle the size changed to update the float style
             element.SizeChanged += element_SizeChanged;
+
+            HandleDocking(element);
         }
 
         /// <summary>
@@ -1018,6 +1089,7 @@ namespace ActivityDesk
         {
             //Check if the element should be docked
             HandleDockingFromTouch((ScatterViewItem)sender, e.Device.GetPosition(view));
+            log.AppendLine(DateTime.Now +" "+ ((ScatterViewItem)sender) .ToString()+ " moved at " + e.GetTouchPoint(this).Position);
         }
 
         /// <summary>
@@ -1249,6 +1321,7 @@ namespace ActivityDesk
         /// </summary>
         private void HandleDockingFromTouch(ScatterViewItem item,Point p)
         {
+
             //Grab docking state
             var previousdockState = DockStateManager.GetDockState(item);
 
@@ -1257,22 +1330,22 @@ namespace ActivityDesk
                 return;
 
             //Dock the resource based on the x,y of the resource item
-            if (p.X < _leftDockTreshold)
+            if (p.X <= _leftDockTreshold)
             {
                 item.Template = (ControlTemplate) item.FindResource("Docked");
                 DockStateManager.SetDockState(item, DockStates.Left);
             }
-            else if (p.X > _rightDockTreshold)
+            else if (p.X >= _rightDockTreshold)
             {
                 item.Template = (ControlTemplate) item.FindResource("Docked");
                 DockStateManager.SetDockState(item, DockStates.Right);
             }
-            else if (p.Y < _upperDockThreshold)
+            else  if (p.Y <= _upperDockThreshold)
             {
                 item.Template = (ControlTemplate) item.FindResource("Docked");
                 DockStateManager.SetDockState(item, DockStates.Top);
             }
-            else if (p.Y >_downTreshold)
+            else if (p.Y >= _downTreshold)
             {
                 item.Center = new Point(item.Center.X,_downTreshold);
             }
@@ -1284,6 +1357,8 @@ namespace ActivityDesk
                 else item.Template = (ControlTemplate)item.FindResource("Floating");
                 DockStateManager.SetDockState(item, DockStates.Floating);
             }
+
+            log.AppendLine(DateTime.Now + item.ToString() + " docked as " + DockStateManager.GetDockState(item));
 
             //Update the dock
             UpdateDock(item);
@@ -1442,14 +1517,26 @@ namespace ActivityDesk
                 Path = new PropertyPath("ActualCenter.Y")
             });
 
-            ((IResourceContainer)origin).Connector = new Connection() { ConnectionLine = line, Item = destination };
-                ((IResourceContainer) destination).Connector = new Connection() {ConnectionLine = line, Item = origin};
+            ((IResourceContainer)origin).Connector = new Connection { ConnectionLine = line, Item = destination };
+                ((IResourceContainer) destination).Connector = new Connection {ConnectionLine = line, Item = origin};
         }
 
         private void Visualizer_OnVisualizationMoved(object sender, TagVisualizerEventArgs e)
         {
+            log.AppendLine(DateTime.Now + " Visualisation moved to " + e.TagVisualization.TranslatePoint(new Point(0, 0), this));
             //Mark the interruptability based on the angle
             ((BaseVisualization)e.TagVisualization).Interruptable = e.TagVisualization.Orientation > 180 && e.TagVisualization.Orientation < 260;
+
+        }
+
+        private void View_OnTouchDown(object sender, TouchEventArgs e)
+        {
+            log.AppendLine(DateTime.Now + " TouchDown on " + e.Device.GetPosition(this));
+        }
+
+        private void View_OnTouchMove(object sender, TouchEventArgs e)
+        {
+            log.AppendLine(DateTime.Now + " TouchMove on " + e.Device.GetPosition(this));
         }
     }
     public enum DockStates
